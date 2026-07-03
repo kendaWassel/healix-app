@@ -8,15 +8,19 @@ import PatientRegister from "./screens/registers/patient/PatientRegister";
 import DoctorRegister from "./screens/registers/doctor/DoctorRegister";
 import DeliveryRegister from "./screens/registers/delivery/DeliveryRegister";
 import PharmacistRegister from "./screens/registers/pharmacist/PharmacistRegister";
+import LandingPage from "./screens/landingPage/LandingPage";
+import Patient from "./screens/patient/patient";
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Login"
+        initialRouteName="Landing"
         screenOptions={{ headerShown: false }}
       >
+        <Stack.Screen name="Landing" component={LandingPage} />
         <Stack.Screen name="Login" component={UserLogin} />
         <Stack.Screen name="Register" component={NewAccountSetup} />
         <Stack.Screen
@@ -39,7 +43,7 @@ export default function App() {
          name="PharmacistRegister"
           component={PharmacistRegister}
            />
-     
+        <Stack.Screen name="Patient" component={Patient} />
 
       </Stack.Navigator>
     </NavigationContainer>
