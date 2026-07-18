@@ -25,42 +25,64 @@ const PatientHeader = () => {
   </View>
 
       {/* أزرار التنقل السريع */}
-      <View style={styles.tabBar}>
-        <TouchableOpacity
-          style={[styles.tab, isActive("DoctorConsultation") && styles.tabActive]}
-          onPress={() => navigation.navigate("DoctorConsultation")}
-        >
-          <Ionicons
-            name="medkit"
-            size={18}
-            color={isActive("DoctorConsultation") ? "#fff" : "#052443"}
-          />
-          <Text
-            style={[
-              styles.tabText,
-              isActive("DoctorConsultation") && styles.tabTextActive,
-            ]}
-          >
-            Consultation
-          </Text>
-        </TouchableOpacity>
+    <View style={styles.tabBar}>
+  <TouchableOpacity
+    style={[styles.tab, isActive("DoctorConsultation") && styles.tabActive]}
+    onPress={() => navigation.navigate("DoctorConsultation")}
+  >
+    <Ionicons
+      name="medkit"
+      size={18}
+      color={isActive("DoctorConsultation") ? "#fff" : "#767676"}
+    />
+    <Text
+      style={[
+        styles.tabTextInactive,
+        isActive("DoctorConsultation") && styles.tabTextActive,
+      ]}
+    >
+      Consultation
+    </Text>
+  </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.tab}
-          onPress={() => navigation.navigate("MySchedules")}
-        >
-          <Ionicons name="calendar" size={18} color="#767676" />
-          <Text style={styles.tabTextInactive}>Schedules</Text>
-        </TouchableOpacity>
+  <TouchableOpacity
+    style={[styles.tab, isActive("MySchedules") && styles.tabActive]}
+    onPress={() => navigation.navigate("MySchedules")}
+  >
+    <Ionicons
+      name="calendar"
+      size={18}
+      color={isActive("MySchedules") ? "#fff" : "#767676"}
+    />
+    <Text
+      style={[
+        styles.tabTextInactive,
+        isActive("MySchedules") && styles.tabTextActive,
+      ]}
+    >
+      Schedules
+    </Text>
+  </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.tab}
-          onPress={() => navigation.navigate("Receipts")}
-        >
-          <Ionicons name="receipt" size={18} color="#767676" />
-          <Text style={styles.tabTextInactive}>Receipts</Text>
-        </TouchableOpacity>
-      </View>
+  <TouchableOpacity
+    style={[styles.tab, isActive("Receipts") && styles.tabActive]}
+    onPress={() => navigation.navigate("Receipts")}
+  >
+    <Ionicons
+      name="receipt"
+      size={18}
+      color={isActive("Receipts") ? "#fff" : "#767676"}
+    />
+    <Text
+      style={[
+        styles.tabTextInactive,
+        isActive("Receipts") && styles.tabTextActive,
+      ]}
+    >
+      Receipts
+    </Text>
+  </TouchableOpacity>
+</View>
     </View>
   );
 };
