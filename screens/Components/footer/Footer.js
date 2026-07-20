@@ -1,13 +1,16 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.footer}>
       <Text style={styles.logo}>
         Heal<Text style={{ color: "#39CCCC" }}>ix</Text>
       </Text>
-      <Text style={styles.tagline}>Your health, our priority</Text>
+      <Text style={styles.tagline}>{t("footer.tagline")}</Text>
 
       <View style={styles.socialRow}>
         <TouchableOpacity style={styles.socialBtn}>
@@ -22,9 +25,7 @@ const Footer = () => {
       </View>
 
       <View style={styles.divider} />
-      <Text style={styles.copyright}>
-        © 2026 Healix. All rights reserved.
-      </Text>
+      <Text style={styles.copyright}>{t("footer.copyright")}</Text>
     </View>
   );
 };

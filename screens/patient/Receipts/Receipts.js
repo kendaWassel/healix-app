@@ -1,4 +1,3 @@
-// screens/patient/Receipts/Receipts.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -15,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
+import { useTranslation } from "react-i18next";
 import PatientHeader from "../../Components/header/PatientHeader";
 import Footer from "../../Components/footer/Footer";
 import SendToPharmacy from "./SendtoPharmacy";
@@ -24,11 +24,14 @@ import Modal from "./Modal";
 import PaymentModal from "../../Components/servicesCard/PayementModal";
 import RatingModal from "../DoctorConsultation/booking/RatingModal";
 import DoneModal from "../DoctorConsultation/booking/DoneModal";
+import * as ImageManipulator from "expo-image-manipulator";
+import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
 
 const DDI_URL = "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/ddi";
 
 export default function Receipts() {
   const navigation = useNavigation();
+  const { t } = useTranslation();
 
   const [receipts, setReceipts] = useState([]);
   const [pharmacistReceipts, setPharmacistReceipts] = useState([]);
@@ -54,6 +57,7 @@ export default function Receipts() {
   const [checkResult, setCheckResult] = useState(null);
   const [checkLoading, setCheckLoading] = useState(false);
   const [checkError, setCheckError] = useState("");
+  const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
 
   const [uploadDisabled, setUploadDisabled] = useState(false);
   const [selectedReceiptId, setSelectedReceiptId] = useState(null);
@@ -119,7 +123,7 @@ export default function Receipts() {
       }
     } catch (err) {
       console.error(err);
-      setError("Failed to load receipts.");
+      setError(t("receipts.loadFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -153,7 +157,6 @@ export default function Receipts() {
         ? data
         : [];
       const meta = data?.meta || data.meta;
-
       if (Array.isArray(receiptData)) {
         const formatted = receiptData.map((p) => ({
           id: p.order_id,
@@ -186,7 +189,7 @@ export default function Receipts() {
       }
     } catch (err) {
       console.error(err);
-      setErrorPharmacist("Failed to load pharmacist receipts.");
+      setErrorPharmacist(t("receipts.loadPharmacistFailed"));
     } finally {
       setIsLoadingPharmacist(false);
     }
@@ -218,15 +221,15 @@ export default function Receipts() {
         setDeliveryData(data.data);
         if (!data.data?.delivery) {
           setDeliveryMessage(
-            data.data?.message || "No delivery agent assigned yet"
+            data.data?.message || t("receipts.noDeliveryAgent")
           );
         }
       } else {
-        setDeliveryMessage(data.message || "No delivery assigned yet");
+        setDeliveryMessage(data.message || t("receipts.noDeliveryAgent"));
       }
     } catch (err) {
       console.error(err);
-      setDeliveryMessage("Failed to load delivery info");
+      setDeliveryMessage(t("receipts.loadDeliveryFailed"));
     } finally {
       setDeliveryLoading(false);
     }
@@ -282,12 +285,12 @@ export default function Receipts() {
   const handleUpload = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      setError("Permission to access photos is required.");
+      setError(t("receipts.permissionRequired"));
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaType.Images,
       quality: 0.8,
     });
 
@@ -300,15 +303,21 @@ export default function Receipts() {
     setUploadDisabled(true);
     const token = await AsyncStorage.getItem("token");
 
-    const formData = new FormData();
-    formData.append("image", {
-      uri: asset.uri,
-      name: asset.fileName || "receipt.jpg",
-      type: asset.mimeType || "image/jpeg",
-    });
-    formData.append("category", "prescription");
-
     try {
+      const manipulated = await ImageManipulator.manipulateAsync(
+        asset.uri,
+        [],
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      const formData = new FormData();
+      formData.append("image", {
+        uri: manipulated.uri,
+        name: "receipt.jpg",
+        type: "image/jpeg",
+      });
+      formData.append("category", "prescription");
+
       setIsLoading(true);
 
       const response = await fetch(
@@ -324,13 +333,14 @@ export default function Receipts() {
       );
 
       const data = await response.json();
-
+      console.log("receipt details: ", data);
+      console.log("image url specifically:", data.data?.prescription_image_url);
       if (data.status === "success") {
         fetchMyReceipts();
       }
     } catch (err) {
       console.error(err);
-      setError("Failed to upload receipt.");
+      setError(t("receipts.uploadFailed"));
     } finally {
       setIsLoading(false);
       setUploadDisabled(false);
@@ -366,7 +376,7 @@ export default function Receipts() {
 
   const handleCheckInteraction = async () => {
     if (!drugA.trim() || !drugB.trim()) {
-      setCheckError("Please enter both drug names");
+      setCheckError(t("receipts.enterBothDrugs"));
       return;
     }
     setCheckLoading(true);
@@ -387,12 +397,12 @@ export default function Receipts() {
       const result = await res.json();
 
       if (!res.ok) {
-        setCheckError(result.message || result.detail || "Drug not found");
+        setCheckError(result.message || result.detail || t("receipts.drugNotFound"));
         return;
       }
       setCheckResult(result.data || result);
     } catch (err) {
-      setCheckError("Connection failed. Try again.");
+      setCheckError(t("receipts.connectionFailed"));
     } finally {
       setCheckLoading(false);
     }
@@ -405,14 +415,14 @@ export default function Receipts() {
         {/* My Receipts */}
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>My Receipts</Text>
+            <Text style={styles.sectionTitle}>{t("receipts.myReceipts")}</Text>
             <View style={styles.headerButtons}>
               <TouchableOpacity
                 onPress={handleUpload}
                 disabled={uploadDisabled}
                 style={[styles.addBtn, uploadDisabled && styles.btnDisabled]}
               >
-                <Text style={styles.addBtnText}>Upload Receipt</Text>
+                <Text style={styles.addBtnText}>{t("receipts.uploadReceipt")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
@@ -421,17 +431,17 @@ export default function Receipts() {
                   setDrugB("");
                   setCheckResult(null);
                   setCheckError("");
+                  clearSuggestion();
                 }}
                 style={styles.addBtn}
               >
-                <Text style={styles.addBtnText}>Check Interaction</Text>
+                <Text style={styles.addBtnText}>{t("receipts.checkInteraction")}</Text>
               </TouchableOpacity>
             </View>
           </View>
           <Text style={styles.sectionSubtitle}>
-            Check Your Receipts and send them or add new ones
+            {t("receipts.checkSubtitle")}
           </Text>
-
           {isLoading ? (
             <ActivityIndicator size="large" color="#39CCCC" style={{ marginVertical: 20 }} />
           ) : error ? (
@@ -466,11 +476,11 @@ export default function Receipts() {
                         style={styles.sendBtn}
                       >
                         <Ionicons name="send" size={14} color="#fff" />
-                        <Text style={styles.sendBtnText}>Send to Pharmacy</Text>
+                        <Text style={styles.sendBtnText}>{t("receipts.sendToPharmacy")}</Text>
                       </TouchableOpacity>
                     ) : (
                       <View style={styles.sentBadge}>
-                        <Text style={styles.sentBadgeText}>Sent</Text>
+                        <Text style={styles.sentBadgeText}>{t("receipts.sent")}</Text>
                       </View>
                     )}
                   </TouchableOpacity>
@@ -482,7 +492,7 @@ export default function Receipts() {
                   disabled={pagination.currentPage === 1}
                   style={styles.pageBtn}
                 >
-                  <Text style={styles.pageBtnText}>Prev</Text>
+                  <Text style={styles.pageBtnText}>{t("common.prev")}</Text>
                 </TouchableOpacity>
                 <Text style={styles.pageInfo}>
                   {pagination.currentPage} of {pagination.totalPages}
@@ -492,12 +502,12 @@ export default function Receipts() {
                   disabled={pagination.currentPage === pagination.totalPages}
                   style={styles.pageBtn}
                 >
-                  <Text style={styles.pageBtnText}>Next</Text>
+                  <Text style={styles.pageBtnText}>{t("common.next")}</Text>
                 </TouchableOpacity>
               </View>
             </>
           ) : (
-            <Text style={styles.emptyText}>No Delivery Orders Found</Text>
+            <Text style={styles.emptyText}>{t("receipts.noReceipts")}</Text>
           )}
 
           <SendToPharmacy
@@ -529,17 +539,16 @@ export default function Receipts() {
 
         {/* Pharmacist Receipts */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Receipts from pharmacist</Text>
+          <Text style={styles.sectionTitle}>{t("receipts.receiptsFromPharmacist")}</Text>
           <Text style={styles.sectionSubtitle}>
-            Check Your accepted receipts
+            {t("receipts.checkAccepted")}
           </Text>
-
           {!phLoadBtn ? (
             <TouchableOpacity
               onPress={() => setPhLoadBtn(true)}
               style={styles.loadBtn}
             >
-              <Text style={styles.loadBtnText}>Load Orders</Text>
+              <Text style={styles.loadBtnText}>{t("receipts.loadOrders")}</Text>
             </TouchableOpacity>
           ) : isLoadingPharmacist ? (
             <ActivityIndicator size="large" color="#39CCCC" style={{ marginVertical: 20 }} />
@@ -552,17 +561,17 @@ export default function Receipts() {
                   <View key={item.id} style={styles.receiptCard}>
                     <Text style={styles.receiptName}>{item.name}</Text>
                     <Text style={styles.detailLine}>
-                      <Text style={styles.detailLabel}>Source: </Text>
+                      <Text style={styles.detailLabel}>{t("receipts.source")} </Text>
                       {item.source}
                     </Text>
                     <Text style={styles.detailLine}>
-                      <Text style={styles.detailLabel}>Status: </Text>
+                      <Text style={styles.detailLabel}>{t("receipts.status")} </Text>
                       {item.order_status}
                     </Text>
 
                     {item.items && item.items.length > 0 && (
                       <View style={styles.medicinesBox}>
-                        <Text style={styles.medicinesTitle}>Medicines:</Text>
+                        <Text style={styles.medicinesTitle}>{t("receipts.medicines")}</Text>
                         {item.items.map((medicine, index) => (
                           <View key={index} style={styles.medicineRow}>
                             <View style={{ flex: 1 }}>
@@ -570,7 +579,7 @@ export default function Receipts() {
                                 {medicine.medicine_name}
                               </Text>
                               <Text style={styles.medicineQty}>
-                                Quantity: {medicine.quantity}
+                                {t("receipts.quantity", { qty: medicine.quantity })}
                               </Text>
                             </View>
                             <Text style={styles.medicinePrice}>
@@ -583,7 +592,7 @@ export default function Receipts() {
 
                     <View style={styles.totalRow}>
                       <Text style={styles.totalText}>
-                        Total: ${item.total_price.toFixed(2)}
+                        {t("receipts.total", { amount: item.total_price.toFixed(2) })}
                       </Text>
                       <Text style={styles.totalText}>{item.date}</Text>
                     </View>
@@ -596,13 +605,12 @@ export default function Receipts() {
                       style={styles.deliveryInfoBtn}
                     >
                       <Text style={styles.deliveryInfoBtnText}>
-                        Delivery info
+                        {t("receipts.deliveryInfo")}
                       </Text>
                     </TouchableOpacity>
 
                     <Text style={styles.totalWithFee}>
-                      Total Price with delivery fee: $
-                      {item.total_amount.toFixed(2)}
+                      {t("receipts.totalWithFee", { amount: item.total_amount.toFixed(2) })}
                     </Text>
 
                     {item.order_status === "delivered" && (
@@ -611,7 +619,7 @@ export default function Receipts() {
                         style={styles.payRateBtn}
                       >
                         <Text style={styles.payRateBtnText}>
-                          Pay and Rate
+                          {t("receipts.payAndRate")}
                         </Text>
                       </TouchableOpacity>
                     )}
@@ -624,7 +632,7 @@ export default function Receipts() {
                   disabled={pharmacistPagination.currentPage === 1}
                   style={styles.pageBtn}
                 >
-                  <Text style={styles.pageBtnText}>Prev</Text>
+                  <Text style={styles.pageBtnText}>{t("common.prev")}</Text>
                 </TouchableOpacity>
                 <Text style={styles.pageInfo}>
                   {pharmacistPagination.currentPage} of{" "}
@@ -638,12 +646,12 @@ export default function Receipts() {
                   }
                   style={styles.pageBtn}
                 >
-                  <Text style={styles.pageBtnText}>Next</Text>
+                  <Text style={styles.pageBtnText}>{t("common.next")}</Text>
                 </TouchableOpacity>
               </View>
             </>
           ) : (
-            <Text style={styles.emptyText}>No Accepted Receipts Found</Text>
+            <Text style={styles.emptyText}>{t("receipts.noAcceptedReceipts")}</Text>
           )}
         </View>
 
@@ -652,7 +660,7 @@ export default function Receipts() {
 
       {/* Delivery Info Modal */}
       <Modal open={showDeliveryModal} onClose={() => setShowDeliveryModal(false)}>
-        <Text style={styles.modalTitle}>Delivery Information</Text>
+        <Text style={styles.modalTitle}>{t("receipts.deliveryInformation")}</Text>
 
         {deliveryLoading ? (
           <ActivityIndicator size="large" color="#39CCCC" />
@@ -668,26 +676,26 @@ export default function Receipts() {
                 {deliveryData.delivery?.name}
               </Text>
               <Text style={styles.deliveryDetail}>
-                <Text style={styles.deliveryLabel}>Phone: </Text>
+                <Text style={styles.deliveryLabel}>{t("receipts.phone")} </Text>
                 {deliveryData.delivery?.phone}
               </Text>
               <Text style={styles.deliveryDetail}>
-                <Text style={styles.deliveryLabel}>Vehicle: </Text>
+                <Text style={styles.deliveryLabel}>{t("receipts.vehicle")} </Text>
                 {deliveryData.delivery?.vehicle_type}
               </Text>
               <Text style={styles.deliveryDetail}>
-                <Text style={styles.deliveryLabel}>Plate Number: </Text>
+                <Text style={styles.deliveryLabel}>{t("receipts.plateNumber")} </Text>
                 {deliveryData.delivery?.plate_number}
               </Text>
               <Text style={styles.deliveryDetail}>
-                <Text style={styles.deliveryLabel}>Status: </Text>
+                <Text style={styles.deliveryLabel}>{t("receipts.status")} </Text>
                 {deliveryData.order_status}
               </Text>
             </View>
           </View>
         ) : (
           <Text style={styles.emptyText}>
-            {deliveryMessage || "No delivery information available"}
+            {deliveryMessage || t("receipts.noDeliveryInfo")}
           </Text>
         )}
       </Modal>
@@ -711,9 +719,9 @@ export default function Receipts() {
         }
         message={
           ratingStep === "delivery"
-            ? "Rate Delivery service"
+            ? t("receipts.rateDelivery")
             : ratingStep === "pharmacist"
-            ? "Rate Pharmacist service"
+            ? t("receipts.ratePharmacist")
             : ""
         }
       />
@@ -729,7 +737,7 @@ export default function Receipts() {
           setShowBookingDone(false);
           fetchPharmacistReceipts();
         }}
-        message="Thank you for your feedback!"
+        message={t("receipts.thankYouFeedback")}
       />
 
       {/* Drug Interaction Checker */}
@@ -742,25 +750,69 @@ export default function Receipts() {
         <View style={styles.overlay}>
           <View style={styles.checkerCard}>
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.checkerTitle}>Check Drug Interaction</Text>
+              <Text style={styles.checkerTitle}>{t("receipts.checkDrugInteraction")}</Text>
 
               <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>First Drug</Text>
+                <Text style={styles.label}>{t("receipts.firstDrug")}</Text>
                 <TextInput
                   value={drugA}
-                  onChangeText={setDrugA}
+                  onChangeText={(t2) => {
+                    setDrugA(t2);
+                    checkDrugName(t2, "drugA");
+                  }}
                   placeholder="e.g. Warfarin"
                   style={styles.input}
                 />
+                {suggestion?.field === "drugA" && (
+                  <View style={styles.suggestionBox}>
+                    <Text style={styles.suggestionText}>
+                      Did you mean{" "}
+                      <Text style={styles.suggestionValue}>
+                        {suggestion.value}
+                      </Text>
+                      ?
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setDrugA(suggestion.value);
+                        clearSuggestion();
+                      }}
+                    >
+                      <Text style={styles.suggestionUseBtn}>Use it</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
               <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>Second Drug</Text>
+                <Text style={styles.label}>{t("receipts.secondDrug")}</Text>
                 <TextInput
                   value={drugB}
-                  onChangeText={setDrugB}
+                  onChangeText={(t2) => {
+                    setDrugB(t2);
+                    checkDrugName(t2, "drugB");
+                  }}
                   placeholder="e.g. Aspirin"
                   style={styles.input}
                 />
+                {suggestion?.field === "drugB" && (
+                  <View style={styles.suggestionBox}>
+                    <Text style={styles.suggestionText}>
+                      Did you mean{" "}
+                      <Text style={styles.suggestionValue}>
+                        {suggestion.value}
+                      </Text>
+                      ?
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setDrugB(suggestion.value);
+                        clearSuggestion();
+                      }}
+                    >
+                      <Text style={styles.suggestionUseBtn}>Use it</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
 
               <TouchableOpacity
@@ -769,7 +821,7 @@ export default function Receipts() {
                 style={[styles.checkBtn, checkLoading && styles.btnDisabled]}
               >
                 <Text style={styles.checkBtnText}>
-                  {checkLoading ? "Checking..." : "Check"}
+                  {checkLoading ? t("receipts.checking") : t("receipts.check")}
                 </Text>
               </TouchableOpacity>
 
@@ -791,7 +843,7 @@ export default function Receipts() {
                       ]}
                     >
                       <Text style={styles.resultTitle}>
-                        ⚠️ Interaction Detected
+                        {t("receipts.interactionDetected")}
                       </Text>
                       <Text style={styles.resultSeverity}>
                         {checkResult.severity === "Major"
@@ -802,7 +854,7 @@ export default function Receipts() {
                       </Text>
                       {checkResult.severity_confidence === "UNCERTAIN" && (
                         <Text style={styles.uncertainText}>
-                          Model estimate only — verify clinically.
+                          {t("receipts.uncertainNote")}
                         </Text>
                       )}
                       <Text style={styles.resultDrugs}>
@@ -812,7 +864,7 @@ export default function Receipts() {
                   ) : (
                     <View style={[styles.resultBox, styles.resultSafe]}>
                       <Text style={styles.resultSafeTitle}>
-                        ✅ No Interaction Expected
+                        {t("receipts.noInteractionExpected")}
                       </Text>
                       <Text style={styles.resultDrugs}>
                         {checkResult.drug_a} + {checkResult.drug_b}
@@ -820,17 +872,15 @@ export default function Receipts() {
                     </View>
                   )}
                   <Text style={styles.disclaimerText}>
-                    This is for information only. Always consult your doctor
-                    or pharmacist.
+                    {t("receipts.disclaimer")}
                   </Text>
                 </View>
               )}
-
               <TouchableOpacity
                 onPress={() => setShowDrugChecker(false)}
                 style={styles.closeCheckerBtn}
               >
-                <Text style={styles.closeCheckerBtnText}>Close</Text>
+                <Text style={styles.closeCheckerBtnText}>{t("receipts.close")}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -839,7 +889,6 @@ export default function Receipts() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   section: {
     paddingHorizontal: 20,
@@ -1197,4 +1246,31 @@ const styles = StyleSheet.create({
     color: "#374151",
     fontWeight: "600",
   },
+  suggestionBox: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  backgroundColor: "#fffbeb",
+  borderWidth: 1,
+  borderColor: "#fde68a",
+  borderRadius: 6,
+  paddingHorizontal: 8,
+  paddingVertical: 6,
+  marginTop: 6,
+},
+suggestionText: {
+  fontSize: 12,
+  color: "#92400e",
+  flex: 1,
+},
+suggestionValue: {
+  fontWeight: "700",
+},
+suggestionUseBtn: {
+  fontSize: 12,
+  fontWeight: "700",
+  color: "#92400e",
+  textDecorationLine: "underline",
+  marginLeft: 8,
+},
 });

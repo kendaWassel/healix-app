@@ -4,8 +4,10 @@ import {
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function MapPicker({ visible, initialPosition, onConfirm, onClose }) {
+  const { t } = useTranslation();
   const [position, setPosition] = useState(
     Array.isArray(initialPosition) ? initialPosition : null
   );
@@ -21,7 +23,7 @@ export default function MapPicker({ visible, initialPosition, onConfirm, onClose
     <Modal visible={visible} animationType="slide">
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Pick your location</Text>
+          <Text style={styles.title}>{t("mapPicker.title")}</Text>
           <TouchableOpacity onPress={onClose}>
             <Ionicons name="close" size={26} color="#333" />
           </TouchableOpacity>
@@ -43,19 +45,22 @@ export default function MapPicker({ visible, initialPosition, onConfirm, onClose
         <View style={styles.footer}>
           <Text style={styles.coords}>
             {position
-              ? `Selected: ${position[0].toFixed(6)}, ${position[1].toFixed(6)}`
-              : "Tap on the map to choose a point"}
+              ? t("mapPicker.selected", {
+                  lat: position[0].toFixed(6),
+                  lng: position[1].toFixed(6),
+                })
+              : t("mapPicker.tapToChoose")}
           </Text>
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={styles.cancelText}>{t("common.cancel")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.confirmBtn, !position && styles.disabledBtn]}
               disabled={!position}
               onPress={() => position && onConfirm(position[0], position[1])}
             >
-              <Text style={styles.confirmText}>Confirm</Text>
+              <Text style={styles.confirmText}>{t("common.confirm")}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -63,7 +68,6 @@ export default function MapPicker({ visible, initialPosition, onConfirm, onClose
     </Modal>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   header: {

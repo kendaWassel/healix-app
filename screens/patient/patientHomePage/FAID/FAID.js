@@ -1,37 +1,22 @@
 import { View, Text, StyleSheet } from "react-native";
+import { useTranslation } from "react-i18next";
 import FAIDCard from "../FAID/FAIDCard";
 
-const faid = [
-  {
-    title: "CPR Basics",
-    desc: "Check responsiveness, call for help, push hard and fast on the chest.",
-  },
-  {
-    title: "Bleeding Control",
-    desc: "Put pressure on the wound with a clean cloth until bleeding stops.",
-  },
-  {
-    title: "Burn Care",
-    desc: "Cool with running water, cover with a clean, non-fluffy dressing.",
-  },
-  {
-    title: "Choking Response",
-    desc: "If coughing fails, give quick abdominal thrusts until the object comes out or help arrives.",
-  },
-  {
-    title: "Shock Recognition",
-    desc: "Lay them flat, raise legs if safe, keep warm, call for help.",
-  },
-  {
-    title: "Poisoning/Ingestion",
-    desc: "Do not vomit; call poison control or emergency services and share what was taken.",
-  },
-];
-
 const FAID = () => {
+  const { t } = useTranslation();
+
+  const faid = [
+    { title: t("faid.cprTitle"), desc: t("faid.cprDesc") },
+    { title: t("faid.bleedingTitle"), desc: t("faid.bleedingDesc") },
+    { title: t("faid.burnTitle"), desc: t("faid.burnDesc") },
+    { title: t("faid.chokingTitle"), desc: t("faid.chokingDesc") },
+    { title: t("faid.shockTitle"), desc: t("faid.shockDesc") },
+    { title: t("faid.poisoningTitle"), desc: t("faid.poisoningDesc") },
+  ];
+
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>First Aids</Text>
+      <Text style={styles.sectionTitle}>{t("faid.sectionTitle")}</Text>
       <View style={styles.grid}>
         {faid.map((item, index) => (
           <FAIDCard key={index} item={item} />
