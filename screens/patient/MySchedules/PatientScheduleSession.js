@@ -1,4 +1,3 @@
-// screens/patient/mySchedules/PatientScheduleSession.js
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -10,6 +9,7 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 
 export default function PatientScheduleSession({
   isOpen,
@@ -17,6 +17,7 @@ export default function PatientScheduleSession({
   sessionId,
   onConfirm,
 }) {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState(new Date(0, 0, 0, 0, 0, 0));
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -75,7 +76,7 @@ export default function PatientScheduleSession({
         }
       } else {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Failed to book session");
+        throw new Error(serverError.message || t("patientScheduleSession.bookFailed"));
       }
     } finally {
       onClose();
@@ -86,10 +87,10 @@ export default function PatientScheduleSession({
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.title}>Schedule for later</Text>
+          <Text style={styles.title}>{t("patientScheduleSession.title")}</Text>
 
           <View style={styles.fieldWrapper}>
-            <Text style={styles.label}>Pick a date and time</Text>
+            <Text style={styles.label}>{t("patientScheduleSession.pickDateTime")}</Text>
             <View style={styles.row}>
               <TouchableOpacity
                 onPress={() => setShowDatePicker(true)}
@@ -133,10 +134,10 @@ export default function PatientScheduleSession({
 
           <View style={styles.buttonsRow}>
             <TouchableOpacity onPress={handleBookSession} style={styles.bookBtn}>
-              <Text style={styles.bookBtnText}>Book Session</Text>
+              <Text style={styles.bookBtnText}>{t("patientScheduleSession.bookSession")}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Text style={styles.closeBtnText}>Close</Text>
+              <Text style={styles.closeBtnText}>{t("patientScheduleSession.close")}</Text>
             </TouchableOpacity>
           </View>
         </View>

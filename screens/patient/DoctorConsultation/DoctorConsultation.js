@@ -12,10 +12,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
+import PatientHeader from "../../Components/header/PatientHeader";
 import Footer from "../../Components/footer/Footer";
 
 export default function DoctorConsultation() {
   const navigation = useNavigation();
+  const { t } = useTranslation();
 
   const [selected, setSelected] = useState("");
   const [error, setError] = useState(null);
@@ -105,8 +108,8 @@ export default function DoctorConsultation() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-      {/* الرأس الثابت: السهم + العنوان + الوصف + زر Next */}
+  <View style={{ flex: 1 }}>    
+            <PatientHeader />
       <View style={styles.headerSection}>
         <TouchableOpacity
           onPress={() => {
@@ -120,9 +123,9 @@ export default function DoctorConsultation() {
 
         <View style={styles.headerRow}>
           <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={styles.title}>Pick a Speciality</Text>
+            <Text style={styles.title}>{t("doctorConsultation.pickSpeciality")}</Text>
             <Text style={styles.subtitle}>
-              Tap one of the specialities to choose and then tap next
+              {t("doctorConsultation.tapToChoose")}
             </Text>
           </View>
           <TouchableOpacity
@@ -130,7 +133,7 @@ export default function DoctorConsultation() {
             disabled={!selected}
             onPress={() => navigation.navigate("PickDoctor", { id: selected })}
           >
-            <Text style={styles.nextBtnText}>Next</Text>
+            <Text style={styles.nextBtnText}>{t("common.next")}</Text>
           </TouchableOpacity>
         </View>
 
@@ -168,7 +171,7 @@ export default function DoctorConsultation() {
                   pagination.currentPage === 1 && styles.pageBtnTextDisabled,
                 ]}
               >
-                Prev
+                {t("common.prev")}
               </Text>
             </TouchableOpacity>
 
@@ -192,7 +195,7 @@ export default function DoctorConsultation() {
                     styles.pageBtnTextDisabled,
                 ]}
               >
-                Next
+                {t("common.next")}
               </Text>
               <Ionicons
                 name="chevron-forward"
@@ -214,7 +217,7 @@ export default function DoctorConsultation() {
       />
 
       <Footer />
-    </SafeAreaView>
+    </View>
   );
 }
 

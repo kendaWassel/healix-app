@@ -3,8 +3,10 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 
 export default function RatingModal({ isOpen, onClose, url, message, onRatingSuccess }) {
+  const { t } = useTranslation();
   const [rating, setRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -16,7 +18,7 @@ export default function RatingModal({ isOpen, onClose, url, message, onRatingSuc
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      setError("Please select a rating");
+      setError(t("ratingModal.pleaseSelectRating"));
       return;
     }
 
@@ -44,7 +46,7 @@ export default function RatingModal({ isOpen, onClose, url, message, onRatingSuc
       const data = await response.json();
 
       if (!response.ok || data.status !== "success") {
-        throw new Error(data.message || "Failed to submit rating, Try again!");
+        throw new Error(data.message || t("ratingModal.submitFailed"));
       }
 
       setSuccess(true);
@@ -57,7 +59,7 @@ export default function RatingModal({ isOpen, onClose, url, message, onRatingSuc
         }
       }, 1500);
     } catch (err) {
-      setError(err.message || "Failed to submit rating. Please try again.");
+      setError(err.message || t("ratingModal.submitFailedRetry"));
     } finally {
       setIsSubmitting(false);
     }
@@ -78,7 +80,7 @@ export default function RatingModal({ isOpen, onClose, url, message, onRatingSuc
           {success && (
             <View style={styles.successBox}>
               <Text style={styles.successText}>
-                Rating submitted successfully!
+                {t("ratingModal.submitSuccess")}
               </Text>
             </View>
           )}
@@ -106,7 +108,10 @@ export default function RatingModal({ isOpen, onClose, url, message, onRatingSuc
 
           {rating > 0 && (
             <Text style={styles.ratingText}>
-              You rated: {rating} {rating === 1 ? "star" : "stars"}
+              {t("ratingModal.youRated", {
+                count: rating,
+                starWord: rating === 1 ? t("ratingModal.star") : t("ratingModal.stars"),
+              })}
             </Text>
           )}
 
@@ -120,7 +125,7 @@ export default function RatingModal({ isOpen, onClose, url, message, onRatingSuc
               ]}
             >
               <Text style={styles.submitBtnText}>
-                {isSubmitting ? "Submitting..." : "Submit Rating"}
+                {isSubmitting ? t("ratingModal.submitting") : t("ratingModal.submitRating")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -128,7 +133,7 @@ export default function RatingModal({ isOpen, onClose, url, message, onRatingSuc
               disabled={isSubmitting}
               style={[styles.skipBtn, isSubmitting && styles.btnDisabled]}
             >
-              <Text style={styles.skipBtnText}>Skip</Text>
+              <Text style={styles.skipBtnText}>{t("ratingModal.skip")}</Text>
             </TouchableOpacity>
           </View>
         </View>

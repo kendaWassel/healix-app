@@ -2,35 +2,40 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function BookingOption({ isOpen, onClose, onConfirm, isLoading }) {
+  const { t } = useTranslation();
   const [selectedOption, setSelectedOption] = useState("Call Now");
-  const options = ["Call Now", "Schedule For later"];
+  const options = [
+    { value: "Call Now", label: t("bookingOption.callNow") },
+    { value: "Schedule For later", label: t("bookingOption.scheduleLater") },
+  ];
 
   return (
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.title}>Pick one</Text>
+          <Text style={styles.title}>{t("bookingOption.pickOne")}</Text>
 
           <View style={styles.optionsWrapper}>
             {options.map((option) => (
               <TouchableOpacity
-                key={option}
-                onPress={() => setSelectedOption(option)}
+                key={option.value}
+                onPress={() => setSelectedOption(option.value)}
                 style={[
                   styles.optionRow,
-                  selectedOption === option && styles.optionRowSelected,
+                  selectedOption === option.value && styles.optionRowSelected,
                 ]}
               >
-                <Text style={styles.optionText}>{option}</Text>
+                <Text style={styles.optionText}>{option.label}</Text>
                 <View
                   style={[
                     styles.radioOuter,
-                    selectedOption === option && styles.radioOuterSelected,
+                    selectedOption === option.value && styles.radioOuterSelected,
                   ]}
                 >
-                  {selectedOption === option && (
+                  {selectedOption === option.value && (
                     <View style={styles.radioInner} />
                   )}
                 </View>
@@ -40,7 +45,7 @@ export default function BookingOption({ isOpen, onClose, onConfirm, isLoading })
 
           <View style={styles.buttonsRow}>
             <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
-              <Text style={styles.cancelBtnText}>Cancel</Text>
+              <Text style={styles.cancelBtnText}>{t("common.cancel")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => onConfirm(selectedOption)}
@@ -48,7 +53,7 @@ export default function BookingOption({ isOpen, onClose, onConfirm, isLoading })
               style={[styles.confirmBtn, isLoading && styles.btnDisabled]}
             >
               <Text style={styles.confirmBtnText}>
-                {isLoading ? "Processing..." : "Confirm"}
+                {isLoading ? t("bookingOption.processing") : t("common.confirm")}
               </Text>
             </TouchableOpacity>
           </View>

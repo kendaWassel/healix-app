@@ -8,10 +8,10 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import DoctorCard from "../../../Components/doctorCard/DoctorCard";
 import Footer from "../../../Components/footer/Footer";
 import BookingOption from "../booking/BookingOption";
@@ -22,6 +22,7 @@ import PatientCallNowModal from "../booking/PatientCallNowModal";
 const PickDoctor = () => {
   const route = useRoute();
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const { id } = route.params || {};
 
   const [openPickOption, setOpenPickOption] = useState(false);
@@ -116,7 +117,7 @@ const PickDoctor = () => {
       }, 200);
     } else if (option === "Call Now") {
       if (selected === null || !doctors[selected]) {
-        setError("Please select a doctor first");
+        setError(t("pickDoctor.selectDoctorFirst"));
         setOpenPickOption(false);
         return;
       }
@@ -157,25 +158,19 @@ const PickDoctor = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fafbfc" }} edges={["top"]}>
-      {/* الرأس الثابت: السهم + العنوان + الوصف + زر Next */}
+    <View style={{ flex: 1, backgroundColor: "#fafbfc" }}>
       <View style={styles.headerSection}>
         <TouchableOpacity
-          onPress={() => {
-            console.log("Back pressed, can go back?", navigation.canGoBack());
-            navigation.goBack();
-          }}
+          onPress={() => navigation.navigate("DoctorConsultation")}
           style={styles.backBtn}
         >
           <Ionicons name="arrow-back" size={26} color="#052443" />
         </TouchableOpacity>
 
         <View style={styles.headerRow}>
-          <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={styles.title}>Pick A Doctor For Consultation</Text>
-            <Text style={styles.subtitle}>
-              Tap one of the Doctors to choose and then tap next
-            </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>{t("pickDoctor.title")}</Text>
+            <Text style={styles.subtitle}>{t("pickDoctor.tapToChoose")}</Text>
           </View>
           <TouchableOpacity
             style={styles.nextBtn}
@@ -184,11 +179,11 @@ const PickDoctor = () => {
                 setError(null);
                 setOpenPickOption(true);
               } else {
-                setError("Please select a doctor first");
+                setError(t("pickDoctor.selectDoctorFirst"));
               }
             }}
           >
-            <Text style={styles.nextBtnText}>Next</Text>
+            <Text style={styles.nextBtnText}>{t("common.next")}</Text>
           </TouchableOpacity>
         </View>
 
@@ -203,7 +198,6 @@ const PickDoctor = () => {
         )}
       </View>
 
-      {/* البطاقات — قريبة من الرأس، تبدأ من الأعلى */}
       <FlatList
         data={doctors}
         keyExtractor={(_, index) => String(index)}
@@ -212,7 +206,7 @@ const PickDoctor = () => {
         columnWrapperStyle={{ justifyContent: "space-between" }}
         ListEmptyComponent={
           !isLoading ? (
-            <Text style={styles.emptyText}>No doctors found.</Text>
+            <Text style={styles.emptyText}>{t("pickDoctor.noDoctorsFound")}</Text>
           ) : null
         }
         ListFooterComponent={
@@ -237,7 +231,7 @@ const PickDoctor = () => {
                     pagination.currentPage === 1 && styles.pageBtnTextDisabled,
                   ]}
                 >
-                  Prev
+                  {t("common.prev")}
                 </Text>
               </TouchableOpacity>
 
@@ -261,7 +255,7 @@ const PickDoctor = () => {
                       styles.pageBtnTextDisabled,
                   ]}
                 >
-                  Next
+                  {t("common.next")}
                 </Text>
                 <Ionicons
                   name="chevron-forward"
@@ -278,8 +272,8 @@ const PickDoctor = () => {
         }
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingTop: 12,
           paddingBottom: 20,
+          flexGrow: 1,
         }}
       />
 
@@ -302,7 +296,7 @@ const PickDoctor = () => {
           setTimeout(() => setOpenModalDone(true), 300);
         }}
       />
-      <DoneModal isOpen={openModalDone} onHome={handleGoHome} message="Booking done" />
+      <DoneModal isOpen={openModalDone} onHome={handleGoHome} message={t("pickDoctor.bookingDone")} />
       <PatientCallNowModal
         onClose={() => setOpenCallNow(false)}
         isOpen={openCallNow}
@@ -310,12 +304,13 @@ const PickDoctor = () => {
           selected !== null && doctors[selected] ? doctors[selected].id : null
         }
         onConfirm={() => {
-          console.log("Call initiated successfully");
+          console.log(t("pickDoctor.callInitiated"));
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   headerSection: {

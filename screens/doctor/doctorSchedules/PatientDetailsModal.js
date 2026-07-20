@@ -15,21 +15,29 @@ import { Ionicons } from "@expo/vector-icons";
 export default function PatientDetailsModal({ details, onClose }) {
   if (!details) return null;
 
-  const chronicDiseases = details.medical_record?.chronic_diseases || [];
-  const previousSurgeries = details.medical_record?.previous_surgeries || [];
-  const allergies = details.medical_record?.allergies || [];
+  const chronicDiseases = details.medical_record?.chronic_diseases;
+  const previousSurgeries = details.medical_record?.previous_surgeries;
+  const allergies = details.medical_record?.allergies;
   const images = details.medical_record?.images || [];
   const files = details.medical_record?.files || [];
+  const isPregnant = details.medical_record?.is_pregnant;
 
-  const renderList = (items) => {
-    if (items.length === 0) {
+  const renderList = (value) => {
+    if (!value) {
       return <Text style={styles.listItem}>• None</Text>;
     }
-    return items.map((item, index) => (
-      <Text key={index} style={styles.listItem}>
-        • {item}
-      </Text>
-    ));
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        return <Text style={styles.listItem}>• None</Text>;
+      }
+      return value.map((item, index) => (
+        <Text key={index} style={styles.listItem}>
+          • {item}
+        </Text>
+      ));
+    }
+
+    return <Text style={styles.listItem}>• {value}</Text>;
   };
 
   return (
@@ -57,6 +65,20 @@ export default function PatientDetailsModal({ details, onClose }) {
               <Text style={styles.label}>Birth Date:</Text>
               <Text style={styles.value}>{details.birth_date || "N/A"}</Text>
             </View>
+
+         
+            {details.gender === "female" && (
+              <View style={styles.row}>
+                <Text style={styles.label}>Pregnancy Status:</Text>
+                <Text style={styles.value}>
+                  {isPregnant === "yes"
+                    ? " Pregnant"
+                    : isPregnant === "no"
+                    ? "Not Pregnant"
+                    : "Not specified"}
+                </Text>
+              </View>
+            )}
 
             <View style={styles.group}>
               <Text style={styles.label}>Chronic Diseases:</Text>

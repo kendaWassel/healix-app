@@ -13,9 +13,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
 
-const DDI_URL = "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/ddi";
-
-const CreatePrescription = ({ isOpen, onClose, onSave, consultationId }) => {
+const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId }) => {
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [showFormPopup, setShowFormPopup] = useState(false);
   const [diagnosis, setDiagnosis] = useState("");
@@ -25,10 +23,11 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId }) => {
   ]);
 
   const [interactionWarnings, setInteractionWarnings] = useState([]);
+  const [allergyWarnings, setAllergyWarnings] = useState([]);
+  const [pregnancyWarnings, setPregnancyWarnings] = useState([]);
   const [showInteractionPopup, setShowInteractionPopup] = useState(false);
   const [checking, setChecking] = useState(false);
 
-  // 👇 اقتراح ضبابي لأسماء الأدوية
   const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
 
   useEffect(() => {
@@ -38,7 +37,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId }) => {
       setDiagnosis("");
       setNotes("");
       setMedicines([{ name: "", dosage: "", boxes: "", instructions: "" }]);
-      clearSuggestion();   // 👈 أضف هذا
+      clearSuggestion();
     }
   }, [isOpen]);
 
@@ -54,96 +53,85 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId }) => {
     updated[index][field] = value;
     setMedicines(updated);
 
-    if (field === "name") {           // 👈 أضف هذا الشرط
+    if (field === "name") {
       checkDrugName(value, `medicine-${index}`);
     }
   };
 
-  // 👇 دالة جديدة لقبول الاقتراح
   const acceptSuggestion = (index) => {
     handleMedicineChange(index, "name", suggestion.value);
     clearSuggestion();
   };
 
+  // 🔹 endpoint موحّد — تفاعل + بدائل + حساسية + حمل معاً
   const checkInteractions = async () => {
     const drugNames = medicines
       .map((m) => m.name.trim())
       .filter((name) => name !== "");
 
-    if (drugNames.length < 2) return [];
+    if (drugNames.length < 2) return { hasWarning: false };
 
     const uniqueDrugNames = [...new Set(drugNames.map((d) => d.toLowerCase()))]
       .map((lower) => drugNames.find((d) => d.toLowerCase() === lower));
 
-    if (uniqueDrugNames.length < 2) return [];
+    if (uniqueDrugNames.length < 2) return { hasWarning: false };
 
     const token = await AsyncStorage.getItem("token");
 
     try {
-      const response = await fetch(`${DDI_URL}/screen`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ drugs: uniqueDrugNames }),
-      });
-      if (!response.ok) return [];
+      const response = await fetch(
+        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/doctor/prescriptions/verify`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ medications: uniqueDrugNames, patient_id: patientId }),
+        }
+      );
+
+      if (!response.ok) return { hasWarning: false };
       const result_json = await response.json();
+      console.log("verify result", result_json);
 
-      console.log("screen result", result_json);
-      const findings = result_json.data?.findings || result_json.findings || [];
-      console.log("Findings:", findings);
-      console.log("Severities:", findings.map((f) => f.severity));
+      const data = result_json.data || result_json;
 
-      const dangerous = findings.filter(
+      const dangerous = (data.drug_interactions || []).filter(
         (f) =>
           f.severity === "Major" ||
           f.severity === "Moderate" ||
           f.severity_confidence === "UNCERTAIN"
       );
-      console.log("Dangerous:", dangerous);
 
-      const withAlternatives = await Promise.all(
-        dangerous.map(async (f) => {
-          try {
-            const res = await fetch(`${DDI_URL}/interaction`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "ngrok-skip-browser-warning": "true",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ drug_a: f.drug_a, drug_b: f.drug_b }),
-            });
-            const detail_json = await res.json();
-            const detail = detail_json.data || detail_json;
-            return {
-              ...f,
-              alternatives: detail.alternatives?.candidates || [],
-              alt_for: f.drug_b,
-            };
-          } catch {
-            return { ...f, alternatives: [], alt_for: f.drug_b };
-          }
-        })
-      );
+      const withAlternatives = dangerous.map((f) => ({
+        ...f,
+        alternatives: f.alternatives?.candidates || [],
+        alt_for: f.drug_b,
+      }));
 
-      return withAlternatives;
+      return {
+        interactions: withAlternatives,
+        allergies: data.allergy_warnings || [],
+        pregnancy: data.pregnancy_warnings || [],
+        hasWarning: data.safe === false,
+      };
     } catch (err) {
       console.error("DDI check failed:", err);
-      return [];
+      return { hasWarning: false };
     }
   };
 
   const handleSavePrescription = async () => {
     setChecking(true);
-    const warnings = await checkInteractions();
+    const result = await checkInteractions();
     setChecking(false);
 
-    if (warnings.length > 0) {
-      setInteractionWarnings(warnings);
+    if (result.hasWarning) {
+      setInteractionWarnings(result.interactions || []);
+      setAllergyWarnings(result.allergies || []);
+      setPregnancyWarnings(result.pregnancy || []);
       setShowInteractionPopup(true);
       return;
     }
@@ -273,7 +261,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId }) => {
                     style={[styles.input, { marginBottom: 8 }]}
                   />
 
-                  {/* 👇 صندوق الاقتراح الجديد */}
                   {suggestion?.field === `medicine-${index}` && (
                     <View style={styles.suggestionBox}>
                       <Text style={styles.suggestionText}>
@@ -329,7 +316,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId }) => {
                   style={[styles.primaryBtn, checking && styles.btnDisabled]}
                 >
                   <Text style={styles.primaryBtnText}>
-                    {checking ? "Checking Interactions ..." : "Save Prescription"}
+                    {checking ? "Checking Safety..." : "Save Prescription"}
                   </Text>
                 </TouchableOpacity>
 
@@ -348,7 +335,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId }) => {
         </View>
       </Modal>
 
-      {/* Interaction Warning Popup */}
+      {/* Safety Warnings Popup */}
       <Modal
         visible={showInteractionPopup}
         transparent
@@ -358,15 +345,15 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId }) => {
         <View style={styles.overlay}>
           <View style={styles.formCard}>
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.warningTitle}>Warning : Drug Interaction ⚠️</Text>
+              <Text style={styles.warningTitle}>Warning : Safety Concerns ⚠️</Text>
               <Text style={styles.warningSubtitle}>
-                Interaction between this Drugs :
+                Please review before saving:
               </Text>
 
               <View style={{ gap: 12, marginBottom: 20 }}>
                 {interactionWarnings.map((w, i) => (
                   <View
-                    key={i}
+                    key={`int-${i}`}
                     style={[
                       styles.warningCard,
                       w.severity === "Major"
@@ -377,7 +364,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId }) => {
                     ]}
                   >
                     <Text style={styles.warningDrugs}>
-                      {w.drug_a} + {w.drug_b}
+                      🔴 {w.drug_a} + {w.drug_b}
                     </Text>
                     <Text
                       style={[
@@ -421,6 +408,44 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId }) => {
                         </Text>
                       </View>
                     )}
+                  </View>
+                ))}
+
+                {allergyWarnings.map((a, i) => (
+                  <View key={`alg-${i}`} style={styles.allergyCard}>
+                    <Text style={styles.allergyText}>
+                      🤧 Patient allergic to:{" "}
+                      <Text style={{ fontWeight: "700" }}>
+                        {a.medication || a.allergen}
+                      </Text>
+                    </Text>
+                    <Text style={styles.allergyNote}>{a.note}</Text>
+                    {a.risk && (
+                      <Text style={styles.allergyRisk}>Risk: {a.risk}</Text>
+                    )}
+                    {a.cross_reactive_drugs && a.cross_reactive_drugs.length > 0 && (
+                      <View style={styles.altSection}>
+                        <Text style={styles.altLabel}>
+                          Drugs that may cause similar reaction:
+                        </Text>
+                        <View style={styles.altChips}>
+                          {a.cross_reactive_drugs.slice(0, 5).map((drug, j) => (
+                            <View key={j} style={styles.allergyChip}>
+                              <Text style={styles.allergyChipText}>{drug}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                ))}
+
+                {pregnancyWarnings.map((p, i) => (
+                  <View key={`preg-${i}`} style={styles.pregnancyCard}>
+                    <Text style={styles.pregnancyText}>
+                      🤰 {p.medication} — Category {p.category}
+                    </Text>
+                    <Text style={styles.pregnancySubText}>{p.warning}</Text>
                   </View>
                 ))}
               </View>
@@ -521,7 +546,6 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
   },
-  // 👇 أنماط جديدة لصندوق الاقتراح
   suggestionBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -654,6 +678,56 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#9ca3af",
     marginTop: 4,
+  },
+  allergyCard: {
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#fb923c",
+    backgroundColor: "#fff7ed",
+    padding: 12,
+  },
+  allergyText: {
+    fontWeight: "600",
+    color: "#111827",
+    fontSize: 13,
+  },
+  allergyNote: {
+    fontSize: 12,
+    color: "#374151",
+    marginTop: 4,
+  },
+  allergyRisk: {
+    fontSize: 11,
+    color: "#dc2626",
+    fontWeight: "700",
+    marginTop: 4,
+  },
+  allergyChip: {
+    backgroundColor: "#fed7aa",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  allergyChipText: {
+    fontSize: 11,
+    color: "#9a3412",
+  },
+  pregnancyCard: {
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#c084fc",
+    backgroundColor: "#faf5ff",
+    padding: 12,
+  },
+  pregnancyText: {
+    fontWeight: "600",
+    fontSize: 13,
+    color: "#111827",
+  },
+  pregnancySubText: {
+    fontSize: 12,
+    color: "#4b5563",
+    marginTop: 2,
   },
 });
 

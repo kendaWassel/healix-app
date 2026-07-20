@@ -3,9 +3,11 @@ import React from "react";
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 
 export default function YouAreDone({ isOpen, onClose, onHome }) {
   const navigation = useNavigation();
+  const { t } = useTranslation();
 
   const handleGoHome = () => {
     if (onHome) {
@@ -19,7 +21,7 @@ export default function YouAreDone({ isOpen, onClose, onHome }) {
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.title}>You Are Done</Text>
+          <Text style={styles.title}>{t("youAreDone.title")}</Text>
 
           <View style={styles.iconWrapper}>
             <View style={styles.iconCircle}>
@@ -28,14 +30,13 @@ export default function YouAreDone({ isOpen, onClose, onHome }) {
           </View>
 
           <TouchableOpacity onPress={handleGoHome} style={styles.homeBtn}>
-            <Text style={styles.homeBtnText}>Go to Home Screen</Text>
+            <Text style={styles.homeBtnText}>{t("youAreDone.goHome")}</Text>
           </TouchableOpacity>
         </View>
       </View>
     </Modal>
   );
 }
-
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,

@@ -35,15 +35,13 @@ export default function NewOrders() {
   const [prices, setPrices] = useState({});
   const [dosages, setDosages] = useState([]);
 
-  // manual flow (image-based prescriptions): names first, then safety, then pricing
   const [manualDrugNames, setManualDrugNames] = useState([""]);
   const [manualSafetyChecked, setManualSafetyChecked] = useState(false);
 
-  // interaction + pregnancy + allergy
   const [safetyWarnings, setSafetyWarnings] = useState(null);
   const [showSafetyPopup, setShowSafetyPopup] = useState(false);
   const [safetyChecking, setSafetyChecking] = useState(false);
-  const [safetyCheckStage, setSafetyCheckStage] = useState(null); // "initial" | "manualBeforePricing"
+  const [safetyCheckStage, setSafetyCheckStage] = useState(null);
   const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
 
   const fetchPrescriptions = async (pageNumber = 1) => {
@@ -132,7 +130,6 @@ export default function NewOrders() {
     }
   };
 
-  // 🔹 المرحلة 1 (وصفة الصورة) — فحص الأسماء المُدخَلة يدوياً قبل أي تسعير
   const handleCheckManualDrugs = async () => {
     const validNames = manualDrugNames.filter((n) => n.trim() !== "");
     if (validNames.length === 0) return;
@@ -151,7 +148,6 @@ export default function NewOrders() {
     }
   };
 
-  // 🔹 بعد التأكد من السلامة (بتحذير أو بدونه)، جهّز حقول التسعير
   const proceedToManualPricing = (names) => {
     setDosages(names.map((name) => ({ dosageName: name, dosage: "", price: "" })));
     setManualSafetyChecked(true);
@@ -328,13 +324,11 @@ export default function NewOrders() {
                         setManualDrugNames([""]);
                         setManualSafetyChecked(false);
 
-                        // وصفة يدوية (صورة) — لا يوجد أدوية بعد، افتح مباشرة نافذة إدخال الأسماء
                         if (!item.medicines || item.medicines.length === 0) {
                           setShowAcceptPopup(true);
                           return;
                         }
 
-                        // وصفة طبيب — الأدوية موجودة في DB، /verify يجلبها تلقائياً
                         setSafetyChecking(true);
                         const safety = await runSafetyCheck(item.prescription_id);
                         setSafetyChecking(false);
@@ -449,7 +443,6 @@ export default function NewOrders() {
           <View style={styles.acceptCard}>
             <ScrollView showsVerticalScrollIndicator={false}>
               {selectedItem?.medicines && selectedItem.medicines.length > 0 ? (
-                // 🔹 وصفة طبيب — الأسماء جاهزة، فقط أدخل السعر
                 <>
                   <Text style={styles.popupTitle}>Enter Price</Text>
                   {selectedItem.medicines.map((med, index) => (
@@ -493,7 +486,6 @@ export default function NewOrders() {
                   </View>
                 </>
               ) : !manualSafetyChecked ? (
-                // 🔹 وصفة صورة — المرحلة 1: إدخال الأسماء فقط
                 <>
                   <Text style={styles.popupTitle}>Enter Medicine Names</Text>
 
@@ -569,7 +561,6 @@ export default function NewOrders() {
                   </View>
                 </>
               ) : (
-                // 🔹 وصفة صورة — المرحلة 2: بعد الفحص، أدخل الجرعة والسعر
                 <>
                   <Text style={styles.popupTitle}>Enter Price</Text>
 
@@ -733,8 +724,26 @@ export default function NewOrders() {
                   {safetyWarnings.allergies.map((a, i) => (
                     <View key={i} style={styles.allergyCard}>
                       <Text style={styles.allergyText}>
-                        {a.drug || a.medication} — {a.warning || a.message}
+                        {a.medication || a.allergen}
                       </Text>
+                      <Text style={styles.allergyNote}>{a.note}</Text>
+                      {a.risk && (
+                        <Text style={styles.allergyRisk}>Risk: {a.risk}</Text>
+                      )}
+                      {a.cross_reactive_drugs && a.cross_reactive_drugs.length > 0 && (
+                        <View style={styles.crossReactiveSection}>
+                          <Text style={styles.crossReactiveLabel}>
+                            Drugs that may cause similar reaction:
+                          </Text>
+                          <View style={styles.crossReactiveChips}>
+                            {a.cross_reactive_drugs.slice(0, 5).map((drug, j) => (
+                              <View key={j} style={styles.crossReactiveChip}>
+                                <Text style={styles.crossReactiveChipText}>{drug}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      )}
                     </View>
                   ))}
                 </View>
@@ -746,7 +755,7 @@ export default function NewOrders() {
                   {safetyWarnings.pregnancy.map((p, i) => (
                     <View key={i} style={styles.pregnancyCard}>
                       <Text style={styles.pregnancyText}>
-                        {p.drug} — Category {p.category}
+                        {p.medication} — Category {p.category}
                       </Text>
                       <Text style={styles.pregnancySubText}>{p.warning}</Text>
                     </View>
@@ -1098,7 +1107,44 @@ const styles = StyleSheet.create({
   allergyText: {
     fontSize: 13,
     color: "#111827",
-    fontWeight: "500",
+    fontWeight: "600",
+  },
+  allergyNote: {
+    fontSize: 12,
+    color: "#374151",
+    marginTop: 4,
+  },
+  allergyRisk: {
+    fontSize: 11,
+    color: "#dc2626",
+    fontWeight: "700",
+    marginTop: 4,
+  },
+  crossReactiveSection: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#fed7aa",
+  },
+  crossReactiveLabel: {
+    fontSize: 11,
+    color: "#6b7280",
+    marginBottom: 6,
+  },
+  crossReactiveChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  crossReactiveChip: {
+    backgroundColor: "#fed7aa",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  crossReactiveChipText: {
+    fontSize: 11,
+    color: "#9a3412",
   },
   pregnancyCard: {
     borderRadius: 10,

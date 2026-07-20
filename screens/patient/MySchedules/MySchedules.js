@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import Footer from "../../Components/footer/Footer";
 import PatientHeader from "../../Components/header/PatientHeader";
 import PatientScheduleCall from "./PatientScheduleCall";
@@ -20,6 +21,7 @@ import DoneModal from "../DoctorConsultation/booking/DoneModal";
 import PaymentModal from "../../Components/servicesCard/PayementModal";
 
 const MySchedules = () => {
+  const { t } = useTranslation();
   const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -37,7 +39,6 @@ const MySchedules = () => {
   const [selectedCpId, setSelectedCpId] = useState(null);
   const [showBookingDone, setShowBookingDone] = useState(false);
   const [cpLoadBtn, setCpLoadBtn] = useState(false);
-
   const [pagination, setPagination] = useState({
     currentPage: 1,
     itemsPerPage: 3,
@@ -78,7 +79,7 @@ const MySchedules = () => {
       const totalPages = Math.ceil(totalItems / pagination.itemsPerPage) || 1;
       setPagination((prev) => ({ ...prev, totalItems, totalPages }));
     } catch (err) {
-      setError(err.message || "Failed to load schedules.");
+      setError(err.message || t("mySchedules.loadFail"));
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +113,7 @@ const MySchedules = () => {
       const totalPages = Math.ceil(totalItems / cpPagination.itemsPerPage) || 1;
       setCpPagination((prev) => ({ ...prev, totalItems, totalPages }));
     } catch (err) {
-      setCpError(err.message || "Failed to load schedules.");
+      setCpError(err.message || t("mySchedules.loadFail"));
     } finally {
       setCpIsLoading(false);
     }
@@ -167,7 +168,7 @@ const MySchedules = () => {
         style={[styles.pageBtn, page === 1 && styles.pageBtnDisabled]}
       >
         <Text style={[styles.pageBtnText, page === 1 && styles.pageBtnTextDisabled]}>
-          Previous
+          {t("common.prev")}
         </Text>
       </TouchableOpacity>
       <Text style={styles.pageInfo}>
@@ -181,7 +182,7 @@ const MySchedules = () => {
         <Text
           style={[styles.pageBtnText, page === totalPages && styles.pageBtnTextDisabled]}
         >
-          Next
+          {t("common.next")}
         </Text>
       </TouchableOpacity>
     </View>
@@ -193,8 +194,8 @@ const MySchedules = () => {
       <ScrollView style={{ backgroundColor: "#f9fafb" }} contentContainerStyle={{ paddingBottom: 30 }}>
         {/* Doctor Schedules */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Doctor Schedules</Text>
-          <Text style={styles.sectionSubtitle}>Check your Schedules here</Text>
+          <Text style={styles.sectionTitle}>{t("mySchedules.doctorSchedules")}</Text>
+          <Text style={styles.sectionSubtitle}>{t("mySchedules.checkSchedules")}</Text>
 
           {isLoading ? (
             <ActivityIndicator size="large" color="#39CCCC" style={{ marginVertical: 20 }} />
@@ -233,18 +234,17 @@ const MySchedules = () => {
                           style={styles.callBtn}
                         >
                           <Ionicons name="call" size={16} color="#39CCCC" />
-                          <Text style={styles.callBtnText}>Call</Text>
+                          <Text style={styles.callBtnText}>{t("mySchedules.call")}</Text>
                         </TouchableOpacity>
                       )}
                     </View>
-
                     <View style={styles.infoRow}>
                       <View style={styles.infoItem}>
                         <Ionicons name="time-outline" size={16} color="#39CCCC" />
                         <Text style={styles.infoText}>
                           {schedule.scheduled_at
                             ? new Date(schedule.scheduled_at).toLocaleString()
-                            : "Unknown"}
+                            : t("mySchedules.unknown")}
                         </Text>
                       </View>
                       <View style={styles.infoItem}>
@@ -252,7 +252,7 @@ const MySchedules = () => {
                         <Text style={styles.infoText}>{schedule.fee}</Text>
                       </View>
                       <Text style={styles.statusText}>
-                        {schedule.status || "Unknown"}
+                        {schedule.status || t("mySchedules.unknown")}
                       </Text>
                     </View>
                   </View>
@@ -266,21 +266,21 @@ const MySchedules = () => {
               />
             </>
           ) : (
-            <Text style={styles.emptyText}>No schedules found.</Text>
+            <Text style={styles.emptyText}>{t("mySchedules.noSchedulesFound")}</Text>
           )}
         </View>
 
         {/* Care Provider Schedules */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Care Provider Schedules</Text>
-          <Text style={styles.sectionSubtitle}>Check your Schedules here</Text>
+          <Text style={styles.sectionTitle}>{t("mySchedules.careProviderSchedules")}</Text>
+          <Text style={styles.sectionSubtitle}>{t("mySchedules.checkSchedules")}</Text>
 
           {!cpLoadBtn ? (
             <TouchableOpacity
               onPress={() => setCpLoadBtn(true)}
               style={styles.loadBtn}
             >
-              <Text style={styles.loadBtnText}>Load Orders</Text>
+              <Text style={styles.loadBtnText}>{t("mySchedules.loadOrders")}</Text>
             </TouchableOpacity>
           ) : cpIsLoading ? (
             <ActivityIndicator size="large" color="#39CCCC" style={{ marginVertical: 20 }} />
@@ -307,7 +307,6 @@ const MySchedules = () => {
                           </Text>
                         </View>
                       </View>
-
                       {schedule.session_status === "canceled" ? (
                         <TouchableOpacity
                           onPress={() => {
@@ -317,7 +316,7 @@ const MySchedules = () => {
                           }}
                           style={styles.callBtn}
                         >
-                          <Text style={styles.callBtnText}>Choose New Date</Text>
+                          <Text style={styles.callBtnText}>{t("mySchedules.chooseNewDate")}</Text>
                         </TouchableOpacity>
                       ) : (
                         schedule.session_status === "completed" && (
@@ -330,7 +329,7 @@ const MySchedules = () => {
                             style={styles.callBtn}
                           >
                             <Ionicons name="star" size={16} color="#39CCCC" />
-                            <Text style={styles.callBtnText}>Pay and Rate</Text>
+                            <Text style={styles.callBtnText}>{t("mySchedules.payAndRate")}</Text>
                           </TouchableOpacity>
                         )
                       )}
@@ -344,7 +343,7 @@ const MySchedules = () => {
                             ? new Date(
                                 schedule.session_scheduled_at
                               ).toLocaleString()
-                            : "Unknown"}
+                            : t("mySchedules.unknown")}
                         </Text>
                       </View>
                       <View style={styles.infoItem}>
@@ -354,26 +353,26 @@ const MySchedules = () => {
                     </View>
 
                     <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>Service: </Text>
+                      <Text style={styles.detailLabel}>{t("mySchedules.service")} </Text>
                       <Text style={styles.detailValue}>
-                        {schedule.session_reason || "Unknown"}
+                        {schedule.session_reason || t("mySchedules.unknown")}
                       </Text>
                     </View>
                     <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>Gender: </Text>
+                      <Text style={styles.detailLabel}>{t("mySchedules.gender")} </Text>
                       <Text style={styles.detailValue}>
-                        {schedule.gender || "Unknown"}
+                        {schedule.gender || t("mySchedules.unknown")}
                       </Text>
                     </View>
                     <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>Status: </Text>
+                      <Text style={styles.detailLabel}>{t("mySchedules.status")} </Text>
                       {schedule.session_status === "canceled" ? (
                         <View style={styles.canceledBadge}>
-                          <Text style={styles.canceledBadgeText}>Canceled</Text>
+                          <Text style={styles.canceledBadgeText}>{t("mySchedules.canceled")}</Text>
                         </View>
                       ) : (
                         <Text style={styles.detailValue}>
-                          {schedule.session_status || "Unknown"}
+                          {schedule.session_status || t("mySchedules.unknown")}
                         </Text>
                       )}
                     </View>
@@ -388,13 +387,13 @@ const MySchedules = () => {
               />
             </>
           ) : (
-            <Text style={styles.emptyText}>No schedules found.</Text>
+            <Text style={styles.emptyText}>{t("mySchedules.noSchedulesFound")}</Text>
           )}
         </View>
 
-          <Footer />
+        <Footer />
       </ScrollView>
-          
+
       <PatientScheduleCall
         isOpen={showCallModal}
         onClose={() => {
@@ -421,7 +420,7 @@ const MySchedules = () => {
           setShowRateModal(false);
           setTimeout(() => setShowBookingDone(true), 300);
         }}
-        message="Rate the care provider"
+        message={t("mySchedules.rateCareProvider")}
       />
       <DoneModal
         isOpen={showBookingDone}
@@ -433,7 +432,7 @@ const MySchedules = () => {
           setShowRateModal(false);
           fetchCpSchedules();
         }}
-        message="Thank you for your feedback!"
+        message={t("mySchedules.thankYouFeedback")}
       />
       <PatientScheduleSession
         isOpen={showScheduleModal}
@@ -448,6 +447,8 @@ const MySchedules = () => {
     </View>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   section: {

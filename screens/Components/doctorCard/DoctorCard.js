@@ -1,7 +1,8 @@
-// components/doctorCard/DoctorCard.js
+// screens/patient/Components/doctorCard/DoctorCard.js
 import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 const DoctorCard = ({
   doctor_image,
@@ -15,6 +16,8 @@ const DoctorCard = ({
   isActive,
   isDimmed,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <TouchableOpacity
       onPress={onSelect}
@@ -56,7 +59,9 @@ const DoctorCard = ({
         </View>
         <View style={styles.infoItem}>
           <Ionicons name="pricetag-outline" size={14} color="#39CCCC" />
-          <Text style={styles.infoText}>{consultation_fee}$ fee</Text>
+          <Text style={styles.infoText}>
+            {consultation_fee}$ {t("doctorCard.fee")}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>

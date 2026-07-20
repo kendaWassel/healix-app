@@ -1,4 +1,3 @@
-// screens/patient/Receipts/SendtoPharmacy.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -12,9 +11,11 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import Modal from "./Modal";
 
 const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
+  const { t } = useTranslation();
   const [pharmacies, setPharmacies] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
@@ -105,14 +106,14 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
 
       const data = await response.json();
       if (data.status === "success") {
-        Alert.alert("Success", data.message);
+        Alert.alert(t("sendToPharmacy.successMessage"), data.message);
         onClose();
         onDone();
       } else {
-        Alert.alert("Error", "Failed to send prescription!");
+        Alert.alert("Error", t("sendToPharmacy.sendFailed"));
       }
     } catch (error) {
-      Alert.alert("Error", "Something went wrong!");
+      Alert.alert("Error", t("sendToPharmacy.somethingWrong"));
       console.error(error);
     } finally {
       setLoadingSend(false);
@@ -133,7 +134,7 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Text style={styles.title}>Send to pharmacy</Text>
+      <Text style={styles.title}>{t("sendToPharmacy.title")}</Text>
 
       <View style={styles.searchRow}>
         <View style={styles.searchBox}>
@@ -141,7 +142,7 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
           <TextInput
             value={search}
             onChangeText={setSearch}
-            placeholder="Search pharmacy..."
+            placeholder={t("sendToPharmacy.searchPlaceholder")}
             style={styles.searchInput}
           />
         </View>
@@ -157,7 +158,7 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
         )}
 
         {!loading && filtered.length === 0 && (
-          <Text style={styles.emptyText}>No pharmacies found</Text>
+          <Text style={styles.emptyText}>{t("sendToPharmacy.noPharmaciesFound")}</Text>
         )}
 
         {filtered.map((p) => {
@@ -180,19 +181,19 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
                         isSelected && styles.textSelected,
                       ]}
                     >
-                      {p.name || "Unknown"}
+                      {p.name || t("sendToPharmacy.unknown")}
                     </Text>
                   </View>
-                  <Text style={styles.pharmacyCity}>{p.city || "Unknown"}</Text>
+                  <Text style={styles.pharmacyCity}>{p.city || t("sendToPharmacy.unknown")}</Text>
                   <View style={styles.pharmacyPhoneRow}>
                     <Ionicons name="call-outline" size={13} color="#6b7280" />
-                    <Text style={styles.pharmacyPhone}>{p.phone || "Unknown"}</Text>
+                    <Text style={styles.pharmacyPhone}>{p.phone || t("sendToPharmacy.unknown")}</Text>
                   </View>
                 </View>
 
                 <View style={styles.ratingRow}>
                   <Ionicons name="star" size={15} color="#0A2A4A" />
-                  <Text style={styles.ratingText}>{p.rating ?? "Unknown"}</Text>
+                  <Text style={styles.ratingText}>{p.rating ?? t("sendToPharmacy.unknown")}</Text>
                 </View>
               </View>
 
@@ -200,13 +201,13 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
                 <View style={styles.bottomItem}>
                   <Ionicons name="time-outline" size={15} color="#6b7280" />
                   <Text style={styles.bottomItemText}>
-                    {p.from || "Unknown"} - {p.to || "Unknown"}
+                    {p.from || t("sendToPharmacy.unknown")} - {p.to || t("sendToPharmacy.unknown")}
                   </Text>
                 </View>
                 <View style={styles.bottomItem}>
                   <Ionicons name="location-outline" size={15} color="#6b7280" />
                   <Text style={styles.bottomItemText} numberOfLines={1}>
-                    {p.address || "Unknown"}
+                    {p.address || t("sendToPharmacy.unknown")}
                   </Text>
                 </View>
                 {p.open_now !== undefined && (
@@ -216,7 +217,7 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
                       { color: p.open_now ? "#16a34a" : "#dc2626" },
                     ]}
                   >
-                    {p.open_now ? "Open" : "Closed"}
+                    {p.open_now ? t("sendToPharmacy.open") : t("sendToPharmacy.closed")}
                   </Text>
                 )}
               </View>
@@ -224,7 +225,6 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
           );
         })}
       </ScrollView>
-
       <View style={styles.paginationRow}>
         <TouchableOpacity
           onPress={handlePrevPage}
@@ -234,11 +234,11 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
             pagination.currentPage === 1 && styles.btnDisabled,
           ]}
         >
-          <Text style={styles.pageBtnText}>Prev</Text>
+          <Text style={styles.pageBtnText}>{t("common.prev")}</Text>
         </TouchableOpacity>
 
         <Text style={styles.pageInfo}>
-          Page {pagination.currentPage} of {pagination.lastPage}
+          {t("sendToPharmacy.pageOf", { page: pagination.currentPage, lastPage: pagination.lastPage })}
         </Text>
 
         <TouchableOpacity
@@ -249,7 +249,7 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
             pagination.currentPage === pagination.lastPage && styles.btnDisabled,
           ]}
         >
-          <Text style={styles.pageBtnText}>Next</Text>
+          <Text style={styles.pageBtnText}>{t("common.next")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -261,7 +261,7 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
           }}
           style={styles.cancelBtn}
         >
-          <Text style={styles.cancelBtnText}>Cancel</Text>
+          <Text style={styles.cancelBtnText}>{t("common.cancel")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -273,7 +273,7 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
           ]}
         >
           <Text style={styles.sendBtnText}>
-            {loadingSend ? "Sending..." : "Send"}
+            {loadingSend ? t("sendToPharmacy.sending") : t("sendToPharmacy.send")}
           </Text>
         </TouchableOpacity>
       </View>

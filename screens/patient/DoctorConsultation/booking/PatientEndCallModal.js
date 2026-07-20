@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 
 export default function PatientEndCallModal({
   isOpen,
@@ -9,13 +10,14 @@ export default function PatientEndCallModal({
   consultationId,
   onEndSuccess,
 }) {
+  const { t } = useTranslation();
   const [isEnding, setIsEnding] = useState(false);
   const [error, setError] = useState(null);
-  const [message, setMessage] = useState("Consultation is in progress");
+  const [message, setMessage] = useState(t("patientEndCall.inProgress"));
 
   const handleEndCall = async () => {
     if (!consultationId) {
-      setError("Consultation ID is missing");
+      setError(t("patientEndCall.idMissing"));
       return;
     }
     setIsEnding(true);
@@ -36,11 +38,11 @@ export default function PatientEndCallModal({
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Failed to end call");
+        throw new Error(serverError.message || t("patientEndCall.endFailed"));
       }
 
       const data = await response.json();
-      setMessage(data.message || "Call ended successfully");
+      setMessage(data.message || t("patientEndCall.callEndedSuccess"));
 
       if (onEndSuccess) {
         onEndSuccess();
@@ -50,7 +52,7 @@ export default function PatientEndCallModal({
         onClose();
       }, 500);
     } catch (err) {
-      setError(err.message || "Failed to end call. Please try again.");
+      setError(err.message || t("patientEndCall.endFailedRetry"));
     } finally {
       setIsEnding(false);
     }
@@ -60,7 +62,7 @@ export default function PatientEndCallModal({
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.title}>Consultation in Progress</Text>
+          <Text style={styles.title}>{t("patientEndCall.title")}</Text>
           <Text style={styles.message}>{message}</Text>
 
           {error && (
@@ -76,11 +78,11 @@ export default function PatientEndCallModal({
               style={[styles.endBtn, isEnding && styles.btnDisabled]}
             >
               <Text style={styles.endBtnText}>
-                {isEnding ? "Ending call..." : "End Call"}
+                {isEnding ? t("patientEndCall.endingCall") : t("patientEndCall.endCall")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Text style={styles.closeBtnText}>Close</Text>
+              <Text style={styles.closeBtnText}>{t("patientEndCall.close")}</Text>
             </TouchableOpacity>
           </View>
         </View>

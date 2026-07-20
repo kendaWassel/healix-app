@@ -7,10 +7,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import MedicalReportModal, { uploadImage, uploadFile } from "./MedicalReportModal";
 import MapPicker from "./MapPicker";
 
 export default function PatientRegister() {
+  const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -45,7 +47,7 @@ export default function PatientRegister() {
 
     if (!medicalReport) {
       setIsLoading(false);
-      setError("Please fill the Medical Report section");
+      setError(t("patientRegister.medicalReportRequired"));
       return;
     }
 
@@ -71,6 +73,7 @@ export default function PatientRegister() {
           chronic_diseases: medicalReport.chronic_diseases || "",
           previous_surgeries: medicalReport.previous_surgeries || "",
           allergies: medicalReport.allergies || "",
+          is_pregnant: medicalReport.is_pregnant || "",
           current_medications: medicalReport.current_medications || "",
           attachments: [imageId, fileId],
         },
@@ -88,12 +91,12 @@ export default function PatientRegister() {
         }
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Registration failed");
+      if (!res.ok) throw new Error(data.message || t("patientRegister.registrationFailed"));
 
-      setSuccessMsg("Check your email for Activation link");
+      setSuccessMsg(t("patientRegister.checkEmailActivation"));
       setTimeout(() => navigation.navigate("Login"), 800);
     } catch (err) {
-      setError(err.message || "Failed to create user. Please try again.");
+      setError(err.message || t("patientRegister.createUserFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -108,8 +111,8 @@ export default function PatientRegister() {
         >
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.title}>Patients Account Setup</Text>
-        <Text style={styles.subtitle}>Fill your information to register</Text>
+        <Text style={styles.title}>{t("patientRegister.title")}</Text>
+        <Text style={styles.subtitle}>{t("patientRegister.subtitle")}</Text>
         {error && <Text style={styles.error}>{error}</Text>}
         {successMsg && <Text style={styles.success}>{successMsg}</Text>}
       </View>
@@ -120,7 +123,7 @@ export default function PatientRegister() {
           <Ionicons name="person-circle" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type full name"
+            placeholder={t("patientRegister.fullNamePlaceholder")}
             value={fullName}
             onChangeText={setFullName}
           />
@@ -130,7 +133,7 @@ export default function PatientRegister() {
           <Ionicons name="call" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type phone number"
+            placeholder={t("patientRegister.phonePlaceholder")}
             keyboardType="numeric"
             value={phone}
             onChangeText={setPhone}
@@ -144,7 +147,7 @@ export default function PatientRegister() {
         >
           <Ionicons name="calendar" size={20} color="#39CCCC" />
           <Text style={styles.dateText}>
-            {birthDate ? birthDate.toLocaleDateString() : "Birth date"}
+            {birthDate ? birthDate.toLocaleDateString() : t("patientRegister.birthDatePlaceholder")}
           </Text>
         </TouchableOpacity>
         {showDatePicker && (
@@ -165,7 +168,7 @@ export default function PatientRegister() {
           <Ionicons name="mail" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type email"
+            placeholder={t("patientRegister.emailPlaceholder")}
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -178,7 +181,7 @@ export default function PatientRegister() {
           <Ionicons name="lock-closed" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type password..."
+            placeholder={t("patientRegister.passwordPlaceholder")}
             secureTextEntry={!passwordShown}
             value={password}
             onChangeText={setPassword}
@@ -196,9 +199,9 @@ export default function PatientRegister() {
         <View style={styles.inputGroup}>
           <Ionicons name="male-female" size={20} color="#39CCCC" />
           <Picker style={styles.picker} selectedValue={gender} onValueChange={setGender}>
-            <Picker.Item label="Gender" value="" />
-            <Picker.Item label="Male" value="male" />
-            <Picker.Item label="Female" value="female" />
+            <Picker.Item label={t("patientRegister.genderPlaceholder")} value="" />
+            <Picker.Item label={t("patientRegister.male")} value="male" />
+            <Picker.Item label={t("patientRegister.female")} value="female" />
           </Picker>
         </View>
 
@@ -207,20 +210,20 @@ export default function PatientRegister() {
           <Ionicons name="location" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="area-street-building-floor-home no"
+            placeholder={t("patientRegister.addressPlaceholder")}
             value={address}
             onChangeText={setAddress}
           />
         </View>
 
-        {/* زر الموقع على الخريطة — placeholder، انظر الملاحظة أسفل */}
-            <TouchableOpacity
-            style={styles.mapButton}
-         onPress={() => setIsMapOpen(true)}
-            >
+        {/* زر الموقع على الخريطة */}
+        <TouchableOpacity
+          style={styles.mapButton}
+          onPress={() => setIsMapOpen(true)}
+        >
           <Ionicons name="map" size={18} color="#333" />
           <Text style={styles.mapButtonText}>
-            {latitude ? "Location selected ✓" : "Location in map"}
+            {latitude ? t("patientRegister.locationSelected") : t("patientRegister.locationInMap")}
           </Text>
         </TouchableOpacity>
 
@@ -231,7 +234,7 @@ export default function PatientRegister() {
         >
           <Ionicons name="cloud-upload" size={18} color="#333" />
           <Text style={styles.mapButtonText}>
-            {medicalReport ? "Edit Medical Report" : "Add Medical Report"}
+            {medicalReport ? t("patientRegister.editMedicalReport") : t("patientRegister.addMedicalReport")}
           </Text>
         </TouchableOpacity>
 
@@ -244,7 +247,7 @@ export default function PatientRegister() {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.registerBtnText}>Register</Text>
+            <Text style={styles.registerBtnText}>{t("patientRegister.register")}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -254,17 +257,18 @@ export default function PatientRegister() {
         onClose={() => setIsMedicalModalOpen(false)}
         onSubmit={handleSaveMedicalReport}
         initialValues={medicalReport}
+        gender={gender}
       />
       <MapPicker
-     visible={isMapOpen}
-    initialPosition={latitude && longitude ? [latitude, longitude] : null}
-    onConfirm={(lat, lng) => {
-    setLatitude(lat);
-    setLongitude(lng);
-    setIsMapOpen(false);
-         }}
-     onClose={() => setIsMapOpen(false)}
-        />
+        visible={isMapOpen}
+        initialPosition={latitude && longitude ? [latitude, longitude] : null}
+        onConfirm={(lat, lng) => {
+          setLatitude(lat);
+          setLongitude(lng);
+          setIsMapOpen(false);
+        }}
+        onClose={() => setIsMapOpen(false)}
+      />
     </ScrollView>
   );
 }

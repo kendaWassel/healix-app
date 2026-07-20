@@ -1,4 +1,3 @@
-// screens/patient/Receipts/ReceiptsDetails.js
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -10,9 +9,11 @@ import {
   StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import Modal from "./Modal";
 
 const ReceiptDetails = ({ open, onClose, prescription_id }) => {
+  const { t } = useTranslation();
   const [receipt, setReceipt] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,10 +45,10 @@ const ReceiptDetails = ({ open, onClose, prescription_id }) => {
         if (data.status === "success") {
           setReceipt(data.data);
         } else {
-          setError("Failed to load prescription details.");
+          setError(t("receiptDetails.loadFailed"));
         }
       } catch (err) {
-        setError("Network error");
+        setError(t("receiptDetails.networkError"));
       } finally {
         setLoading(false);
       }
@@ -58,7 +59,7 @@ const ReceiptDetails = ({ open, onClose, prescription_id }) => {
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Text style={styles.title}>Prescription Details</Text>
+      <Text style={styles.title}>{t("receiptDetails.title")}</Text>
 
       {loading && (
         <ActivityIndicator size="large" color="#39CCCC" style={{ marginVertical: 20 }} />
@@ -74,48 +75,47 @@ const ReceiptDetails = ({ open, onClose, prescription_id }) => {
                 style={styles.prescriptionImage}
                 resizeMode="contain"
               />
-              <Text style={styles.imageCaption}>Uploaded prescription image</Text>
+              <Text style={styles.imageCaption}>{t("receiptDetails.uploadedImageCaption")}</Text>
             </View>
           ) : (
             <>
               <View style={{ gap: 4 }}>
                 <Text style={styles.infoLine}>
-                  <Text style={styles.infoLabel}>Doctor: </Text>
+                  <Text style={styles.infoLabel}>{t("receiptDetails.doctor")} </Text>
                   {receipt.doctor_name}
                 </Text>
                 <Text style={styles.infoLine}>
-                  <Text style={styles.infoLabel}>Diagnosis: </Text>
+                  <Text style={styles.infoLabel}>{t("receiptDetails.diagnosis")} </Text>
                   {receipt.diagnosis}
                 </Text>
                 <Text style={styles.infoLine}>
-                  <Text style={styles.infoLabel}>Notes: </Text>
+                  <Text style={styles.infoLabel}>{t("receiptDetails.notes")} </Text>
                   {receipt.notes}
                 </Text>
                 <Text style={styles.infoLine}>
-                  <Text style={styles.infoLabel}>Status: </Text>
+                  <Text style={styles.infoLabel}>{t("receiptDetails.status")} </Text>
                   {receipt.status}
                 </Text>
               </View>
 
               <View style={styles.divider} />
-
-              <Text style={styles.medicinesTitle}>Medicines</Text>
+              <Text style={styles.medicinesTitle}>{t("receiptDetails.medicinesTitle")}</Text>
               {receipt.medicines?.map((med, index) => (
                 <View key={index} style={styles.medicineCard}>
                   <Text style={styles.infoLine}>
-                    <Text style={styles.infoLabel}>Name: </Text>
+                    <Text style={styles.infoLabel}>{t("receiptDetails.name")} </Text>
                     {med.name}
                   </Text>
                   <Text style={styles.infoLine}>
-                    <Text style={styles.infoLabel}>Dosage: </Text>
+                    <Text style={styles.infoLabel}>{t("receiptDetails.dosage")} </Text>
                     {med.dosage}
                   </Text>
                   <Text style={styles.infoLine}>
-                    <Text style={styles.infoLabel}>Quantity: </Text>
+                    <Text style={styles.infoLabel}>{t("receiptDetails.quantity")} </Text>
                     {med.quantity}
                   </Text>
                   <Text style={styles.infoLine}>
-                    <Text style={styles.infoLabel}>Instructions: </Text>
+                    <Text style={styles.infoLabel}>{t("receiptDetails.instructions")} </Text>
                     {med.instructions}
                   </Text>
                 </View>
@@ -125,7 +125,7 @@ const ReceiptDetails = ({ open, onClose, prescription_id }) => {
 
           <View style={styles.footerRow}>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Text style={styles.closeBtnText}>Close</Text>
+              <Text style={styles.closeBtnText}>{t("receiptDetails.close")}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

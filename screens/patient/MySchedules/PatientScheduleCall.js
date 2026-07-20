@@ -1,4 +1,3 @@
-// screens/patient/mySchedules/PatientScheduleCall.js
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
@@ -11,6 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import PatientEndCallModal from "../DoctorConsultation/booking/PatientEndCallModal";
 import RatingModal from "../DoctorConsultation/booking/RatingModal";
 import DoneModal from "../DoctorConsultation/booking/DoneModal";
@@ -22,6 +22,7 @@ export default function PatientScheduleCall({
   doctorId,
   doctorPhone,
 }) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState("");
@@ -71,14 +72,14 @@ export default function PatientScheduleCall({
         console.log("Call initiation response: ", data);
 
         if (!response.ok || data.status !== "success") {
-          throw new Error(data.message || "Failed to initiate call");
+          throw new Error(data.message || t("patientScheduleCall.callInitiateFailed"));
         }
 
-        setMessage(data.message || "You can call the doctor now");
+        setMessage(data.message || t("patientScheduleCall.youCanCallNow"));
         setCanCall(true);
       } catch (err) {
-        setError(err.message || "Failed to initiate call");
-        setMessage(err.message || "Failed to initiate call");
+        setError(err.message || t("patientScheduleCall.callInitiateFailed"));
+        setMessage(err.message || t("patientScheduleCall.callInitiateFailed"));
         setCanCall(false);
       } finally {
         setIsLoading(false);
@@ -88,7 +89,6 @@ export default function PatientScheduleCall({
     initiateCall();
   }, [isOpen, consultationId]);
 
-  // مراقبة حالة التطبيق — بديل window.onblur/onfocus
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {
       if (
@@ -109,14 +109,14 @@ export default function PatientScheduleCall({
   const handleCallClick = async () => {
     const phone = doctorPhone;
     if (!phone) {
-      setError("Doctor phone number missing.");
+      setError(t("patientScheduleCall.phoneMissing"));
       return;
     }
 
     const url = `tel:${phone}`;
     const supported = await Linking.canOpenURL(url);
     if (!supported) {
-      setError("Cannot open phone dialer on this device.");
+      setError(t("patientScheduleCall.dialerUnavailable"));
       return;
     }
 
@@ -126,7 +126,7 @@ export default function PatientScheduleCall({
 
   const handleEndCallSuccess = () => {
     setShowEndCallModal(false);
-    setMessage("Call ended successfully.");
+    setMessage(t("patientScheduleCall.callEndedSuccess"));
     setShowRatingModal(true);
   };
 
@@ -147,13 +147,15 @@ export default function PatientScheduleCall({
 
           {doctorPhone && (
             <View style={styles.phoneBox}>
-              <Text style={styles.phoneText}>Doctor Phone: {doctorPhone}</Text>
+              <Text style={styles.phoneText}>
+                {t("patientScheduleCall.doctorPhone", { phone: doctorPhone })}
+              </Text>
             </View>
           )}
 
           {isLoading ? (
             <View style={styles.loadingBox}>
-              <Text style={styles.loadingText}>Preparing call...</Text>
+              <Text style={styles.loadingText}>{t("patientScheduleCall.preparingCall")}</Text>
             </View>
           ) : (
             <TouchableOpacity
@@ -165,12 +167,12 @@ export default function PatientScheduleCall({
               ]}
             >
               <Ionicons name="call" size={18} color="#fff" />
-              <Text style={styles.callBtnText}>Start consultation</Text>
+              <Text style={styles.callBtnText}>{t("patientScheduleCall.startConsultation")}</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
-            <Text style={styles.cancelBtnText}>Cancel</Text>
+            <Text style={styles.cancelBtnText}>{t("common.cancel")}</Text>
           </TouchableOpacity>
         </View>
 
@@ -188,7 +190,7 @@ export default function PatientScheduleCall({
           }}
           url={`consultations/${consultationId}/rate/${doctorId}`}
           onRatingSuccess={handleRatingSuccess}
-          message="Rate the doctor"
+          message={t("patientScheduleCall.rateTheDoctor")}
         />
         <DoneModal
           isOpen={showBookingDone}
@@ -196,13 +198,12 @@ export default function PatientScheduleCall({
             setShowBookingDone(false);
             onClose();
           }}
-          message="Thank you for your feedback!"
+          message={t("patientScheduleCall.thankYouFeedback")}
         />
       </View>
     </Modal>
   );
 }
-
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,

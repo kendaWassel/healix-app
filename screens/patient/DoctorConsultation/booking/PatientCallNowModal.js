@@ -11,12 +11,14 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import PatientEndCallModal from "./PatientEndCallModal";
 import RatingModal from "./RatingModal";
 import DoneModal from "./DoneModal";
 import PaymentModal from "../../../Components/servicesCard/PayementModal";
 
 export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfirm }) {
+  const { t } = useTranslation();
   const [isCreatingConsultation, setIsCreatingConsultation] = useState(false);
   const [error, setError] = useState(null);
   const [consultationId, setConsultationId] = useState(null);
@@ -71,14 +73,14 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
         const data = await response.json();
         console.log("consultation data: ", data);
         if (!response.ok || data.status !== "success") {
-          throw new Error(data.message || "Failed to create consultation");
+          throw new Error(data.message || t("patientCallNow.consultationFailed"));
         }
 
         setConsultationId(data.data.consultation_id);
         setDoctorPhone(data.data.doctor_phone);
-        setMessage(data.message || "You can call the doctor Now");
+        setMessage(data.message || t("patientCallNow.callBackendSuccess"));
       } catch (err) {
-        setError(err.message || "Failed to create consultation");
+        setError(err.message || t("patientCallNow.consultationFailed"));
       } finally {
         setIsCreatingConsultation(false);
       }
@@ -87,7 +89,6 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
     createConsultation();
   }, [isOpen, doctorId]);
 
-  // مراقبة حالة التطبيق — بديل window.onblur/onfocus
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {
       if (
@@ -129,7 +130,7 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
   const handleCallClick = async () => {
     const phone = doctorPhone;
     if (!phone) {
-      setError("Doctor phone number missing.");
+      setError(t("patientCallNow.phoneMissing"));
       return;
     }
 
@@ -138,7 +139,7 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
     const url = `tel:${phone}`;
     const supported = await Linking.canOpenURL(url);
     if (!supported) {
-      setError("Cannot open phone dialer on this device.");
+      setError(t("patientCallNow.dialerUnavailable"));
       return;
     }
 
@@ -150,7 +151,7 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
 
   const handleEndCallSuccess = () => {
     setShowEndCallModal(false);
-    setMessage("Call ended successfully.");
+    setMessage(t("patientCallNow.callEndedSuccess"));
     setTimeout(() => {
       setShowPaymentModal(true);
     }, 600);
@@ -188,7 +189,7 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
 
           {isCreatingConsultation ? (
             <View style={styles.loadingBox}>
-              <Text style={styles.loadingText}>Creating consultation...</Text>
+              <Text style={styles.loadingText}>{t("patientCallNow.creatingConsultation")}</Text>
             </View>
           ) : (
             <TouchableOpacity
@@ -200,12 +201,12 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
               ]}
             >
               <Ionicons name="call" size={18} color="#fff" />
-              <Text style={styles.callBtnText}>Start consultation</Text>
+              <Text style={styles.callBtnText}>{t("patientCallNow.startConsultation")}</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
-            <Text style={styles.cancelBtnText}>Cancel</Text>
+            <Text style={styles.cancelBtnText}>{t("common.cancel")}</Text>
           </TouchableOpacity>
         </View>
 
@@ -231,7 +232,7 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
               setShowBookingDone(true);
             }, 300);
           }}
-          message="Rate the doctor"
+          message={t("patientCallNow.rateTheDoctor")}
         />
         <DoneModal
           isOpen={showBookingDone}
@@ -239,7 +240,7 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
             setShowBookingDone(false);
             onClose();
           }}
-          message="Thank you for your feedback!"
+          message={t("patientCallNow.thankYouFeedback")}
         />
       </View>
     </Modal>

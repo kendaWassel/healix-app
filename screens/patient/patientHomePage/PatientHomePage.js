@@ -4,11 +4,13 @@ import {
   ScrollView, ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import PatientHeader from "../../Components/header/PatientHeader";
 import Footer from "../../Components/footer/Footer";
 import FAID from "./FAID/FAID";
 
 export default function PatientHomePage() {
+  const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -33,8 +35,8 @@ export default function PatientHomePage() {
         {/* الرأس + زر التحديث */}
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.title}>Account Information</Text>
-            <Text style={styles.subtitle}>View or update your information</Text>
+            <Text style={styles.title}>{t("patientHome.title")}</Text>
+            <Text style={styles.subtitle}>{t("patientHome.subtitle")}</Text>
           </View>
           <TouchableOpacity
             style={[styles.updateBtn, (isUpdating || isLoading) && styles.updateBtnDisabled]}
@@ -43,7 +45,7 @@ export default function PatientHomePage() {
             {isUpdating ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (
-              <Text style={styles.updateBtnText}>Update</Text>
+              <Text style={styles.updateBtnText}>{t("patientHome.update")}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -52,12 +54,12 @@ export default function PatientHomePage() {
         {successMsg && <Text style={styles.successBox}>{successMsg}</Text>}
 
         {isLoading ? (
-          <Text style={styles.loadingText}>Loading profile information...</Text>
+          <Text style={styles.loadingText}>{t("patientHome.loadingProfile")}</Text>
         ) : (
           <View style={styles.form}>
             {/* الاسم الكامل */}
             <View style={styles.field}>
-              <Text style={styles.label}>Full Name</Text>
+              <Text style={styles.label}>{t("patientHome.fullName")}</Text>
               <View style={styles.inputGroup}>
                 <Ionicons name="person" size={20} color="#39CCCC" />
                 <TextInput
@@ -70,7 +72,7 @@ export default function PatientHomePage() {
 
             {/* الإيميل */}
             <View style={styles.field}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>{t("patientHome.email")}</Text>
               <View style={styles.inputGroup}>
                 <Ionicons name="mail" size={20} color="#39CCCC" />
                 <TextInput
@@ -83,7 +85,7 @@ export default function PatientHomePage() {
 
             {/* الهاتف */}
             <View style={styles.field}>
-              <Text style={styles.label}>Phone Number</Text>
+              <Text style={styles.label}>{t("patientHome.phone")}</Text>
               <View style={styles.inputGroup}>
                 <Ionicons name="call" size={20} color="#39CCCC" />
                 <TextInput
@@ -96,12 +98,12 @@ export default function PatientHomePage() {
 
             {/* تاريخ الميلاد */}
             <View style={styles.field}>
-              <Text style={styles.label}>Birth date</Text>
+              <Text style={styles.label}>{t("patientHome.birthDate")}</Text>
               <View style={styles.inputGroup}>
                 <Ionicons name="calendar" size={20} color="#39CCCC" />
                 <TextInput
                   style={styles.input}
-                  placeholder="Not set"
+                  placeholder={t("patientHome.notSet")}
                   editable={false}
                 />
               </View>
@@ -109,7 +111,7 @@ export default function PatientHomePage() {
 
             {/* كلمة المرور */}
             <View style={styles.field}>
-              <Text style={styles.label}>Password</Text>
+              <Text style={styles.label}>{t("patientHome.password")}</Text>
               <View style={styles.inputGroup}>
                 <Ionicons name="lock-closed" size={20} color="#39CCCC" />
                 <TextInput
@@ -117,7 +119,7 @@ export default function PatientHomePage() {
                   value={patientData.password}
                   secureTextEntry={!passwordShown}
                   editable={false}
-                  placeholder="Leave empty to keep current password"
+                  placeholder={t("patientHome.passwordPlaceholder")}
                 />
                 <TouchableOpacity onPress={() => setPasswordShown(!passwordShown)}>
                   <Ionicons
@@ -131,7 +133,7 @@ export default function PatientHomePage() {
 
             {/* الجنس */}
             <View style={styles.field}>
-              <Text style={styles.label}>Gender</Text>
+              <Text style={styles.label}>{t("patientHome.gender")}</Text>
               <View style={styles.inputGroup}>
                 <Ionicons name="male-female" size={20} color="#39CCCC" />
                 <TextInput
@@ -144,12 +146,12 @@ export default function PatientHomePage() {
 
             {/* العنوان */}
             <View style={styles.field}>
-              <Text style={styles.label}>Address</Text>
+              <Text style={styles.label}>{t("patientHome.address")}</Text>
               <View style={styles.inputGroup}>
                 <Ionicons name="location" size={20} color="#39CCCC" />
                 <TextInput
                   style={styles.input}
-                  placeholder="area-street-building-floor-home no"
+                  placeholder={t("patientHome.addressPlaceholder")}
                   value={patientData.address}
                   editable={false}
                 />
@@ -158,20 +160,20 @@ export default function PatientHomePage() {
 
             {/* الموقع على الخريطة */}
             <View style={styles.field}>
-              <Text style={styles.label}>Location in map</Text>
+              <Text style={styles.label}>{t("patientHome.locationInMap")}</Text>
               <TouchableOpacity style={styles.mapButton} disabled>
                 <Ionicons name="map" size={18} color="#39CCCC" />
-                <Text style={styles.mapButtonText}>Location in map</Text>
+                <Text style={styles.mapButtonText}>{t("patientHome.locationInMap")}</Text>
               </TouchableOpacity>
             </View>
 
             {/* ملف التقرير الطبي */}
             <View style={styles.field}>
-              <Text style={styles.label}>Medical report File</Text>
+              <Text style={styles.label}>{t("patientHome.medicalReportFile")}</Text>
               <TouchableOpacity style={styles.fileButton} disabled>
                 <Ionicons name="document-text" size={18} color="#39CCCC" />
                 <Text style={styles.fileButtonText}>
-                  {licenseFileName || "View File"}
+                  {licenseFileName || t("patientHome.viewFile")}
                 </Text>
               </TouchableOpacity>
             </View>

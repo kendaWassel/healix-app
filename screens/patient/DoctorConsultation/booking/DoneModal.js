@@ -2,13 +2,16 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
-export default function DoneModal({ isOpen, onClose, onHome, message = "You Are Done" }) {
+export default function DoneModal({ isOpen, onClose, onHome, message }) {
+  const { t } = useTranslation();
+
   return (
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.title}>{message}</Text>
+          <Text style={styles.title}>{message || t("doneModal.defaultMessage")}</Text>
 
           <View style={styles.iconWrapper}>
             <View style={styles.iconCircle}>
@@ -17,7 +20,7 @@ export default function DoneModal({ isOpen, onClose, onHome, message = "You Are 
           </View>
 
           <TouchableOpacity onPress={onHome} style={styles.homeBtn}>
-            <Text style={styles.homeBtnText}>Go to Home Screen</Text>
+            <Text style={styles.homeBtnText}>{t("doneModal.goHome")}</Text>
           </TouchableOpacity>
         </View>
       </View>
