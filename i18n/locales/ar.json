@@ -372,6 +372,75 @@
 "drugSuggestion": {
   "didYouMean": "هل تقصد",
   "useIt": "استخدمه"
+},
+"nurse":{
+    "nurseHeader": {
+    "home": "الرئيسية",
+    "newOrders": "الطلبات الجديدة",
+    "mySchedules": "مواعيدي",
+    "nurse": "ممرضة"
+  },
+  "nurseHome": {
+    "title": "معلومات الحساب",
+    "subtitle": "عرض أو تعديل معلوماتك",
+    "update": "تحديث",
+    "updating": "جارٍ التحديث...",
+    "loadingProfile": "جارٍ تحميل معلومات الملف الشخصي...",
+    "fullName": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الهاتف",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "اتركه فارغًا للاحتفاظ بكلمة المرور الحالية",
+    "gender": "الجنس",
+    "genderPlaceholder": "الجنس",
+    "genderFemale": "أنثى",
+    "genderMale": "ذكر",
+    "sessionFee": "أجرة الجلسة",
+    "licenseFile": "ملف الرخصة",
+    "viewFile": "عرض الملف",
+    "viewCurrent": "عرض الحالي",
+    "updateSuccess": "تم تحديث الملف الشخصي بنجاح!",
+    "updateFail": "فشل تحديث الملف الشخصي. حاول مرة أخرى.",
+    "loadFail": "فشل تحميل معلومات الملف الشخصي.",
+    "uploadFail": "فشل رفع الملف"
+  },
+  "nurseNewOrders": {
+    "title": "الطلبات الجديدة",
+    "subtitle": "تحقق من طلباتك الجديدة هنا",
+    "loading": "جارٍ تحميل الطلبات...",
+    "service": "الخدمة:",
+    "accept": "قبول",
+    "accepting": "جارٍ القبول",
+    "noOrders": "لا توجد طلبات",
+    "previous": "السابق",
+    "next": "التالي",
+    "pageOf": "{{page}} من {{total}}",
+    "orderAccepted": "تم قبول الطلب بنجاح",
+    "cancel": "إلغاء"
+  },
+  "nurseAppointments": {
+    "title": "مواعيدي",
+    "subtitle": "عرض زيارات مرضاك",
+    "filter": "تصفية:",
+    "all": "الكل",
+    "accepted": "مقبول",
+    "completed": "مكتمل",
+    "loading": "جارٍ تحميل الطلبات...",
+    "noSchedules": "لا توجد مواعيد",
+    "service": "الخدمة:",
+    "at": "في:",
+    "status": "الحالة:",
+    "viewDetails": "عرض التفاصيل",
+    "loadingDetails": "جارٍ التحميل...",
+    "startSession": "بدء الجلسة",
+    "starting": "جارٍ البدء...",
+    "endSession": "إنهاء الجلسة",
+    "ending": "جارٍ الإنهاء...",
+    "previous": "السابق",
+    "next": "التالي",
+    "pageOf": "{{page}} من {{total}}"
+  }
 }
+
 }
 

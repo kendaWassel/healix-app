@@ -375,5 +375,69 @@
 "drugSuggestion": {
   "didYouMean": "Did you mean",
   "useIt": "Use it"
+},
+"nurse":{
+  "nurseHome": {
+    "title": "Account Information",
+    "subtitle": "View or update your information",
+    "update": "Update",
+    "updating": "Updating...",
+    "loadingProfile": "Loading profile information...",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "password": "Password",
+    "passwordPlaceholder": "Leave empty to keep current password",
+    "gender": "Gender",
+    "genderPlaceholder": "Gender",
+    "genderFemale": "Female",
+    "genderMale": "Male",
+    "sessionFee": "Session Fee",
+    "licenseFile": "License File",
+    "viewFile": "View File",
+    "viewCurrent": "View Current",
+    "updateSuccess": "Profile updated successfully!",
+    "updateFail": "Failed to update profile. Please try again.",
+    "loadFail": "Failed to load profile information.",
+    "uploadFail": "File upload failed"
+  },
+  "nurseNewOrders": {
+    "title": "New Orders",
+    "subtitle": "Check your new orders here",
+    "loading": "Loading orders...",
+    "service": "Service:",
+    "accept": "Accept",
+    "accepting": "Accepting",
+    "noOrders": "No Orders Found",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "{{page}} of {{total}}",
+    "orderAccepted": "Order Accepted Successfully",
+    "cancel": "Cancel"
+  },
+  "nurseAppointments": {
+    "title": "My Schedules",
+    "subtitle": "View your patient visits",
+    "filter": "Filter:",
+    "all": "All",
+    "accepted": "Accepted",
+    "completed": "Completed",
+    "loading": "Loading orders...",
+    "noSchedules": "No Schedules Found",
+    "service": "Service:",
+    "at": "At:",
+    "status": "Status:",
+    "viewDetails": "View details",
+    "loadingDetails": "Loading...",
+    "startSession": "Start Session",
+    "starting": "Starting...",
+    "endSession": "End Session",
+    "ending": "Ending...",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "{{page}} of {{total}}"
+  }
 }
 }
+
+

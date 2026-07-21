@@ -14,7 +14,8 @@ import LandingPage from "./screens/landingPage/LandingPage";
 import Patient from "./screens/patient/patient";
 import Doctor from "./screens/doctor/Doctor";
 import Pharmacist from "./screens/Pharmacist/Pharmacist";
-import Delivery from "./screens/Delivery/Delivery";
+import Delivery from "./screens/delivery/Delivery";
+import Nurse from "./screens/nurse/Nurse";
 
 const Stack = createNativeStackNavigator();
 
@@ -22,7 +23,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Landing"
+        initialRouteName="Nurse"
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Landing" component={LandingPage} />
@@ -52,6 +53,7 @@ export default function App() {
         <Stack.Screen name="Doctor" component={Doctor} /> 
         <Stack.Screen name="Pharmacist" component={Pharmacist} />
         <Stack.Screen name="Delivery" component={Delivery} />
+        <Stack.Screen name="Nurse" component={Nurse} />
       </Stack.Navigator>
     </NavigationContainer>
   );
