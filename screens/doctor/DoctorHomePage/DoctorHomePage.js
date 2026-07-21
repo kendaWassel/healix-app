@@ -12,7 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import DoctorHeader from "../../Components/header/DoctorHeader";
 import Footer from "../../Components/footer/Footer";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 
 const DoctorHomePage = () => {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -34,7 +34,7 @@ const DoctorHomePage = () => {
   const [licenseFileName] = useState("");
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+   <View style={{ flex: 1 }}>
       <DoctorHeader />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.headerRow}>
@@ -173,7 +173,7 @@ const DoctorHomePage = () => {
 
         <Footer />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

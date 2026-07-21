@@ -260,3 +260,147 @@ export default function ScheduleLaterModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(5,36,67,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    width: "90%",
+    maxWidth: 420,
+    maxHeight: "85%",
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  fieldWrapper: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#374151",
+    marginBottom: 6,
+  },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  pickerWrapper: {
+    marginTop: 8,
+  },
+  confirmDateBtn: {
+    backgroundColor: "#0e7490",
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: "center",
+    marginTop: 8,
+  },
+  confirmDateBtnText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  slotsWrapper: {
+    marginBottom: 16,
+    minHeight: 60,
+  },
+  centerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  loadingText: {
+    color: "#6b7280",
+    fontSize: 13,
+  },
+  errorText: {
+    color: "#dc2626",
+    fontSize: 13,
+  },
+  slotsLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: 8,
+  },
+  slotsScrollArea: {
+    maxHeight: 180,
+  },
+  slotsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  slotBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    backgroundColor: "#fff",
+  },
+  slotBtnSelected: {
+    backgroundColor: "#0e7490",
+    borderColor: "#0e7490",
+  },
+  slotBtnText: {
+    fontSize: 13,
+    color: "#374151",
+  },
+  slotBtnTextSelected: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+  hintText: {
+    color: "#9ca3af",
+    fontSize: 13,
+    textAlign: "center",
+    marginVertical: 10,
+  },
+  buttonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 16,
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  cancelBtnText: {
+    color: "#374151",
+    fontWeight: "600",
+  },
+  confirmBtn: {
+    flex: 1,
+    backgroundColor: "#052443",
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  confirmBtnDisabled: {
+    backgroundColor: "#9ca3af",
+  },
+  confirmBtnText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+});

@@ -1,12 +1,15 @@
 // components/headers/DoctorHeader.js
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../common/LanguageSwitcher";
 
 const DoctorHeader = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const { t } = useTranslation();
 
   const isActive = (screenName) => route.name === screenName;
 
@@ -23,7 +26,7 @@ const DoctorHeader = () => {
       <View style={styles.linksRow}>
         <TouchableOpacity onPress={() => navigation.navigate("DoctorHome")}>
           <Text style={isActive("DoctorHome") ? styles.activeLink : styles.link}>
-            Home
+            {t("header.home")}
           </Text>
         </TouchableOpacity>
 
@@ -31,14 +34,17 @@ const DoctorHeader = () => {
           <Text
             style={isActive("DoctorSchedules") ? styles.activeLink : styles.link}
           >
-            My Schedules
+            {t("header.mySchedules")}
           </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.badge}>
-        <Ionicons name="medkit" size={22} color="#39CCCC" />
-        <Text style={styles.badgeText}>Doctor</Text>
+      <View style={styles.rightSection}>
+        <LanguageSwitcher />
+        <View style={styles.badge}>
+          <Ionicons name="medkit" size={22} color="#39CCCC" />
+          <Text style={styles.badgeText}>{t("header.doctor")}</Text>
+        </View>
       </View>
     </View>
   );
@@ -48,13 +54,16 @@ export default DoctorHeader;
 
 const styles = StyleSheet.create({
   nav: {
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+    paddingTop: Platform.OS === "ios" ? 66 : 35,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
+    flexWrap: "wrap",
   },
   logo: {
     width: 90,
@@ -62,18 +71,22 @@ const styles = StyleSheet.create({
   },
   linksRow: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 18,
+    gap: 20,
   },
   link: {
-    color: "#374151",
+    color: "#767676",
     fontWeight: "500",
-    fontSize: 13,
+    fontSize: 14,
   },
   activeLink: {
     color: "#39CCCC",
     fontWeight: "700",
-    fontSize: 13,
+    fontSize: 14,
+  },
+  rightSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   badge: {
     flexDirection: "row",
@@ -81,8 +94,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   badgeText: {
+    fontWeight: "600",
     color: "#052443",
-    fontWeight: "500",
     fontSize: 13,
   },
 });

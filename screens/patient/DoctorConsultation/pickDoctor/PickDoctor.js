@@ -7,11 +7,13 @@ import {
   FlatList,
   ActivityIndicator,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
+import PatientHeader from "../../../Components/header/PatientHeader";
 import DoctorCard from "../../../Components/doctorCard/DoctorCard";
 import Footer from "../../../Components/footer/Footer";
 import BookingOption from "../booking/BookingOption";
@@ -65,8 +67,6 @@ const PickDoctor = () => {
       }
 
       const data = await response.json();
-      console.log("success getting doctors: ", data);
-
       setDoctors(data.data);
 
       const totalItems = data.meta.total;
@@ -108,29 +108,20 @@ const PickDoctor = () => {
   }, [id, pagination.currentPage, pagination.itemsPerPage]);
 
   const handleConfirm = async (option) => {
-    console.log("Selected option:", option);
-
     if (option === "Schedule For later") {
       setOpenPickOption(false);
-      setTimeout(() => {
-        setOpenScheduleLater(true);
-      }, 200);
+      setTimeout(() => setOpenScheduleLater(true), 200);
     } else if (option === "Call Now") {
       if (selected === null || !doctors[selected]) {
         setError(t("pickDoctor.selectDoctorFirst"));
         setOpenPickOption(false);
         return;
       }
-
       setOpenPickOption(false);
-      setTimeout(() => {
-        setOpenCallNow(true);
-      }, 200);
+      setTimeout(() => setOpenCallNow(true), 200);
     } else {
       setOpenPickOption(false);
-      setTimeout(() => {
-        setOpenModalDone(true);
-      }, 400);
+      setTimeout(() => setOpenModalDone(true), 400);
     }
   };
 
@@ -148,17 +139,16 @@ const PickDoctor = () => {
           {...doctor}
           isActive={isActive}
           isDimmed={isDimmed}
-          onSelect={() => {
-            console.log("doctor selected: ", doctor.id);
-            setSelected(index);
-          }}
+          onSelect={() => setSelected(index)}
         />
       </View>
     );
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fafbfc" }}>
+     <View style={{ flex: 1, backgroundColor: "#fafbfc" }}>
+      <PatientHeader />
+
       <View style={styles.headerSection}>
         <TouchableOpacity
           onPress={() => navigation.navigate("DoctorConsultation")}
@@ -291,7 +281,6 @@ const PickDoctor = () => {
           selected !== null && doctors[selected] ? doctors[selected].id : null
         }
         onConfirm={({ date, time }) => {
-          console.log("Scheduled later:", { date, time });
           setOpenScheduleLater(false);
           setTimeout(() => setOpenModalDone(true), 300);
         }}
@@ -303,20 +292,17 @@ const PickDoctor = () => {
         doctorId={
           selected !== null && doctors[selected] ? doctors[selected].id : null
         }
-        onConfirm={() => {
-          console.log(t("pickDoctor.callInitiated"));
-        }}
+        onConfirm={() => {}}
       />
     </View>
   );
 };
 
-
 const styles = StyleSheet.create({
-  headerSection: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
+headerSection: {
+  paddingTop: 4,         
+  paddingHorizontal: 16,
+},
   backBtn: {
     marginBottom: 12,
   },

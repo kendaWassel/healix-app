@@ -15,7 +15,9 @@
    "consultation": "استشارة",
   "schedules": "المواعيد",
   "receipts": "الوصفات",
-  "patient": "مريض"
+  "patient": "مريض",
+  "mySchedules": "مواعيدي",
+  "doctor": "طبيب"
 },
   "deliveryHome": {
     "title": "معلومات الحساب",
@@ -366,6 +368,10 @@
   "title": "اختر موقعك",
   "selected": "المحدد: {{lat}}, {{lng}}",
   "tapToChoose": "اضغط على الخريطة لاختيار نقطة"
+},
+"drugSuggestion": {
+  "didYouMean": "هل تقصد",
+  "useIt": "استخدمه"
 }
 }
 

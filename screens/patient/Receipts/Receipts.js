@@ -766,7 +766,7 @@ export default function Receipts() {
                 {suggestion?.field === "drugA" && (
                   <View style={styles.suggestionBox}>
                     <Text style={styles.suggestionText}>
-                      Did you mean{" "}
+                    {t("drugSuggestion.didYouMean")}{" "}
                       <Text style={styles.suggestionValue}>
                         {suggestion.value}
                       </Text>
@@ -778,7 +778,7 @@ export default function Receipts() {
                         clearSuggestion();
                       }}
                     >
-                      <Text style={styles.suggestionUseBtn}>Use it</Text>
+                       <Text style={styles.suggestionUseBtn}>{t("drugSuggestion.useIt")}</Text>
                     </TouchableOpacity>
                   </View>
                 )}

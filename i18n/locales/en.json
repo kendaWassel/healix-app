@@ -15,7 +15,9 @@
     "consultation": "Consultation",
     "schedules": "Schedules",
     "receipts": "Receipts",
-    "patient": "Patient"
+    "patient": "Patient",
+    "mySchedules": "My Schedules",
+    "doctor": "Doctor"
   },
   "deliveryHome": {
     "title": "Account Information",
@@ -369,5 +371,9 @@
   "title": "Pick your location",
   "selected": "Selected: {{lat}}, {{lng}}",
   "tapToChoose": "Tap on the map to choose a point"
+},
+"drugSuggestion": {
+  "didYouMean": "Did you mean",
+  "useIt": "Use it"
 }
 }
