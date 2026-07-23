@@ -17,9 +17,9 @@ const NurseHeader = () => {
   );
 
   const navItems = [
-    { label: t("nurseHeader.home"), route: "NurseHome" },
-    { label: t("nurseHeader.newOrders"), route: "NurseNewOrders" },
-    { label: t("nurseHeader.mySchedules"), route: "NurseAppointments" },
+    { label: t("nurse.nurseHeader.home"), route: "NurseHome" },
+    { label: t("nurse.nurseHeader.newOrders"), route: "NurseNewOrders" },
+    { label: t("nurse.nurseHeader.mySchedules"), route: "NurseAppointments" },
   ];
 
   const goTo = (route) => {
