@@ -1,4 +1,3 @@
-// screens/prescription/CreatePrescription.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -11,9 +10,11 @@ import {
   StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
 
 const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId }) => {
+  const { t } = useTranslation();
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [showFormPopup, setShowFormPopup] = useState(false);
   const [diagnosis, setDiagnosis] = useState("");
@@ -63,7 +64,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
     clearSuggestion();
   };
 
-  // 🔹 endpoint موحّد — تفاعل + بدائل + حساسية + حمل معاً
   const checkInteractions = async () => {
     const drugNames = medicines
       .map((m) => m.name.trim())
@@ -167,11 +167,11 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
         if (onSave) onSave();
       } else {
         const errorData = await response.json();
-        Alert.alert("Error", errorData.message || "Failed to save prescription");
+        Alert.alert("Error", errorData.message || t("createPrescription.saveFailed"));
       }
     } catch (err) {
       console.error("Error saving prescription:", err);
-      Alert.alert("Error", "Failed to save prescription. Please try again.");
+      Alert.alert("Error", t("createPrescription.saveFailedRetry"));
     }
   };
 
@@ -186,9 +186,9 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
       >
         <View style={styles.overlay}>
           <View style={styles.confirmCard}>
-            <Text style={styles.confirmTitle}>Create Prescription</Text>
+            <Text style={styles.confirmTitle}>{t("createPrescription.createTitle")}</Text>
             <Text style={styles.confirmText}>
-              Do you want to create a prescription for this patient?
+              {t("createPrescription.createConfirm")}
             </Text>
 
             <View style={{ gap: 12, width: "100%" }}>
@@ -199,7 +199,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                 }}
                 style={styles.primaryBtn}
               >
-                <Text style={styles.primaryBtnText}>Yes</Text>
+                <Text style={styles.primaryBtnText}>{t("createPrescription.yes")}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -209,7 +209,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                 }}
                 style={styles.dangerBtn}
               >
-                <Text style={styles.dangerBtnText}>No</Text>
+                <Text style={styles.dangerBtnText}>{t("createPrescription.no")}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -226,74 +226,73 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
         <View style={styles.overlay}>
           <View style={styles.formCard}>
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.formTitle}>Prescription Details</Text>
+              <Text style={styles.formTitle}>{t("createPrescription.prescriptionDetails")}</Text>
 
               <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>Diagnosis</Text>
+                <Text style={styles.label}>{t("createPrescription.diagnosis")}</Text>
                 <TextInput
                   value={diagnosis}
                   onChangeText={setDiagnosis}
-                  placeholder="Enter diagnosis"
+                  placeholder={t("createPrescription.diagnosisPlaceholder")}
                   style={styles.input}
                 />
               </View>
 
               <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>Notes</Text>
+                <Text style={styles.label}>{t("createPrescription.notes")}</Text>
                 <TextInput
                   value={notes}
                   onChangeText={setNotes}
-                  placeholder="General notes"
+                  placeholder={t("createPrescription.notesPlaceholder")}
                   multiline
                   numberOfLines={3}
                   style={[styles.input, styles.textarea]}
                 />
               </View>
 
-              <Text style={styles.sectionTitle}>Medicines</Text>
+              <Text style={styles.sectionTitle}>{t("createPrescription.medicines")}</Text>
 
               {medicines.map((med, index) => (
                 <View key={index} style={styles.medicineBox}>
                   <TextInput
-                    placeholder="Medicine Name"
+                    placeholder={t("createPrescription.medicineNamePlaceholder")}
                     value={med.name}
-                    onChangeText={(t) => handleMedicineChange(index, "name", t)}
+                    onChangeText={(t2) => handleMedicineChange(index, "name", t2)}
                     style={[styles.input, { marginBottom: 8 }]}
                   />
 
                   {suggestion?.field === `medicine-${index}` && (
                     <View style={styles.suggestionBox}>
                       <Text style={styles.suggestionText}>
-                        Did you mean{" "}
+                        {t("drugSuggestion.didYouMean")}{" "}
                         <Text style={styles.suggestionValue}>
                           {suggestion.value}
                         </Text>
                         ?
                       </Text>
                       <TouchableOpacity onPress={() => acceptSuggestion(index)}>
-                        <Text style={styles.suggestionUseBtn}>Use it</Text>
+                        <Text style={styles.suggestionUseBtn}>{t("drugSuggestion.useIt")}</Text>
                       </TouchableOpacity>
                     </View>
                   )}
-
                   <TextInput
-                    placeholder="Dosage (e.g., 500mg)"
+                    placeholder={t("createPrescription.dosagePlaceholder")}
                     value={med.dosage}
-                    onChangeText={(t) => handleMedicineChange(index, "dosage", t)}
+                    onChangeText={(t2) => handleMedicineChange(index, "dosage", t2)}
                     style={[styles.input, { marginBottom: 8 }]}
                   />
                   <TextInput
-                    placeholder="Boxes"
+                    placeholder={t("createPrescription.boxesPlaceholder")}
                     value={med.boxes}
-                    onChangeText={(t) => handleMedicineChange(index, "boxes", t)}
+                    onChangeText={(t2) => handleMedicineChange(index, "boxes", t2)}
                     keyboardType="numeric"
                     style={[styles.input, { marginBottom: 8 }]}
                   />
                   <TextInput
-                    placeholder="Instructions"
+                    placeholder={t("createPrescription.instructionsPlaceholder")}
                     value={med.instructions}
-                    onChangeText={(t) =>
-                      handleMedicineChange(index, "instructions", t)
+                    onChangeText={(t2) =>
+                      handleMedicineChange(index, "instructions", t2)
                     }
                     style={styles.input}
                   />
@@ -305,7 +304,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                 style={styles.addMedicineBtn}
               >
                 <Text style={styles.addMedicineBtnText}>
-                  + Add Another Medicine
+                  {t("createPrescription.addAnotherMedicine")}
                 </Text>
               </TouchableOpacity>
 
@@ -316,7 +315,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                   style={[styles.primaryBtn, checking && styles.btnDisabled]}
                 >
                   <Text style={styles.primaryBtnText}>
-                    {checking ? "Checking Safety..." : "Save Prescription"}
+                    {checking ? t("createPrescription.checkingSafety") : t("createPrescription.savePrescription")}
                   </Text>
                 </TouchableOpacity>
 
@@ -327,7 +326,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                   }}
                   style={styles.dangerBtn}
                 >
-                  <Text style={styles.dangerBtnText}>Cancel</Text>
+                  <Text style={styles.dangerBtnText}>{t("createPrescription.cancel")}</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -345,9 +344,9 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
         <View style={styles.overlay}>
           <View style={styles.formCard}>
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.warningTitle}>Warning : Safety Concerns ⚠️</Text>
+              <Text style={styles.warningTitle}>{t("createPrescription.safetyWarningTitle")}</Text>
               <Text style={styles.warningSubtitle}>
-                Please review before saving:
+                {t("createPrescription.reviewBeforeSaving")}
               </Text>
 
               <View style={{ gap: 12, marginBottom: 20 }}>
@@ -376,24 +375,24 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                           : styles.textModerate,
                       ]}
                     >
-                      Severity :{" "}
+                      {t("createPrescription.severity")}{" "}
                       {w.severity === "Major"
-                        ? "Major 🔴"
+                        ? t("createPrescription.major")
                         : w.severity === "Minor"
-                        ? "Minor 🟡"
-                        : "Moderate 🟠"}
+                        ? t("createPrescription.minor")
+                        : t("createPrescription.moderate")}
                     </Text>
 
                     {w.severity_confidence === "UNCERTAIN" && (
                       <Text style={styles.uncertainNote}>
-                        Model estimate only — verify clinically.
+                        {t("createPrescription.uncertainNote")}
                       </Text>
                     )}
 
                     {w.alternatives && w.alternatives.length > 0 && (
                       <View style={styles.altSection}>
                         <Text style={styles.altLabel}>
-                          Alternatives Suggestions:{" "}
+                          {t("createPrescription.alternativesSuggestions")}{" "}
                           <Text style={{ fontWeight: "700" }}>{w.alt_for}</Text>
                         </Text>
                         <View style={styles.altChips}>
@@ -404,7 +403,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                           ))}
                         </View>
                         <Text style={styles.altNote}>
-                          Initial Suggestions - Doctor Decides
+                          {t("createPrescription.initialSuggestions")}
                         </Text>
                       </View>
                     )}
@@ -414,19 +413,19 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                 {allergyWarnings.map((a, i) => (
                   <View key={`alg-${i}`} style={styles.allergyCard}>
                     <Text style={styles.allergyText}>
-                      🤧 Patient allergic to:{" "}
+                      🤧 {t("createPrescription.patientAllergicTo")}{" "}
                       <Text style={{ fontWeight: "700" }}>
                         {a.medication || a.allergen}
                       </Text>
                     </Text>
                     <Text style={styles.allergyNote}>{a.note}</Text>
                     {a.risk && (
-                      <Text style={styles.allergyRisk}>Risk: {a.risk}</Text>
+                      <Text style={styles.allergyRisk}>{t("createPrescription.risk")} {a.risk}</Text>
                     )}
                     {a.cross_reactive_drugs && a.cross_reactive_drugs.length > 0 && (
                       <View style={styles.altSection}>
                         <Text style={styles.altLabel}>
-                          Drugs that may cause similar reaction:
+                          {t("createPrescription.similarReactionDrugs")}
                         </Text>
                         <View style={styles.altChips}>
                           {a.cross_reactive_drugs.slice(0, 5).map((drug, j) => (
@@ -443,24 +442,23 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                 {pregnancyWarnings.map((p, i) => (
                   <View key={`preg-${i}`} style={styles.pregnancyCard}>
                     <Text style={styles.pregnancyText}>
-                      🤰 {p.medication} — Category {p.category}
+                      🤰 {p.medication} — {t("createPrescription.category")} {p.category}
                     </Text>
                     <Text style={styles.pregnancySubText}>{p.warning}</Text>
                   </View>
                 ))}
               </View>
-
               <View style={{ gap: 12 }}>
                 <TouchableOpacity onPress={saveToServer} style={styles.primaryBtn}>
                   <Text style={styles.primaryBtnText}>
-                    I Understood the Risks - Save Prescription
+                    {t("createPrescription.understoodRisks")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => setShowInteractionPopup(false)}
                   style={styles.dangerBtn}
                 >
-                  <Text style={styles.dangerBtnText}>Cancel - Edit Drugs</Text>
+                  <Text style={styles.dangerBtnText}>{t("createPrescription.cancelEditDrugs")}</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>

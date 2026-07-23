@@ -114,15 +114,14 @@ export default function PatientScheduleCall({
     }
 
     const url = `tel:${phone}`;
-    const supported = await Linking.canOpenURL(url);
-    if (!supported) {
-      setError(t("patientScheduleCall.dialerUnavailable"));
-      return;
-    }
-
+   try {
     callWasOpenedRef.current = true;
     await Linking.openURL(url);
-  };
+  } catch (err) {
+    callWasOpenedRef.current = false;
+    setError(t("patientScheduleCall.dialerUnavailable"));
+  }
+};
 
   const handleEndCallSuccess = () => {
     setShowEndCallModal(false);

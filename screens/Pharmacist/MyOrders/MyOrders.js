@@ -1,4 +1,3 @@
-// screens/pharmacist/MyOrders.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -12,10 +11,12 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import PharmacistHeader from "../../Components/header/PharmacistHeader";
 import Footer from "../../Components/footer/Footer";
 
 export default function MyOrders() {
+  const { t } = useTranslation();
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -60,7 +61,7 @@ export default function MyOrders() {
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Request failed");
+        throw new Error(serverError.message || t("myOrdersScreen.requestFailed"));
       }
 
       const data = await response.json();
@@ -70,7 +71,7 @@ export default function MyOrders() {
       setTotalPages(data.meta?.last_page || 1);
     } catch (err) {
       console.error("Failed fetching orders:", err);
-      setError(err?.message || "Failed to load orders.");
+      setError(err?.message || t("myOrdersScreen.loadOrdersFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +97,7 @@ export default function MyOrders() {
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Request failed");
+        throw new Error(serverError.message || t("myOrdersScreen.requestFailed"));
       }
 
       const data = await response.json();
@@ -105,7 +106,7 @@ export default function MyOrders() {
       setDeliveryPage(data.meta?.current_page || 1);
       setDeliveryTotalPages(data.meta?.last_page || 1);
     } catch (err) {
-      setDeliveryError(err.message || "Failed to load delivery orders");
+      setDeliveryError(err.message || t("myOrdersScreen.loadDeliveryFailed"));
     } finally {
       setDeliveryLoading(false);
     }
@@ -131,7 +132,7 @@ export default function MyOrders() {
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Request failed");
+        throw new Error(serverError.message || t("myOrdersScreen.requestFailed"));
       }
 
       const data = await response.json();
@@ -140,7 +141,7 @@ export default function MyOrders() {
       setPastPage(data.meta?.current_page || 1);
       setPastTotalPages(data.meta?.last_page || 1);
     } catch (err) {
-      setPastError(err.message || "Failed to load past orders");
+      setPastError(err.message || t("myOrdersScreen.loadPastFailed"));
     } finally {
       setPastLoading(false);
     }
@@ -174,7 +175,6 @@ export default function MyOrders() {
           },
         }
       );
-
       const result = await response.json();
 
       if (result.status === "success") {
@@ -203,7 +203,7 @@ export default function MyOrders() {
         <Text
           style={[styles.pageBtnText, pageNum === 1 && styles.pageBtnTextDisabled]}
         >
-          Previous
+          {t("myOrdersScreen.previous")}
         </Text>
       </TouchableOpacity>
 
@@ -222,7 +222,7 @@ export default function MyOrders() {
             pageNum === total && styles.pageBtnTextDisabled,
           ]}
         >
-          Next
+          {t("common.next")}
         </Text>
       </TouchableOpacity>
     </View>
@@ -235,9 +235,9 @@ export default function MyOrders() {
 
         {/* Pharmacist Accepted Orders */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Receipts</Text>
+          <Text style={styles.sectionTitle}>{t("myOrdersScreen.yourReceipts")}</Text>
           <Text style={styles.sectionSubtitle}>
-            Make your orders ready for delivery or pickup
+            {t("myOrdersScreen.readySubtitle")}
           </Text>
 
           {isLoading ? (
@@ -249,7 +249,7 @@ export default function MyOrders() {
                   <View key={order.id} style={styles.card}>
                     <Text style={styles.patientName}>{order.patient}</Text>
                     <Text style={styles.sourceText}>
-                      <Text style={styles.labelCyan}>Source: </Text>
+                      <Text style={styles.labelCyan}>{t("myOrdersScreen.source")} </Text>
                       {order.source}
                     </Text>
 
@@ -262,10 +262,10 @@ export default function MyOrders() {
                             </Text>
                             <View style={{ marginLeft: 12 }}>
                               <Text style={styles.medDetail}>
-                                Box: {med.quantity || med.boxes}
+                                {t("myOrdersScreen.box")} {med.quantity || med.boxes}
                               </Text>
                               <Text style={styles.medDetail}>
-                                Price per box: {med.price_per_unit}
+                                {t("myOrdersScreen.pricePerBox")} {med.price_per_unit}
                               </Text>
                             </View>
                           </View>
@@ -282,9 +282,11 @@ export default function MyOrders() {
                         </TouchableOpacity>
                       )}
                     </View>
-
                     <Text style={styles.totalText}>
-                      Total: {order.total_quantity} items - {order.total_medicine_price} $
+                      {t("myOrdersScreen.totalItems", {
+                        qty: order.total_quantity,
+                        price: order.total_medicine_price,
+                      })}
                     </Text>
 
                     <TouchableOpacity
@@ -312,10 +314,10 @@ export default function MyOrders() {
                         ]}
                       >
                         {loadingId === order.id
-                          ? "Processing..."
+                          ? t("myOrdersScreen.processing")
                           : order.status === "ready_for_delivery"
-                          ? "Ready for Delivery"
-                          : "Mark as Ready"}
+                          ? t("myOrdersScreen.readyForDelivery")
+                          : t("myOrdersScreen.markAsReady")}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -331,23 +333,22 @@ export default function MyOrders() {
           ) : error ? (
             <Text style={styles.errorText}>{error}</Text>
           ) : (
-            <Text style={styles.emptyText}>No Orders Found</Text>
+            <Text style={styles.emptyText}>{t("myOrdersScreen.noOrdersFound")}</Text>
           )}
         </View>
 
         {/* Orders Assigned to Delivery */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Orders Assigned to Delivery</Text>
+          <Text style={styles.sectionTitle}>{t("myOrdersScreen.assignedToDelivery")}</Text>
           <Text style={styles.sectionSubtitle}>
-            Track Orders currently assigned to delivery agents
+            {t("myOrdersScreen.trackSubtitle")}
           </Text>
-
           {!deliveryLoadBtn ? (
             <TouchableOpacity
               onPress={() => setDeliveryLoadBtn(true)}
               style={styles.loadBtn}
             >
-              <Text style={styles.loadBtnText}>Load Orders</Text>
+              <Text style={styles.loadBtnText}>{t("myOrdersScreen.loadOrders")}</Text>
             </TouchableOpacity>
           ) : deliveryLoading ? (
             <ActivityIndicator size="large" color="#39CCCC" style={{ marginVertical: 20 }} />
@@ -361,23 +362,23 @@ export default function MyOrders() {
                   return (
                     <View key={order.order_id} style={styles.card}>
                       <Text style={styles.patientName}>
-                        Order #{order.order_id}
+                        {t("myOrdersScreen.orderNumber", { id: order.order_id })}
                       </Text>
 
                       <Text style={styles.sourceText}>
-                        <Text style={styles.labelCyan}>Status: </Text>
+                        <Text style={styles.labelCyan}>{t("myOrdersScreen.status")} </Text>
                         {agent ? agent?.driver_status : order.message}
                       </Text>
 
                       <Text style={styles.sourceText}>
                         {delivery ? (
                           <>
-                            <Text style={styles.labelCyan}>Assigned at: </Text>
+                            <Text style={styles.labelCyan}>{t("myOrdersScreen.assignedAt")} </Text>
                             {new Date(delivery?.assigned_at)?.toLocaleString()}
                           </>
                         ) : (
                           <>
-                            <Text style={styles.labelCyan}>Created at: </Text>
+                            <Text style={styles.labelCyan}>{t("myOrdersScreen.createdAt")} </Text>
                             {new Date(order?.created_at)?.toLocaleString()}
                           </>
                         )}
@@ -392,7 +393,7 @@ export default function MyOrders() {
                           style={styles.viewMedsBtn}
                         >
                           <Text style={styles.viewMedsBtnText}>
-                            View Medications
+                            {t("myOrdersScreen.viewMedications")}
                           </Text>
                         </TouchableOpacity>
                       )}
@@ -407,11 +408,11 @@ export default function MyOrders() {
                           <View style={{ flex: 1 }}>
                             <Text style={styles.agentName}>{agent.name}</Text>
                             <Text style={styles.agentDetail}>
-                              <Text style={styles.labelCyan}>Vehicle: </Text>
+                              <Text style={styles.labelCyan}>{t("myOrdersScreen.vehicle")} </Text>
                               {agent.vehicle_type} • {agent.plate_number}
                             </Text>
                             <Text style={styles.agentDetail}>
-                              <Text style={styles.labelCyan}>Phone: </Text>
+                              <Text style={styles.labelCyan}>{t("myOrdersScreen.phone")} </Text>
                               {agent?.phone}
                             </Text>
                           </View>
@@ -431,21 +432,20 @@ export default function MyOrders() {
           ) : deliveryError ? (
             <Text style={styles.errorText}>{deliveryError}</Text>
           ) : (
-            <Text style={styles.emptyText}>No Delivery Orders Found</Text>
+            <Text style={styles.emptyText}>{t("myOrdersScreen.noDeliveryOrders")}</Text>
           )}
         </View>
-
         {/* Past Orders */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Past Orders</Text>
-          <Text style={styles.sectionSubtitle}>Check your past orders here</Text>
+          <Text style={styles.sectionTitle}>{t("myOrdersScreen.pastOrders")}</Text>
+          <Text style={styles.sectionSubtitle}>{t("myOrdersScreen.pastSubtitle")}</Text>
 
           {!pastLoadBtn ? (
             <TouchableOpacity
               onPress={() => setPastLoadBtn(true)}
               style={styles.loadBtn}
             >
-              <Text style={styles.loadBtnText}>Load Orders</Text>
+              <Text style={styles.loadBtnText}>{t("myOrdersScreen.loadOrders")}</Text>
             </TouchableOpacity>
           ) : pastLoading ? (
             <ActivityIndicator size="large" color="#39CCCC" style={{ marginVertical: 20 }} />
@@ -455,39 +455,39 @@ export default function MyOrders() {
                 {pastOrders.map((order) => (
                   <View key={order.order_id} style={styles.card}>
                     <Text style={styles.patientName}>
-                      Order #{order.order_id}
+                      {t("myOrdersScreen.orderNumber", { id: order.order_id })}
                     </Text>
 
                     <Text style={styles.deliveredAt}>
                       <Text style={styles.labelDarkBlueBig}>
-                        Delivered at:{" "}
+                        {t("myOrdersScreen.deliveredAt")}{" "}
                       </Text>
                       {new Date(order.delivered_at).toLocaleString()}
                     </Text>
 
                     {order.patient ? (
                       <>
-                        <Text style={styles.sectionSubHeading}>Patient:</Text>
+                        <Text style={styles.sectionSubHeading}>{t("myOrdersScreen.patient")}</Text>
                         <View style={{ marginLeft: 12 }}>
                           <Text style={styles.detailLine}>
-                            <Text style={styles.labelCyan}>Name: </Text>
+                            <Text style={styles.labelCyan}>{t("myOrdersScreen.name")} </Text>
                             {order.patient.name}
                           </Text>
                           <Text style={styles.detailLine}>
-                            <Text style={styles.labelCyan}>Address: </Text>
+                            <Text style={styles.labelCyan}>{t("myOrdersScreen.address")} </Text>
                             {order.patient.address}
                           </Text>
                           <Text style={styles.detailLine}>
-                            <Text style={styles.labelCyan}>Phone: </Text>
+                            <Text style={styles.labelCyan}>{t("myOrdersScreen.phone")} </Text>
                             {order.patient.phone}
                           </Text>
                         </View>
                       </>
                     ) : (
-                      <Text style={styles.detailLine}>Unknown patient</Text>
+                      <Text style={styles.detailLine}>{t("myOrdersScreen.unknownPatient")}</Text>
                     )}
 
-                    <Text style={styles.sectionSubHeading}>Medications:</Text>
+                    <Text style={styles.sectionSubHeading}>{t("myOrdersScreen.medicationsLabel")}</Text>
                     {order.medications?.length > 0 ? (
                       order.medications.map((med, index) => (
                         <View key={index} style={{ marginLeft: 12, marginTop: 4 }}>
@@ -496,36 +496,35 @@ export default function MyOrders() {
                           </Text>
                           <View style={{ marginLeft: 12 }}>
                             <Text style={styles.medDetail}>
-                              Box: {med.quantity}
+                              {t("myOrdersScreen.box")} {med.quantity}
                             </Text>
                             <Text style={styles.medDetail}>
-                              Price per box: {med.price}
+                              {t("myOrdersScreen.pricePerBox")} {med.price}
                             </Text>
                           </View>
                         </View>
                       ))
                     ) : (
-                      <Text style={styles.detailLine}>Unknown medications</Text>
+                      <Text style={styles.detailLine}>{t("myOrdersScreen.unknownMedications")}</Text>
                     )}
-
                     <Text style={styles.totalTextBig}>
-                      Total: ${order.total_medicine_price}
+                      {t("myOrdersScreen.total", { amount: order.total_medicine_price })}
                     </Text>
 
-                    <Text style={styles.sectionSubHeading}>Delivered By:</Text>
+                    <Text style={styles.sectionSubHeading}>{t("myOrdersScreen.deliveredBy")}</Text>
                     {order.delivery ? (
                       <View style={{ marginLeft: 12 }}>
                         <Text style={styles.detailLine}>
-                          <Text style={styles.labelCyan}>Name: </Text>
+                          <Text style={styles.labelCyan}>{t("myOrdersScreen.name")} </Text>
                           {order.delivery.name}
                         </Text>
                         <Text style={styles.detailLine}>
-                          <Text style={styles.labelCyan}>Phone: </Text>
+                          <Text style={styles.labelCyan}>{t("myOrdersScreen.phone")} </Text>
                           {order.delivery.phone}
                         </Text>
                       </View>
                     ) : (
-                      <Text style={styles.detailLine}>Unknown delivery agent</Text>
+                      <Text style={styles.detailLine}>{t("myOrdersScreen.unknownDeliveryAgent")}</Text>
                     )}
                   </View>
                 ))}
@@ -540,7 +539,7 @@ export default function MyOrders() {
           ) : pastError ? (
             <Text style={styles.errorText}>{pastError}</Text>
           ) : (
-            <Text style={styles.emptyText}>No Past Orders Found</Text>
+            <Text style={styles.emptyText}>{t("myOrdersScreen.noPastOrders")}</Text>
           )}
         </View>
 
@@ -556,7 +555,7 @@ export default function MyOrders() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Medications</Text>
+            <Text style={styles.modalTitle}>{t("myOrdersScreen.medicationsModalTitle")}</Text>
 
             {selectedOrderMeds.length > 0 ? (
               <View style={{ gap: 10 }}>
@@ -567,7 +566,7 @@ export default function MyOrders() {
                         {med.name} - {med.dosage}
                       </Text>
                       <Text style={styles.medRowQty}>
-                        Quantity: {med.quantity}
+                        {t("myOrdersScreen.quantity")} {med.quantity}
                       </Text>
                     </View>
                     <Text style={styles.medRowPrice}>${med.price}</Text>
@@ -575,14 +574,14 @@ export default function MyOrders() {
                 ))}
               </View>
             ) : (
-              <Text style={styles.emptyText}>No medications found</Text>
+              <Text style={styles.emptyText}>{t("myOrdersScreen.noMedicationsFound")}</Text>
             )}
 
             <TouchableOpacity
               onPress={() => setShowMedsModal(false)}
               style={styles.closeModalBtn}
             >
-              <Text style={styles.closeModalBtnText}>Close</Text>
+              <Text style={styles.closeModalBtnText}>{t("myOrdersScreen.close")}</Text>
             </TouchableOpacity>
           </View>
         </View>
