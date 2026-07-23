@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet,Platform,I18nManager } from "react-native";
 
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useNavigationState } from "@react-navigation/native";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../common/LanguageSwitcher";
@@ -10,26 +10,31 @@ import { colors } from "../../../constants/colors";
 
 const DeliveryHeader = () => {
     console.log("RTL:", I18nManager.isRTL);
-  const navigation = useNavigation();
-  const route = useRoute();
   const { t } = useTranslation();
+    const navigation = useNavigation();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const isActive = (screenName) => {
-    return route.name === screenName;
-  };
+    const currentRoute = useNavigationState(
+      (state) => state?.routes[state.index]?.name
+    );
+  
+    const navItems = [
+      { label: t("header.home"), route: "DeliveryHome" },
+      { label: t("header.newOrders"), route: "NewOrders" },
+      { label: t("header.myOrders"), route: "MyOrders" },
+    ];
+  
 
   const navigate = (screen) => {
     navigation.navigate(screen);
-    setMenuOpen(false);
+    setIsMenuOpen(false);
   };
 
 return (
 <View style={styles.nav}>
 
   {/* Logo */}
-  <TouchableOpacity>
+  <TouchableOpacity onPress={() => navigate("DeliveryHome")}>
     <Image
       source={require("../../../assets/Logo-dark.png")}
       style={styles.logo}
@@ -45,10 +50,10 @@ return (
 
     <TouchableOpacity 
       style={styles.menuButton}
-      onPress={()=>setMenuOpen(!menuOpen)}
+      onPress={()=>setIsMenuOpen(!isMenuOpen)}
     >
       <Ionicons
-        name={menuOpen ? "close" : "menu"}
+        name={isMenuOpen ? "close" : "menu"}
         size={30}
         color="#052443"
       />
@@ -58,21 +63,44 @@ return (
 
 
   {/* Dropdown */}
-  {menuOpen && (
+  {isMenuOpen && (
     <View style={styles.mobileMenu}>
 
-      <Text style={styles.link}>
-        {t("header.home")}
-      </Text>
+  <TouchableOpacity onPress={() => navigate("DeliveryHome")}>
+  <Text
+    style={
+      currentRoute === "DeliveryHome"
+        ? styles.activeLink
+        : styles.link
+    }
+  >
+    {t("header.home")}
+  </Text>
+</TouchableOpacity>
 
-      <Text style={styles.link}>
-        {t("header.newOrders")}
-      </Text>
+<TouchableOpacity onPress={() => navigate("NewOrders")}>
+  <Text
+    style={
+      currentRoute === "NewOrders"
+        ? styles.activeLink
+        : styles.link
+    }
+  >
+    {t("header.newOrders")}
+  </Text>
+</TouchableOpacity>
 
-      <Text style={styles.link}>
-        {t("header.myOrders")}
-      </Text>
-
+<TouchableOpacity onPress={() => navigate("MyOrders")}>
+  <Text
+    style={
+      currentRoute === "MyOrders"
+        ? styles.activeLink
+        : styles.link
+    }
+  >
+    {t("header.myOrders")}
+  </Text>
+</TouchableOpacity>
 
       <View style={styles.badge}>
 
