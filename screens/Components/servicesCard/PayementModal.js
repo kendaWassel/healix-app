@@ -1,4 +1,3 @@
-// components/PaymentModal.js
 import React, { useState } from "react";
 import {
   View,
@@ -9,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function PaymentModal({
   isOpen,
@@ -16,14 +16,15 @@ export default function PaymentModal({
   onPaymentSuccess,
   paymentType = "service",
 }) {
+  const { t } = useTranslation();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
 
   const getPaymentTypeLabel = () => {
     const labels = {
-      doctor: "Doctor Consultation",
-      delivery: "Delivery and Pharmacy Order",
-      careprovider: "Care Provider Session",
+      doctor: t("paymentModal.doctorConsultation"),
+      delivery: t("paymentModal.deliveryOrder"),
+      careprovider: t("paymentModal.careProviderSession"),
     };
 
     return labels[paymentType];
@@ -64,7 +65,7 @@ export default function PaymentModal({
                   color="#052443"
                   style={{ marginBottom: 12 }}
                 />
-                <Text style={styles.title}>Payment Required</Text>
+                <Text style={styles.title}>{t("paymentModal.paymentRequired")}</Text>
                 <Text style={styles.subtitle}>{getPaymentTypeLabel()}</Text>
               </View>
 
@@ -77,19 +78,19 @@ export default function PaymentModal({
                   {isProcessing ? (
                     <>
                       <ActivityIndicator color="#fff" size="small" />
-                      <Text style={styles.payBtnText}>Processing Payment...</Text>
+                      <Text style={styles.payBtnText}>{t("paymentModal.processingPayment")}</Text>
                     </>
                   ) : (
                     <>
                       <Ionicons name="card-outline" size={20} color="#fff" />
-                      <Text style={styles.payBtnText}>Pay Now</Text>
+                      <Text style={styles.payBtnText}>{t("paymentModal.payNow")}</Text>
                     </>
                   )}
                 </TouchableOpacity>
 
                 {!isProcessing && (
                   <TouchableOpacity onPress={handleClose} style={styles.cancelBtn}>
-                    <Text style={styles.cancelBtnText}>Cancel</Text>
+                    <Text style={styles.cancelBtnText}>{t("common.cancel")}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -102,9 +103,9 @@ export default function PaymentModal({
                 color="#22c55e"
                 style={{ marginBottom: 12 }}
               />
-              <Text style={styles.title}>Payment Successful!</Text>
+              <Text style={styles.title}>{t("paymentModal.paymentSuccessful")}</Text>
               <Text style={styles.successText}>
-                Your payment has been processed successfully.
+                {t("paymentModal.paymentSuccessText")}
               </Text>
             </View>
           )}
@@ -113,7 +114,6 @@ export default function PaymentModal({
     </Modal>
   );
 }
-
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,

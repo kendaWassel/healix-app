@@ -1,62 +1,64 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
   ActivityIndicator, Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-
-const accountTypes = [
-  {
-    key: "pharmacist",
-    title: "For Pharmacists",
-    desc: "Receive and process medications orders",
-    icon: "medical",
-    dest: "PharmacistRegister",
-  },
-  {
-    key: "doctor",
-    title: "For Doctors",
-    desc: "Provide online consultations",
-    icon: "person",
-    dest: "DoctorRegister",
-  },
-  {
-    key: "patient",
-    title: "For Patients",
-    desc: "Access a network of trusted healthcare professionals",
-    icon: "person-outline",
-    dest: "PatientRegister",
-  },
-  {
-    key: "delivery",
-    title: "For Delivery Agents",
-    desc: "Deliver medications or transport care providers safely",
-    icon: "car",
-    dest: "DeliveryRegister",
-  },
-  {
-    key: "nurse",
-    title: "For Nurses",
-    desc: "Provide at-home medical care",
-    icon: "medkit",
-    dest: "CareProviderRegister",
-  },
-  {
-    key: "physiotherapist",
-    title: "For Physiotherapists",
-    desc: "Provide at-home physical care",
-    icon: "walk",
-    dest: "CareProviderRegister",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export default function NewAccountSetup() {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const navigation = useNavigation();
+
+  const accountTypes = [
+    {
+      key: "pharmacist",
+      title: t("newAccountSetup.pharmacistTitle"),
+      desc: t("newAccountSetup.pharmacistDesc"),
+      icon: "medical",
+      dest: "PharmacistRegister",
+    },
+    {
+      key: "doctor",
+      title: t("newAccountSetup.doctorTitle"),
+      desc: t("newAccountSetup.doctorDesc"),
+      icon: "person",
+      dest: "DoctorRegister",
+    },
+    {
+      key: "patient",
+      title: t("newAccountSetup.patientTitle"),
+      desc: t("newAccountSetup.patientDesc"),
+      icon: "person-outline",
+      dest: "PatientRegister",
+    },
+    {
+      key: "delivery",
+      title: t("newAccountSetup.deliveryTitle"),
+      desc: t("newAccountSetup.deliveryDesc"),
+      icon: "car",
+      dest: "DeliveryRegister",
+    },
+    {
+      key: "nurse",
+      title: t("newAccountSetup.nurseTitle"),
+      desc: t("newAccountSetup.nurseDesc"),
+      icon: "medkit",
+      dest: "CareProviderRegister",
+    },
+    {
+      key: "physiotherapist",
+      title: t("newAccountSetup.physiotherapistTitle"),
+      desc: t("newAccountSetup.physiotherapistDesc"),
+      icon: "walk",
+      dest: "CareProviderRegister",
+    },
+  ];
 
   const handleContinue = async () => {
     if (!selected) return;
@@ -64,11 +66,10 @@ export default function NewAccountSetup() {
     setIsLoading(true);
 
     try {
-      // احتفظ بمنطق الـ API إن أردته، أو احذفه والانتقال مباشرة
       const dest = accountTypes.find((a) => a.key === selected)?.dest;
       if (dest) navigation.navigate(dest);
     } catch (err) {
-      setError(err.message || "Can't continue. Please try again.");
+      setError(err.message || t("newAccountSetup.continueFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -84,8 +85,8 @@ export default function NewAccountSetup() {
         >
           <Ionicons name="arrow-back" size={26} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.title}>New Account Setup</Text>
-        <Text style={styles.subtitle}>Choose your account type</Text>
+        <Text style={styles.title}>{t("newAccountSetup.title")}</Text>
+        <Text style={styles.subtitle}>{t("newAccountSetup.subtitle")}</Text>
         {error && <Text style={styles.error}>{error}</Text>}
       </View>
 
@@ -137,7 +138,7 @@ export default function NewAccountSetup() {
         {isLoading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.continueButtonText}>Continue</Text>
+          <Text style={styles.continueButtonText}>{t("newAccountSetup.continue")}</Text>
         )}
       </TouchableOpacity>
     </ScrollView>
@@ -184,7 +185,6 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 17, fontWeight: "600", color: "#333" },
   cardTitleSelected: { color: "#39CCCC" },
   cardDesc: { fontSize: 13, color: "#666", marginTop: 2 },
-
   continueButton: {
     backgroundColor: "#052443",
     padding: 18,

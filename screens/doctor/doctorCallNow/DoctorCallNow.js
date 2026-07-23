@@ -1,4 +1,3 @@
-// screens/doctor/DoctorCallNow.js
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
@@ -10,9 +9,11 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import DoctorEndCallModal from "./DoctorEndCallModal";
 import DoneModal from "../../patient/DoctorConsultation/booking/DoneModal";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 export default function DoctorCallNow({
   isOpen,
@@ -21,6 +22,7 @@ export default function DoctorCallNow({
   consultationId,
   patient_phone,
 }) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [patientPhone, setPatientPhone] = useState(patient_phone);
@@ -29,7 +31,6 @@ export default function DoctorCallNow({
   const [showConsDone, setShowConsDone] = useState(false);
   const [canCall, setCanCall] = useState(false);
 
-  // تتبّع هل المستخدم غادر التطبيق فعلاً بسبب المكالمة (بديل window.onblur/onfocus)
   const callWasOpenedRef = useRef(false);
   const appState = useRef(AppState.currentState);
 
@@ -56,8 +57,8 @@ export default function DoctorCallNow({
       setIsLoading(true);
       setError(null);
       setCanCall(false);
- 
-     const token = await AsyncStorage.getItem("token");
+
+      const token = await AsyncStorage.getItem("token");
 
       try {
         const response = await fetch(
@@ -71,18 +72,17 @@ export default function DoctorCallNow({
             },
           }
         );
-
         const data = await response.json();
         console.log("Call initiation response: ", data);
 
         if (!response.ok || data.status !== "success") {
-          throw new Error(data.message || "Failed to initiate call");
+          throw new Error(data.message || t("doctorCallNow.callInitiateFailed"));
         }
-        setMessage(data.message || "You can call the patient now");
+        setMessage(data.message || t("doctorCallNow.youCanCallNow"));
         setCanCall(true);
       } catch (err) {
-        setError(err.message || "Failed to initiate call");
-        setMessage(err.message || "Failed to initiate call");
+        setError(err.message || t("doctorCallNow.callInitiateFailed"));
+        setMessage(err.message || t("doctorCallNow.callInitiateFailed"));
         setCanCall(false);
       } finally {
         setIsLoading(false);
@@ -92,16 +92,13 @@ export default function DoctorCallNow({
     initiateCall();
   }, [isOpen, patientId, consultationId]);
 
-  // مراقبة حالة التطبيق — بديل window.onblur/onfocus
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {
-      // التطبيق ذهب للخلفية (المستخدم فتح تطبيق الهاتف للاتصال)
       if (appState.current === "active" && nextState.match(/inactive|background/)) {
         if (callWasOpenedRef.current) {
           // لا شيء الآن — ننتظر العودة
         }
       }
-      // التطبيق عاد للمقدمة
       if (appState.current.match(/inactive|background/) && nextState === "active") {
         if (callWasOpenedRef.current) {
           setTimeout(() => setShowEndCallModal(true), 300);
@@ -117,24 +114,23 @@ export default function DoctorCallNow({
   const handleCallClick = async () => {
     const phone = patientPhone || patient_phone;
     if (!phone) {
-      setError("Patient phone number missing.");
+      setError(t("doctorCallNow.phoneMissing"));
       return;
     }
 
     const url = `tel:${phone}`;
-    const supported = await Linking.canOpenURL(url);
-    if (!supported) {
-      setError("Cannot open phone dialer on this device.");
-      return;
-    }
-
+ try {
     callWasOpenedRef.current = true;
-    await Linking.openURL(url);
-  };
+    await Linking.openURL(url);   
+  } catch (err) {
+    callWasOpenedRef.current = false;
+    setError(t("doctorCallNow.dialerUnavailable"));
+  }
+};
 
   const handleEndCallSuccess = () => {
     setShowEndCallModal(false);
-    setMessage("Call ended successfully.");
+    setMessage(t("doctorCallNow.callEndedSuccess"));
     setTimeout(() => {
       setShowConsDone(true);
     }, 300);
@@ -153,14 +149,14 @@ export default function DoctorCallNow({
           {(patientPhone || patient_phone) && (
             <View style={styles.phoneBox}>
               <Text style={styles.phoneText}>
-                Patient Phone: {patientPhone || patient_phone}
+                {t("doctorCallNow.patientPhone", { phone: patientPhone || patient_phone })}
               </Text>
             </View>
           )}
 
           {isLoading ? (
             <View style={styles.loadingBox}>
-              <Text style={styles.loadingText}>Preparing call...</Text>
+              <Text style={styles.loadingText}>{t("doctorCallNow.preparingCall")}</Text>
             </View>
           ) : (
             <TouchableOpacity
@@ -173,12 +169,12 @@ export default function DoctorCallNow({
               ]}
             >
               <Ionicons name="call" size={18} color="#fff" />
-              <Text style={styles.callBtnText}>Start consultation</Text>
+              <Text style={styles.callBtnText}>{t("doctorCallNow.startConsultation")}</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
-            <Text style={styles.cancelBtnText}>Cancel</Text>
+            <Text style={styles.cancelBtnText}>{t("common.cancel")}</Text>
           </TouchableOpacity>
         </View>
 
@@ -195,7 +191,7 @@ export default function DoctorCallNow({
             setShowConsDone(false);
             onClose();
           }}
-          message="Call completed successfully!"
+          message={t("doctorCallNow.callCompletedSuccess")}
         />
       </View>
     </Modal>

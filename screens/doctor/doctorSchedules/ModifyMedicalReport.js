@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import MedicalReportModal from "../../registers/patient/MedicalReportModal";
 
 export default function ModifyMedicalReport({
@@ -12,6 +13,7 @@ export default function ModifyMedicalReport({
   patientId,
   consultationId,
 }) {
+  const { t } = useTranslation();
   const [editOpen, setEditOpen] = useState(false);
   const [fields, setFields] = useState({
     diagnosis: "",
@@ -67,11 +69,11 @@ export default function ModifyMedicalReport({
         if (onSave) onSave(dataToSubmit);
       } else {
         const errorData = await response.json();
-        Alert.alert("Error", errorData.message || "Failed to update medical report");
+        Alert.alert("Error", errorData.message || t("modifyMedicalReport.updateFailed"));
       }
     } catch (err) {
       console.error("Error updating medical report:", err);
-      Alert.alert("Error", "Failed to update medical report. Please try again.");
+      Alert.alert("Error", t("modifyMedicalReport.updateFailedRetry"));
     }
   };
 
@@ -89,13 +91,13 @@ export default function ModifyMedicalReport({
       isEdit={true}
     >
       <View style={styles.fieldWrapper}>
-        <Text style={styles.label}>Treatment Plan</Text>
+        <Text style={styles.label}>{t("modifyMedicalReport.treatmentPlan")}</Text>
         <TextInput
           value={fields.treatment_plan}
           onChangeText={(text) =>
             setFields({ ...fields, treatment_plan: text })
           }
-          placeholder="Treatment Plan ..."
+          placeholder={t("modifyMedicalReport.treatmentPlanPlaceholder")}
           placeholderTextColor="#9ca3af"
           style={styles.input}
         />

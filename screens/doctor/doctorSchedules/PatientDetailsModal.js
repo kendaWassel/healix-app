@@ -1,4 +1,3 @@
-// screens/doctorSchedules/PatientDetailsModal.js
 import React from "react";
 import {
   View,
@@ -11,8 +10,10 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function PatientDetailsModal({ details, onClose }) {
+  const { t } = useTranslation();
   if (!details) return null;
 
   const chronicDiseases = details.medical_record?.chronic_diseases;
@@ -24,11 +25,11 @@ export default function PatientDetailsModal({ details, onClose }) {
 
   const renderList = (value) => {
     if (!value) {
-      return <Text style={styles.listItem}>• None</Text>;
+      return <Text style={styles.listItem}>• {t("patientDetailsModal.none")}</Text>;
     }
     if (Array.isArray(value)) {
       if (value.length === 0) {
-        return <Text style={styles.listItem}>• None</Text>;
+        return <Text style={styles.listItem}>• {t("patientDetailsModal.none")}</Text>;
       }
       return value.map((item, index) => (
         <Text key={index} style={styles.listItem}>
@@ -46,7 +47,7 @@ export default function PatientDetailsModal({ details, onClose }) {
         <View style={styles.modal}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Patient Details</Text>
+            <Text style={styles.headerTitle}>{t("patientDetailsModal.title")}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Ionicons name="close" size={22} color="#374151" />
             </TouchableOpacity>
@@ -54,51 +55,49 @@ export default function PatientDetailsModal({ details, onClose }) {
 
           <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 8 }}>
             <View style={styles.row}>
-              <Text style={styles.label}>Name:</Text>
-              <Text style={styles.value}>{details.patient_name || "N/A"}</Text>
+              <Text style={styles.label}>{t("patientDetailsModal.name")}</Text>
+              <Text style={styles.value}>{details.patient_name || t("patientDetailsModal.notAvailable")}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Gender:</Text>
-              <Text style={styles.value}>{details.gender || "N/A"}</Text>
+              <Text style={styles.label}>{t("patientDetailsModal.gender")}</Text>
+              <Text style={styles.value}>{details.gender || t("patientDetailsModal.notAvailable")}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Birth Date:</Text>
-              <Text style={styles.value}>{details.birth_date || "N/A"}</Text>
+              <Text style={styles.label}>{t("patientDetailsModal.birthDate")}</Text>
+              <Text style={styles.value}>{details.birth_date || t("patientDetailsModal.notAvailable")}</Text>
             </View>
 
-         
             {details.gender === "female" && (
               <View style={styles.row}>
-                <Text style={styles.label}>Pregnancy Status:</Text>
+                <Text style={styles.label}>{t("patientDetailsModal.pregnancyStatus")}</Text>
                 <Text style={styles.value}>
                   {isPregnant === "yes"
-                    ? " Pregnant"
+                    ? t("patientDetailsModal.pregnant")
                     : isPregnant === "no"
-                    ? "Not Pregnant"
-                    : "Not specified"}
+                    ? t("patientDetailsModal.notPregnant")
+                    : t("patientDetailsModal.notSpecified")}
                 </Text>
               </View>
             )}
-
             <View style={styles.group}>
-              <Text style={styles.label}>Chronic Diseases:</Text>
+              <Text style={styles.label}>{t("patientDetailsModal.chronicDiseases")}</Text>
               {renderList(chronicDiseases)}
             </View>
 
             <View style={styles.group}>
-              <Text style={styles.label}>Previous Surgeries:</Text>
+              <Text style={styles.label}>{t("patientDetailsModal.previousSurgeries")}</Text>
               {renderList(previousSurgeries)}
             </View>
 
             <View style={styles.group}>
-              <Text style={styles.label}>Allergies:</Text>
+              <Text style={styles.label}>{t("patientDetailsModal.allergies")}</Text>
               {renderList(allergies)}
             </View>
 
             <View style={styles.group}>
-              <Text style={styles.label}>Attachments:</Text>
+              <Text style={styles.label}>{t("patientDetailsModal.attachments")}</Text>
 
-              <Text style={styles.subLabel}>Images:</Text>
+              <Text style={styles.subLabel}>{t("patientDetailsModal.images")}</Text>
               {images.length > 0 ? (
                 images.map((image) => (
                   <Image
@@ -112,10 +111,10 @@ export default function PatientDetailsModal({ details, onClose }) {
                   />
                 ))
               ) : (
-                <Text style={styles.value}>No images</Text>
+                <Text style={styles.value}>{t("patientDetailsModal.noImages")}</Text>
               )}
 
-              <Text style={[styles.subLabel, { marginTop: 12 }]}>Files:</Text>
+              <Text style={[styles.subLabel, { marginTop: 12 }]}>{t("patientDetailsModal.files")}</Text>
               {files.length > 0 ? (
                 files.map((file) => (
                   <View key={file.id} style={{ marginBottom: 6 }}>
@@ -127,20 +126,19 @@ export default function PatientDetailsModal({ details, onClose }) {
                       </TouchableOpacity>
                     ) : (
                       <Text style={styles.value}>
-                        {file.file_name || "File"} — link is not available!
+                        {file.file_name || t("patientDetailsModal.file")} — {t("patientDetailsModal.linkUnavailable")}
                       </Text>
                     )}
                   </View>
                 ))
               ) : (
-                <Text style={styles.value}>No files</Text>
+                <Text style={styles.value}>{t("patientDetailsModal.noFiles")}</Text>
               )}
             </View>
           </ScrollView>
-
           <View style={styles.footer}>
             <TouchableOpacity onPress={onClose} style={styles.footerButton}>
-              <Text style={styles.footerButtonText}>Close</Text>
+              <Text style={styles.footerButtonText}>{t("patientDetailsModal.close")}</Text>
             </TouchableOpacity>
           </View>
         </View>

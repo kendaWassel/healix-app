@@ -1,8 +1,11 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../common/LanguageSwitcher";
 
 const LandingHeader = () => {
   const navigation = useNavigation();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.nav}>
@@ -11,23 +14,24 @@ const LandingHeader = () => {
         <Text style={styles.logo}>
           Heal<Text style={{ color: "#39CCCC" }}>ix</Text>
         </Text>
-     
       </TouchableOpacity>
 
       {/* الأزرار */}
       <View style={styles.buttons}>
+        <LanguageSwitcher />
+
         <TouchableOpacity
           style={styles.signInBtn}
           onPress={() => navigation.navigate("Login")}
         >
-          <Text style={styles.signInText}>Sign in</Text>
+          <Text style={styles.signInText}>{t("landingHeader.signIn")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.signUpBtn}
           onPress={() => navigation.navigate("Register")}
         >
-          <Text style={styles.signUpText}>Sign up</Text>
+          <Text style={styles.signUpText}>{t("landingHeader.signUp")}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -48,24 +52,24 @@ const styles = StyleSheet.create({
     borderBottomColor: "#e0e0e0",
     backgroundColor: "#fff",
   },
-  logo: { fontSize: 30, fontWeight: "bold", color: "#052443" },
+  logo: { fontSize: 26, fontWeight: "bold", color: "#052443" },
   logoImg: { width: 110, height: 36 },
-  buttons: { flexDirection: "row", gap: 8 },
+  buttons: { flexDirection: "row", alignItems: "center", gap: 6 },
   signInBtn: {
     backgroundColor: "#052443",
     borderWidth: 2,
     borderColor: "#052443",
     borderRadius: 25,
-    paddingHorizontal: 20,
+    paddingHorizontal: 14,
     paddingVertical: 11,
   },
-  signInText: { color: "#fff", fontWeight: "600", fontSize: 15 },
+  signInText: { color: "#fff", fontWeight: "600", fontSize: 14 },
   signUpBtn: {
     borderWidth: 2,
     borderColor: "#052443",
     borderRadius: 25,
-    paddingHorizontal: 20,
+    paddingHorizontal: 14,
     paddingVertical: 11,
   },
-  signUpText: { color: "#052443", fontWeight: "600", fontSize: 15 },
+  signUpText: { color: "#052443", fontWeight: "600", fontSize: 14 },
 });

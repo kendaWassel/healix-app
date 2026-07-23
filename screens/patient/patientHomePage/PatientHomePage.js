@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   ScrollView, ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import PatientHeader from "../../Components/header/PatientHeader";
 import Footer from "../../Components/footer/Footer";
 import FAID from "./FAID/FAID";
+import AI_Medical_Assistant from "../AIMedicalAssistant/AIMedicalAssistant";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function PatientHomePage() {
   const { t } = useTranslation();
@@ -16,21 +19,146 @@ export default function PatientHomePage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [showSymptomChat, setShowSymptomChat] = useState(false);
 
-  const [patientData] = useState({
-    full_name: "kenda wassel",
-    email: "kendawassel14@gmail.com",
-    phone: "0943779128",
-    password: "123456",
-    gender: "female",
+  const [patientData, setPatientData] = useState({
+    full_name: "",
+    email: "",
+    phone: "",
+    password: "",
+    birth_date: "",
+    gender: "",
     address: "",
   });
 
   const [licenseFileName] = useState("");
 
+  const fetchPatientProfile = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(
+        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/profile",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const serverError = await response.json().catch(() => ({}));
+        throw new Error(serverError.message || t("patientHome.loadProfileFailed"));
+      }
+
+      const data = await response.json();
+      console.log("Patient profile:", data);
+
+      if (data.status === "success" && data.data) {
+        const profile = data.data;
+        setPatientData({
+          full_name: profile.full_name || "",
+          email: profile.email || "",
+          phone: profile.phone || "",
+          password: "",
+          birth_date: profile.birth_date || "",
+          gender: profile.gender || "",
+          address: profile.address || "",
+        });
+      }
+    } catch (err) {
+      console.error("Failed fetching patient profile:", err);
+      setError(err.message || t("patientHome.loadProfileFailed"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPatientProfile();
+  }, []);
+
+  const handleUpdate = async () => {
+    setIsUpdating(true);
+    setError(null);
+    setSuccessMsg(null);
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const updateData = {
+        full_name: patientData.full_name,
+        email: patientData.email,
+        phone: patientData.phone,
+        birth_date: patientData.birth_date,
+        gender: patientData.gender,
+        address: patientData.address,
+      };
+
+      if (patientData.password) {
+        updateData.password = patientData.password;
+      }
+
+      const response = await fetch(
+        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/profile",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updateData),
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok || data.status !== "success") {
+        throw new Error(data.message || t("patientHome.updateFailed"));
+      }
+
+      setSuccessMsg(t("patientHome.updateSuccess"));
+      setPatientData((prev) => ({ ...prev, password: "" }));
+      setTimeout(() => {
+        setSuccessMsg(null);
+        fetchPatientProfile();
+      }, 2000);
+    } catch (err) {
+      setError(err.message || t("patientHome.updateFailed"));
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <View style={styles.screen}>
       <PatientHeader />
+
+      {/* Chat Bot Button */}
+      <View style={styles.chatBotWrapper}>
+        <TouchableOpacity onPress={() => setShowSymptomChat(true)} activeOpacity={0.9}>
+          <LinearGradient
+            colors={["#052443", "#0a3d62"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.chatBotBtn}
+          >
+            <View style={styles.chatBotIconCircle}>
+              <Ionicons name="chatbubble-ellipses" size={24} color="#fff" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.chatBotTitle}>{t("patientHome.checkSymptoms")}</Text>
+              <Text style={styles.chatBotSubtitle}>{t("patientHome.checkSymptomsDesc")}</Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView contentContainerStyle={styles.container}>
         {/* الرأس + زر التحديث */}
         <View style={styles.headerRow}>
@@ -40,6 +168,7 @@ export default function PatientHomePage() {
           </View>
           <TouchableOpacity
             style={[styles.updateBtn, (isUpdating || isLoading) && styles.updateBtnDisabled]}
+            onPress={handleUpdate}
             disabled={isUpdating || isLoading}
           >
             {isUpdating ? (
@@ -65,7 +194,7 @@ export default function PatientHomePage() {
                 <TextInput
                   style={styles.input}
                   value={patientData.full_name}
-                  editable={false}
+                  onChangeText={(t2) => setPatientData({ ...patientData, full_name: t2 })}
                 />
               </View>
             </View>
@@ -78,7 +207,8 @@ export default function PatientHomePage() {
                 <TextInput
                   style={styles.input}
                   value={patientData.email}
-                  editable={false}
+                  onChangeText={(t2) => setPatientData({ ...patientData, email: t2 })}
+                  keyboardType="email-address"
                 />
               </View>
             </View>
@@ -91,7 +221,7 @@ export default function PatientHomePage() {
                 <TextInput
                   style={styles.input}
                   value={patientData.phone}
-                  editable={false}
+                  onChangeText={(t2) => setPatientData({ ...patientData, phone: t2 })}
                 />
               </View>
             </View>
@@ -103,33 +233,14 @@ export default function PatientHomePage() {
                 <Ionicons name="calendar" size={20} color="#39CCCC" />
                 <TextInput
                   style={styles.input}
+                  value={patientData.birth_date}
                   placeholder={t("patientHome.notSet")}
-                  editable={false}
+                  onChangeText={(t2) => setPatientData({ ...patientData, birth_date: t2 })}
                 />
               </View>
             </View>
 
-            {/* كلمة المرور */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("patientHome.password")}</Text>
-              <View style={styles.inputGroup}>
-                <Ionicons name="lock-closed" size={20} color="#39CCCC" />
-                <TextInput
-                  style={styles.input}
-                  value={patientData.password}
-                  secureTextEntry={!passwordShown}
-                  editable={false}
-                  placeholder={t("patientHome.passwordPlaceholder")}
-                />
-                <TouchableOpacity onPress={() => setPasswordShown(!passwordShown)}>
-                  <Ionicons
-                    name={passwordShown ? "eye" : "eye-off"}
-                    size={18}
-                    color="#767676"
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+         
 
             {/* الجنس */}
             <View style={styles.field}>
@@ -153,36 +264,22 @@ export default function PatientHomePage() {
                   style={styles.input}
                   placeholder={t("patientHome.addressPlaceholder")}
                   value={patientData.address}
-                  editable={false}
+                  onChangeText={(t2) => setPatientData({ ...patientData, address: t2 })}
                 />
               </View>
             </View>
 
-            {/* الموقع على الخريطة */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("patientHome.locationInMap")}</Text>
-              <TouchableOpacity style={styles.mapButton} disabled>
-                <Ionicons name="map" size={18} color="#39CCCC" />
-                <Text style={styles.mapButtonText}>{t("patientHome.locationInMap")}</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* ملف التقرير الطبي */}
-            <View style={styles.field}>
-              <Text style={styles.label}>{t("patientHome.medicalReportFile")}</Text>
-              <TouchableOpacity style={styles.fileButton} disabled>
-                <Ionicons name="document-text" size={18} color="#39CCCC" />
-                <Text style={styles.fileButtonText}>
-                  {licenseFileName || t("patientHome.viewFile")}
-                </Text>
-              </TouchableOpacity>
-            </View>
+         
           </View>
         )}
-         <FAID />  
-      <Footer />
+        <FAID />
+        <Footer />
       </ScrollView>
-      
+
+      <AI_Medical_Assistant
+        isOpen={showSymptomChat}
+        onClose={() => setShowSymptomChat(false)}
+      />
     </View>
   );
 }
@@ -235,4 +332,32 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: "#d1d5db", borderRadius: 10, padding: 12,
   },
   fileButtonText: { color: "#374151", fontSize: 14 },
+
+  chatBotWrapper: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  chatBotBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderRadius: 14,
+  },
+  chatBotIconCircle: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    padding: 10,
+    borderRadius: 24,
+  },
+  chatBotTitle: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  chatBotSubtitle: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 12,
+    marginTop: 2,
+  },
 });

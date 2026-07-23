@@ -1,19 +1,22 @@
 import { View, Text, StyleSheet } from "react-native";
+import { useTranslation } from "react-i18next";
 import ServicesCard from "../../Components/servicesCard/ServicesCard";
 
-const services = [
-  { icon: "person", for: "For Patients", desc: "Access a network of trusted healthcare professionals" },
-  { icon: "medkit", for: "For Doctors", desc: "Provide online consultations" },
-  { icon: "flask", for: "For Pharmacists", desc: "Receive and process medications orders" },
-  { icon: "medical", for: "For Nurses", desc: "Provide at-home medical care" },
-  { icon: "walk", for: "For Physiotherapists", desc: "Provide at-home physical care" },
-  { icon: "car", for: "For Delivery Agents", desc: "Get assigned to deliver medications to patients" },
-];
-
 export default function OurServices() {
+  const { t } = useTranslation();
+
+  const services = [
+    { icon: "person", for: t("ourServices.forPatients"), desc: t("ourServices.forPatientsDesc") },
+    { icon: "medkit", for: t("ourServices.forDoctors"), desc: t("ourServices.forDoctorsDesc") },
+    { icon: "flask", for: t("ourServices.forPharmacists"), desc: t("ourServices.forPharmacistsDesc") },
+    { icon: "medical", for: t("ourServices.forNurses"), desc: t("ourServices.forNursesDesc") },
+    { icon: "walk", for: t("ourServices.forPhysiotherapists"), desc: t("ourServices.forPhysiotherapistsDesc") },
+    { icon: "car", for: t("ourServices.forDeliveryAgents"), desc: t("ourServices.forDeliveryAgentsDesc") },
+  ];
+
   return (
     <View>
-      <Text style={styles.sectionTitle}>Our Services</Text>
+      <Text style={styles.sectionTitle}>{t("ourServices.sectionTitle")}</Text>
       <View style={styles.grid}>
         {services.map((service, index) => (
           <ServicesCard key={index} service={service} />

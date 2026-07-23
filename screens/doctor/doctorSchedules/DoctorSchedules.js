@@ -1,4 +1,3 @@
-// screens/doctor/DoctorSchedules.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -10,20 +9,22 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import DoctorHeader from "../../Components/header/DoctorHeader";
 import Footer from "../../Components/footer/Footer";
 import PatientDetailsModal from "./PatientDetailsModal";
 import DoctorCallNow from "../doctorCallNow/DoctorCallNow";
-import { SafeAreaView } from "react-native-safe-area-context";
-
-const FILTERS = [
-  { key: "All", label: "All" },
-  { key: "pending", label: "Pending" },
-  { key: "in_progress", label: "In Progress" },
-  { key: "completed", label: "Completed" },
-];
 
 export default function DoctorSchedules() {
+  const { t } = useTranslation();
+
+  const FILTERS = [
+    { key: "All", label: t("doctorSchedules.all") },
+    { key: "pending", label: t("doctorSchedules.pending") },
+    { key: "in_progress", label: t("doctorSchedules.inProgress") },
+    { key: "completed", label: t("doctorSchedules.completed") },
+  ];
+
   const [schedules, setSchedules] = useState([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("All");
@@ -65,7 +66,7 @@ export default function DoctorSchedules() {
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Request failed");
+        throw new Error(serverError.message || t("doctorSchedules.requestFailed"));
       }
 
       const data = await response.json();
@@ -80,11 +81,11 @@ export default function DoctorSchedules() {
           totalPages,
         }));
       } else {
-        throw new Error("Invalid response format");
+        throw new Error(t("doctorSchedules.invalidResponse"));
       }
     } catch (err) {
       console.error("Failed fetching schedules:", err);
-      setError(err.message || "Failed to load schedules.");
+      setError(err.message || t("doctorSchedules.loadFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -134,14 +135,14 @@ export default function DoctorSchedules() {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch patient details");
+      if (!response.ok) throw new Error(t("doctorSchedules.fetchDetailsFailed"));
 
       const data = await response.json();
       console.log("Patient details:", data);
       setDetails(data.data || data);
-      setSuccessMsg("Details loaded successfully.");
+      setSuccessMsg(t("doctorSchedules.detailsLoaded"));
     } catch (err) {
-      setError(err.message || "Failed to load Details");
+      setError(err.message || t("doctorSchedules.loadDetailsFailed"));
     } finally {
       setSelectedPatientId(null);
       setSelectedCardId(null);
@@ -164,10 +165,10 @@ export default function DoctorSchedules() {
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <View style={styles.cardTop}>
-        <Text style={styles.patientName}>{item.patient_name || "Unknown"}</Text>
+        <Text style={styles.patientName}>{item.patient_name || t("doctorSchedules.unknown")}</Text>
         <View style={[styles.statusBadge, statusStyle(item.status)]}>
           <Text style={[styles.statusText, statusTextStyle(item.status)]}>
-            {item.status || "Unknown"}
+            {item.status || t("doctorSchedules.unknown")}
           </Text>
         </View>
       </View>
@@ -183,7 +184,7 @@ export default function DoctorSchedules() {
           }}
         >
           <Ionicons name="call" size={16} color="#fff" />
-          <Text style={styles.callButtonText}>Call</Text>
+          <Text style={styles.callButtonText}>{t("doctorSchedules.call")}</Text>
         </TouchableOpacity>
       )}
 
@@ -195,7 +196,7 @@ export default function DoctorSchedules() {
           <Text style={styles.timeText}>
             {item.scheduled_at
               ? new Date(item.scheduled_at).toLocaleString()
-              : "Unknown"}
+              : t("doctorSchedules.unknown")}
           </Text>
         </View>
         <TouchableOpacity
@@ -204,7 +205,7 @@ export default function DoctorSchedules() {
           onPress={() => handleViewDetails(item.patient_id, item.consultation_id)}
         >
           <Text style={styles.detailsButtonText}>
-            {selectedCardId === item.consultation_id ? "Loading..." : "View details"}
+            {selectedCardId === item.consultation_id ? t("doctorSchedules.loading") : t("doctorSchedules.viewDetails")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -212,19 +213,19 @@ export default function DoctorSchedules() {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+    <View style={{ flex: 1 }}>
       <DoctorHeader />
 
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.title}>My Schedules</Text>
+          <Text style={styles.title}>{t("doctorSchedules.title")}</Text>
           <View>
             <TouchableOpacity
               style={styles.filterButton}
               onPress={() => setFilterOpen(!filterOpen)}
             >
               <Ionicons name="filter" size={16} color="#052443" />
-              <Text style={styles.filterButtonText}>Filter</Text>
+              <Text style={styles.filterButtonText}>{t("doctorSchedules.filter")}</Text>
             </TouchableOpacity>
 
             {filterOpen && (
@@ -242,21 +243,21 @@ export default function DoctorSchedules() {
             )}
           </View>
         </View>
-        <Text style={styles.subtitle}>Check your schedules here</Text>
+        <Text style={styles.subtitle}>{t("doctorSchedules.checkSchedules")}</Text>
       </View>
 
       {error && <Text style={styles.errorText}>{error}</Text>}
 
       <FlatList
         data={schedules}
-        keyExtractor={(item,index) => String(item.id ?? item.consultation_id ?? `schedule-${index}`)}
+        keyExtractor={(item, index) => String(item.id ?? item.consultation_id ?? `schedule-${index}`)}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           isLoading ? (
             <ActivityIndicator size="large" color="#39CCCC" style={{ marginTop: 30 }} />
           ) : (
-            <Text style={styles.emptyText}>No schedules found.</Text>
+            <Text style={styles.emptyText}>{t("doctorSchedules.noSchedulesFound")}</Text>
           )
         }
         ListFooterComponent={
@@ -268,7 +269,7 @@ export default function DoctorSchedules() {
                 disabled={pagination.currentPage === 1}
               >
                 <Ionicons name="chevron-back" size={16} color="#39CCCC" />
-                <Text style={styles.pageButtonText}>Prev</Text>
+                <Text style={styles.pageButtonText}>{t("doctorSchedules.prev")}</Text>
               </TouchableOpacity>
 
               <Text style={styles.pageInfo}>
@@ -280,14 +281,16 @@ export default function DoctorSchedules() {
                 onPress={handleNextPage}
                 disabled={pagination.currentPage === pagination.totalPages}
               >
-                <Text style={styles.pageButtonText}>Next</Text>
+                <Text style={styles.pageButtonText}>{t("doctorSchedules.next")}</Text>
                 <Ionicons name="chevron-forward" size={16} color="#39CCCC" />
               </TouchableOpacity>
             </View>
           ) : (
-            <Footer />
+          <Footer />  
           )
+          
         }
+        
       />
 
       {details && (
@@ -314,7 +317,7 @@ export default function DoctorSchedules() {
         patient_phone={patientPhone}
         consultationId={selectedConsultationId}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
