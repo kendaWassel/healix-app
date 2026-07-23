@@ -1,4 +1,3 @@
-// screens/doctor/DoctorEndCallModal.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -13,6 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useTranslation } from "react-i18next";
 import PatientDetailsModal from "../doctorSchedules/PatientDetailsModal";
 import CreatePrescription from "../prescription/CreatePrescription";
 import ModifyMedicalReport from "../doctorSchedules/ModifyMedicalReport";
@@ -24,9 +24,10 @@ export default function DoctorEndCallModal({
   patientId,
   onEndSuccess,
 }) {
+  const { t } = useTranslation();
   const [isEnding, setIsEnding] = useState(false);
   const [error, setError] = useState(null);
-  const [message, setMessage] = useState("Consultation is in progress");
+  const [message, setMessage] = useState(t("doctorEndCall.consultationInProgress"));
   const [serviceReason, setServiceReason] = useState("");
   const [type, setType] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
@@ -50,7 +51,7 @@ export default function DoctorEndCallModal({
 
   const handleViewMedicalReport = async () => {
     if (!patientId) {
-      setReportError("Patient ID is missing");
+      setReportError(t("doctorEndCall.patientIdMissing"));
       return;
     }
 
@@ -75,7 +76,7 @@ export default function DoctorEndCallModal({
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Failed to fetch medical report");
+        throw new Error(serverError.message || t("doctorEndCall.fetchReportFailed"));
       }
 
       const data = await response.json();
@@ -85,7 +86,7 @@ export default function DoctorEndCallModal({
       setShowReportModal(true);
     } catch (err) {
       setReportError(
-        err.message || "Failed to load medical report. Please try again."
+        err.message || t("doctorEndCall.loadReportFailedRetry")
       );
     } finally {
       setIsLoadingReport(false);
@@ -99,7 +100,7 @@ export default function DoctorEndCallModal({
       setShowModifyReport(false);
       setCurrentMedicalReport(null);
       setError(null);
-      setMessage("Consultation is in progress");
+      setMessage(t("doctorEndCall.consultationInProgress"));
       setServiceReason("");
       setType("");
       setScheduledTime("");
@@ -138,7 +139,7 @@ export default function DoctorEndCallModal({
 
   const handleEndCall = async () => {
     if (!consultationId) {
-      setError("Consultation ID is missing");
+      setError(t("doctorEndCall.consultationIdMissing"));
       return;
     }
 
@@ -162,17 +163,17 @@ export default function DoctorEndCallModal({
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Failed to end call");
+        throw new Error(serverError.message || t("doctorEndCall.endCallFailed"));
       }
 
       const data = await response.json();
-      setMessage(data.message || "Call ended successfully");
+      setMessage(data.message || t("doctorEndCall.callEndedSuccess"));
 
       setTimeout(() => {
         setShowCareProviderPopup(true);
       }, 500);
     } catch (err) {
-      setError(err.message || "Failed to end call. Please try again.");
+      setError(err.message || t("doctorEndCall.endCallFailedRetry"));
     } finally {
       setIsEnding(false);
     }
@@ -180,15 +181,15 @@ export default function DoctorEndCallModal({
 
   const handleCareProviderRequest = async () => {
     if (!type) {
-      setError("Please select a service type");
+      setError(t("doctorEndCall.selectServiceType"));
       return;
     }
     if (!serviceReason.trim()) {
-      setError("Please enter a reason for the service");
+      setError(t("doctorEndCall.enterReason"));
       return;
     }
     if (!scheduledTime) {
-      setError("Please select a scheduled time");
+      setError(t("doctorEndCall.selectScheduledTime"));
       return;
     }
     setIsSendingRequest(true);
@@ -219,11 +220,11 @@ export default function DoctorEndCallModal({
         setShowPrescriptionPopup(true);
       } else {
         const errorData = await response.json().catch(() => ({}));
-        setError(errorData.message || "Failed to request service");
+        setError(errorData.message || t("doctorEndCall.requestServiceFailed"));
       }
     } catch (err) {
       console.error(`Failed to request ${type}:`, err);
-      setError("Failed to request service. Please try again.");
+      setError(t("doctorEndCall.requestServiceFailedRetry"));
     }
     setIsSendingRequest(false);
   };
@@ -261,7 +262,6 @@ export default function DoctorEndCallModal({
           showsVerticalScrollIndicator={false}
         >
           {!showCareProviderPopup ? (
-            // 🔹 المرحلة 1 — "Consultation is in progress"
             <View style={styles.card}>
               <Text style={styles.message}>{message}</Text>
 
@@ -282,10 +282,9 @@ export default function DoctorEndCallModal({
                 >
                   <Ionicons name="document-text-outline" size={18} color="#fff" />
                   <Text style={styles.primaryBtnText}>
-                    {isLoadingReport ? "Loading..." : "View Medical Report"}
+                    {isLoadingReport ? t("doctorEndCall.loading") : t("doctorEndCall.viewMedicalReport")}
                   </Text>
                 </TouchableOpacity>
-
                 {reportError && (
                   <View style={styles.errorBoxSmall}>
                     <Text style={styles.errorTextSmall}>{reportError}</Text>
@@ -298,21 +297,20 @@ export default function DoctorEndCallModal({
                   style={[styles.dangerBtn, isEnding && styles.btnDisabled]}
                 >
                   <Text style={styles.dangerBtnText}>
-                    {isEnding ? "Ending call..." : "End Call"}
+                    {isEnding ? t("doctorEndCall.endingCall") : t("doctorEndCall.endCall")}
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={onClose} style={styles.outlineBtn}>
-                  <Text style={styles.outlineBtnText}>Close</Text>
+                  <Text style={styles.outlineBtnText}>{t("doctorEndCall.close")}</Text>
                 </TouchableOpacity>
               </View>
             </View>
           ) : (
-            // 🔹 المرحلة 2 — "Request Care Provider" (نفس النافذة، محتوى مختلف)
             <View style={styles.card}>
-              <Text style={styles.title}>Request Care Provider</Text>
+              <Text style={styles.title}>{t("doctorEndCall.requestCareProvider")}</Text>
               <Text style={styles.subtitle}>
-                Choose physiotherapist or nurse
+                {t("doctorEndCall.choosePhysioOrNurse")}
               </Text>
 
               {error && (
@@ -338,7 +336,7 @@ export default function DoctorEndCallModal({
                       type === "physiotherapist" && styles.choiceBtnTextActive,
                     ]}
                   >
-                    Request Physiotherapist
+                    {t("doctorEndCall.requestPhysiotherapist")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -357,32 +355,31 @@ export default function DoctorEndCallModal({
                       type === "nurse" && styles.choiceBtnTextActive,
                     ]}
                   >
-                    Request Nurse
+                    {t("doctorEndCall.requestNurse")}
                   </Text>
                 </TouchableOpacity>
               </View>
 
               <View style={styles.fieldBlock}>
-                <Text style={styles.label}>Reason for Service</Text>
+                <Text style={styles.label}>{t("doctorEndCall.reasonForService")}</Text>
                 <TextInput
                   value={serviceReason}
-                  onChangeText={(t) => {
-                    setServiceReason(t);
+                  onChangeText={(t2) => {
+                    setServiceReason(t2);
                     setError(null);
                   }}
-                  placeholder="Enter the reason for the care service"
+                  placeholder={t("doctorEndCall.reasonPlaceholder")}
                   style={styles.input}
                 />
               </View>
-
               <View style={styles.fieldBlock}>
-                <Text style={styles.label}>Scheduled Time</Text>
+                <Text style={styles.label}>{t("doctorEndCall.scheduledTime")}</Text>
                 <TouchableOpacity
                   onPress={() => setShowTimePicker(true)}
                   style={styles.input}
                 >
                   <Text style={{ color: scheduledTime ? "#111827" : "#9ca3af" }}>
-                    {scheduledTime || "Select time"}
+                    {scheduledTime || t("doctorEndCall.selectTime")}
                   </Text>
                 </TouchableOpacity>
                 {showTimePicker && (
@@ -421,14 +418,14 @@ export default function DoctorEndCallModal({
                   ]}
                 >
                   <Text style={styles.primaryBtnText}>
-                    {isSendingRequest ? "Sending Request..." : "Send Request"}
+                    {isSendingRequest ? t("doctorEndCall.sendingRequest") : t("doctorEndCall.sendRequest")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleSkipCareProvider}
                   style={styles.dangerBtn}
                 >
-                  <Text style={styles.dangerBtnText}>Skip</Text>
+                  <Text style={styles.dangerBtnText}>{t("doctorEndCall.skip")}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -446,17 +443,7 @@ export default function DoctorEndCallModal({
           }}
         />
       )}
-
-      {showPrescriptionPopup && (
-        <CreatePrescription
-          isOpen={showPrescriptionPopup}
-          onClose={handlePrescriptionSkip}
-          onSave={handlePrescriptionComplete}
-          consultationId={consultationId}
-          patientId={patientId}
-        />
-      )}
-
+    
       {showModifyReport && (
         <ModifyMedicalReport
           isOpen={showModifyReport}
@@ -468,6 +455,7 @@ export default function DoctorEndCallModal({
         />
       )}
     </Modal>
+    
   );
 }
 

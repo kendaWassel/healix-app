@@ -127,27 +127,26 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
     }
   };
 
-  const handleCallClick = async () => {
-    const phone = doctorPhone;
-    if (!phone) {
-      setError(t("patientCallNow.phoneMissing"));
-      return;
-    }
+const handleCallClick = async () => {
+  const phone = doctorPhone;
+  if (!phone) {
+    setError(t("patientCallNow.phoneMissing"));
+    return;
+  }
 
-    triggerCallApi();
+  triggerCallApi();
 
-    const url = `tel:${phone}`;
-    const supported = await Linking.canOpenURL(url);
-    if (!supported) {
-      setError(t("patientCallNow.dialerUnavailable"));
-      return;
-    }
+  const url = `tel:${phone}`;
 
+  try {
     callWasOpenedRef.current = true;
-    await Linking.openURL(url);
-
+    await Linking.openURL(url);  
     if (onConfirm) onConfirm();
-  };
+  } catch (err) {
+    callWasOpenedRef.current = false;
+    setError(t("patientCallNow.dialerUnavailable"));
+  }
+};
 
   const handleEndCallSuccess = () => {
     setShowEndCallModal(false);

@@ -1,21 +1,22 @@
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 
 export default function HeroSection() {
   const navigation = useNavigation();
+  const { t } = useTranslation();
+
   return (
     <View style={styles.hero}>
-      <Text style={styles.heroTitle}>Your Health, Just One Click Away</Text>
+      <Text style={styles.heroTitle}>{t("heroSection.title")}</Text>
       <Text style={styles.heroDesc}>
-        Access quality healthcare from the comfort of your home. Connect with
-        verified doctors, order medicines, and get professional care delivered
-        to your doorstep.
+        {t("heroSection.description")}
       </Text>
       <TouchableOpacity
         style={styles.signupBtn}
         onPress={() => navigation.navigate("Register")}
       >
-        <Text style={styles.signupText}>Sign up</Text>
+        <Text style={styles.signupText}>{t("heroSection.signUp")}</Text>
       </TouchableOpacity>
     </View>
   );

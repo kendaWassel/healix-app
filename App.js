@@ -14,8 +14,8 @@ import LandingPage from "./screens/landingPage/LandingPage";
 import Patient from "./screens/patient/patient";
 import Doctor from "./screens/doctor/Doctor";
 import Pharmacist from "./screens/Pharmacist/Pharmacist";
-import Delivery from "./screens/delivery/Delivery";
-import Nurse from "./screens/nurse/Nurse";
+import Delivery from "./screens/Delivery/Delivery";
+import Nurse from "./screens/Nurse/Nurse";
 
 const Stack = createNativeStackNavigator();
 
@@ -23,7 +23,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Login"
+        initialRouteName="Landing"
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Landing" component={LandingPage} />

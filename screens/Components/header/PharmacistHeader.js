@@ -3,22 +3,35 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../common/LanguageSwitcher";
 
 const PharmacistHeader = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const { t } = useTranslation();
 
   const isActive = (screenName) => route.name === screenName;
 
   return (
     <View style={styles.nav}>
-      <TouchableOpacity onPress={() => navigation.navigate("PharmacistHome")}>
-        <Image
-          source={require("../../../assets/Logo-dark.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </TouchableOpacity>
+      <View style={styles.topRow}>
+        <TouchableOpacity onPress={() => navigation.navigate("PharmacistHome")}>
+          <Image
+            source={require("../../../assets/Logo-dark.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
+        <View style={styles.rightSection}>
+          <LanguageSwitcher />
+          <View style={styles.badge}>
+            <Ionicons name="medical" size={20} color="#39CCCC" />
+            <Text style={styles.badgeText}>{t("header.pharmacist")}</Text>
+          </View>
+        </View>
+      </View>
 
       <View style={styles.tabBar}>
         <TouchableOpacity
@@ -36,7 +49,7 @@ const PharmacistHeader = () => {
               isActive("PharmacistHome") && styles.tabTextActive,
             ]}
           >
-            Home
+            {t("header.home")}
           </Text>
         </TouchableOpacity>
 
@@ -55,7 +68,7 @@ const PharmacistHeader = () => {
               isActive("MyOrders") && styles.tabTextActive,
             ]}
           >
-            My Orders
+            {t("header.myOrders")}
           </Text>
         </TouchableOpacity>
 
@@ -74,14 +87,9 @@ const PharmacistHeader = () => {
               isActive("NewOrders") && styles.tabTextActive,
             ]}
           >
-            New Orders
+            {t("header.newOrders")}
           </Text>
         </TouchableOpacity>
-      </View>
-
-      <View style={styles.badge}>
-        <Ionicons name="medical" size={20} color="#39CCCC" />
-        <Text style={styles.badgeText}>Pharmacist</Text>
       </View>
     </View>
   );
@@ -101,7 +109,17 @@ const styles = StyleSheet.create({
   logo: {
     width: 90,
     height: 32,
+  },
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
+  },
+  rightSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   tabBar: {
     flexDirection: "row",

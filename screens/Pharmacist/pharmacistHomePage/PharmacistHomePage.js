@@ -1,4 +1,3 @@
-// screens/pharmacist/PharmacistHomePage.js
 import React, { useState } from "react";
 import {
   View,
@@ -10,10 +9,12 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import PharmacistHeader from "../../Components/header/PharmacistHeader";
 import Footer from "../../Components/footer/Footer";
 
 const PharmacistHomePage = () => {
+  const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
 
   const [physioData] = useState({
@@ -35,24 +36,24 @@ const PharmacistHomePage = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.title}>Account Information</Text>
-            <Text style={styles.subtitle}>View or update your information</Text>
+            <Text style={styles.title}>{t("pharmacistHomePage.accountInfo")}</Text>
+            <Text style={styles.subtitle}>{t("pharmacistHomePage.viewOrUpdate")}</Text>
           </View>
           <TouchableOpacity style={styles.updateBtn} disabled>
-            <Text style={styles.updateBtnText}>Update</Text>
+            <Text style={styles.updateBtnText}>{t("pharmacistHomePage.update")}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Full Name */}
         <Field
-          label="Full Name"
+          label={t("pharmacistHomePage.fullName")}
           icon="person-outline"
           value={physioData.full_name}
         />
 
         {/* Email */}
         <Field
-          label="Email"
+          label={t("pharmacistHomePage.email")}
           icon="mail-outline"
           value={physioData.email}
           keyboardType="email-address"
@@ -60,7 +61,7 @@ const PharmacistHomePage = () => {
 
         {/* Phone */}
         <Field
-          label="Phone Number"
+          label={t("pharmacistHomePage.phone")}
           icon="call-outline"
           value={physioData.phone}
           keyboardType="phone-pad"
@@ -68,14 +69,14 @@ const PharmacistHomePage = () => {
 
         {/* Password */}
         <View style={styles.fieldWrapper}>
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>{t("pharmacistHomePage.passwordLabel")}</Text>
           <View style={styles.inputRow}>
             <Ionicons name="lock-closed-outline" size={20} color="#39CCCC" />
             <TextInput
               value={physioData.password}
               secureTextEntry={!passwordShown}
               editable={false}
-              placeholder="Leave empty to keep current password"
+              placeholder={t("pharmacistHomePage.passwordPlaceholder")}
               style={styles.input}
             />
             <TouchableOpacity onPress={() => setPasswordShown(!passwordShown)}>
@@ -87,17 +88,16 @@ const PharmacistHomePage = () => {
             </TouchableOpacity>
           </View>
         </View>
-
         {/* Pharmacy Name */}
         <Field
-          label="Pharmacy Name"
+          label={t("pharmacistHomePage.pharmacyName")}
           icon="business-outline"
           value={physioData.pharmacy_name}
         />
 
         {/* CR Number */}
         <Field
-          label="CR Number"
+          label={t("pharmacistHomePage.crNumber")}
           icon="ribbon-outline"
           value={physioData.cr_number}
           keyboardType="numeric"
@@ -105,11 +105,11 @@ const PharmacistHomePage = () => {
 
         {/* Address */}
         <View style={styles.fieldWrapper}>
-          <Text style={styles.label}>Address</Text>
+          <Text style={styles.label}>{t("pharmacistHomePage.address")}</Text>
           <View style={styles.inputRow}>
             <Ionicons name="location-outline" size={20} color="#39CCCC" />
             <TextInput
-              placeholder="area-street-building-floor-home no"
+              placeholder={t("pharmacistHomePage.addressPlaceholder")}
               editable={false}
               style={styles.input}
             />
@@ -118,16 +118,16 @@ const PharmacistHomePage = () => {
 
         {/* Location in map */}
         <View style={styles.fieldWrapper}>
-          <Text style={styles.label}>Location in map</Text>
+          <Text style={styles.label}>{t("pharmacistHomePage.locationInMap")}</Text>
           <TouchableOpacity style={styles.fileRow} disabled>
             <Ionicons name="map-outline" size={20} color="#39CCCC" />
-            <Text style={styles.fileText}>Location in map</Text>
+            <Text style={styles.fileText}>{t("pharmacistHomePage.locationInMap")}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Working hours: From */}
         <Field
-          label="Working hours: From"
+          label={t("pharmacistHomePage.workingHoursFrom")}
           icon="time-outline"
           value={physioData.working_hours_from}
           placeholder="--:--"
@@ -135,7 +135,7 @@ const PharmacistHomePage = () => {
 
         {/* Working hours: To */}
         <Field
-          label="Working hours: To"
+          label={t("pharmacistHomePage.workingHoursTo")}
           icon="time-outline"
           value={physioData.working_hours_to}
           placeholder="--:--"
@@ -143,11 +143,11 @@ const PharmacistHomePage = () => {
 
         {/* Medical certificate */}
         <View style={styles.fieldWrapper}>
-          <Text style={styles.label}>Medical certificate File</Text>
+          <Text style={styles.label}>{t("pharmacistHomePage.medicalCertificateFile")}</Text>
           <TouchableOpacity style={styles.fileRow} disabled>
             <Ionicons name="document-outline" size={20} color="#39CCCC" />
             <Text style={styles.fileText}>
-              {licenseFileName || "View File"}
+              {licenseFileName || t("pharmacistHomePage.viewFile")}
             </Text>
           </TouchableOpacity>
         </View>

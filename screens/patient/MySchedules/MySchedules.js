@@ -19,6 +19,7 @@ import PatientScheduleSession from "./PatientScheduleSession";
 import RatingModal from "../DoctorConsultation/booking/RatingModal";
 import DoneModal from "../DoctorConsultation/booking/DoneModal";
 import PaymentModal from "../../Components/servicesCard/PayementModal";
+import { apiFetch } from "../../../utils/apiClient";
 
 const MySchedules = () => {
   const { t } = useTranslation();
@@ -39,6 +40,7 @@ const MySchedules = () => {
   const [selectedCpId, setSelectedCpId] = useState(null);
   const [showBookingDone, setShowBookingDone] = useState(false);
   const [cpLoadBtn, setCpLoadBtn] = useState(false);
+  
   const [pagination, setPagination] = useState({
     currentPage: 1,
     itemsPerPage: 3,
@@ -57,20 +59,12 @@ const MySchedules = () => {
     setError(null);
     try {
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/my-schedules?page=${pagination.currentPage}&per_page=3`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiFetch(
+      `/api/patient/my-schedules?page=${pagination.currentPage}&per_page=3`
+    );
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Request failed");
+           throw new Error(serverError.message || t("mySchedules.loadFail"));
       }
       const data = await response.json();
       setSchedules(data.data);
@@ -391,9 +385,9 @@ const MySchedules = () => {
           )}
         </View>
 
-        <Footer />
+     
       </ScrollView>
-
+   <Footer />
       <PatientScheduleCall
         isOpen={showCallModal}
         onClose={() => {

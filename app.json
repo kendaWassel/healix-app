@@ -28,7 +28,26 @@
           "apiKey": "AIzaSyDVsG_l8IRcPhEoZFZOcrDbyLWdZ7HOpCo"
         }
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "queries": [
+        {
+          "intent": {
+            "action": "android.intent.action.DIAL",
+            "data": {
+              "scheme": "tel"
+            }
+          }
+        },
+        {
+          "intent": {
+            "action": "android.intent.action.DIAL",
+            "data": {
+              "scheme": "tel"
+            }
+          }
+        }
+      ],
+      "package": "com.anonymous.medicalapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"

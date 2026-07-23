@@ -1,19 +1,23 @@
 import { useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Image,
+  ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
+import ForgotPasswordModal from "./ForgetPasswordModal";
 
 export default function UserLogin() {
+  const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);  
 
   const navigation = useNavigation();
 
@@ -34,9 +38,9 @@ export default function UserLogin() {
         }
       );
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Login failed");
+      if (!response.ok) throw new Error(data.message || t("userLogin.loginFailed"));
 
-      setSuccessMsg("Logged in successfully!!");
+      setSuccessMsg(t("userLogin.loginSuccess"));
       await AsyncStorage.setItem("token", data.token);
 
       if (data.email_verified) {
@@ -47,7 +51,7 @@ export default function UserLogin() {
         navigation.navigate(routes[data.role] || "Delivery");
       }
     } catch (err) {
-      setError(err.message || "Failed to login. Please try again.");
+      setError(err.message || t("userLogin.loginFailedRetry"));
     } finally {
       setIsLoading(false);
     }
@@ -63,18 +67,18 @@ export default function UserLogin() {
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* الشعار في الأعلى بخلفية زرقاء */}
         <View style={styles.header}>
-  <Text style={{ color: "#fff", fontSize: 36, fontWeight: "bold" }}>
-    Heal<Text style={{ color: "#39CCCC" }}>ix</Text>
-  </Text>
-</View>
+          <Text style={{ color: "#fff", fontSize: 36, fontWeight: "bold" }}>
+            Heal<Text style={{ color: "#39CCCC" }}>ix</Text>
+          </Text>
+        </View>
 
         <View style={styles.form}>
           <Text style={styles.title}>
-            Log <Text style={styles.titleCyan}>in</Text>
+            {t("userLogin.title")} <Text style={styles.titleCyan}>{t("userLogin.titleCyan")}</Text>
           </Text>
-          <Text style={styles.subtitle}>Enter your credential to login</Text>
+          <Text style={styles.subtitle}>{t("userLogin.subtitle")}</Text>
 
-          {error && <Text style={styles.error}>{error}, Try again</Text>}
+          {error && <Text style={styles.error}>{error}{t("userLogin.tryAgain")}</Text>}
           {successMsg && <Text style={styles.success}>{successMsg}</Text>}
 
           {/* الإيميل */}
@@ -82,7 +86,7 @@ export default function UserLogin() {
             <Ionicons name="mail" size={22} color="#39CCCC" />
             <TextInput
               style={styles.input}
-              placeholder="Type email"
+              placeholder={t("userLogin.emailPlaceholder")}
               keyboardType="email-address"
               autoCapitalize="none"
               value={email}
@@ -90,13 +94,12 @@ export default function UserLogin() {
               editable={!isLoading}
             />
           </View>
-
           {/* كلمة المرور */}
           <View style={styles.inputGroup}>
             <Ionicons name="lock-closed" size={22} color="#39CCCC" />
             <TextInput
               style={styles.input}
-              placeholder="Type Password..."
+              placeholder={t("userLogin.passwordPlaceholder")}
               secureTextEntry={!passwordShown}
               value={password}
               onChangeText={setPassword}
@@ -111,6 +114,13 @@ export default function UserLogin() {
             </TouchableOpacity>
           </View>
 
+          <TouchableOpacity
+            onPress={() => setShowForgotPassword(true)}
+            style={{ alignSelf: "flex-end", marginTop: 4 }}
+          >
+            <Text style={styles.forgotPasswordLink}>{t("forgotPassword.linkText")}</Text>
+          </TouchableOpacity>
+
           {/* زر الدخول */}
           <TouchableOpacity
             style={[styles.button, isDisabled && styles.buttonDisabled]}
@@ -120,19 +130,25 @@ export default function UserLogin() {
             {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Sign in</Text>
+              <Text style={styles.buttonText}>{t("userLogin.signIn")}</Text>
             )}
           </TouchableOpacity>
 
           {/* رابط التسجيل */}
           <View style={styles.registerRow}>
-            <Text style={styles.registerText}>Don't have an account yet? </Text>
+            <Text style={styles.registerText}>{t("userLogin.noAccount")}</Text>
             <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-              <Text style={styles.registerLink}>Register</Text>
+              <Text style={styles.registerLink}>{t("userLogin.register")}</Text>
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
+
+   
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -140,8 +156,6 @@ export default function UserLogin() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   scroll: { flexGrow: 1 },
-
-  // الشعار الأزرق في الأعلى
   header: {
     backgroundColor: "#052443",
     paddingVertical: 50,
@@ -151,7 +165,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 30,
   },
   logo: { width: 180, height: 120 },
-
   form: { padding: 28, marginTop: 120 },
   title: {
     fontSize: 26, fontWeight: "bold", color: "#052443", textAlign: "center",
@@ -179,4 +192,9 @@ const styles = StyleSheet.create({
   },
   registerText: { color: "#767676" },
   registerLink: { color: "#39CCCC", fontWeight: "600" },
+  forgotPasswordLink: {
+    color: "#39CCCC",
+    fontWeight: "600",
+    fontSize: 13,
+  },
 });

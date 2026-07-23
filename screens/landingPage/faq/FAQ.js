@@ -4,21 +4,23 @@ import {
   LayoutAnimation, Platform, UIManager,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const FAQS = [
-  { q: "How do I book an appointment?", a: "You can book an appointment by choosing a care provider, selecting a suitable time, and confirming your booking from your dashboard." },
-  { q: "Can I cancel or reschedule my appointment?", a: "Yes, you can cancel or reschedule your appointment before it starts from the schedules page." },
-  { q: "How do online consultations work?", a: "Online consultations are done through secure calls. You will be notified when the doctor is ready to start the session." },
-  { q: "When do I pay for the session?", a: "Payment is required after the session is completed. You will then be able to rate your care provider." },
-  { q: "Is my medical data secure?", a: "Absolutely. All medical data is encrypted and handled according to strict privacy standards." },
-];
-
 export default function FAQ() {
+  const { t } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(null);
+
+  const FAQS = [
+    { q: t("faq.q1"), a: t("faq.a1") },
+    { q: t("faq.q2"), a: t("faq.a2") },
+    { q: t("faq.q3"), a: t("faq.a3") },
+    { q: t("faq.q4"), a: t("faq.a4") },
+    { q: t("faq.q5"), a: t("faq.a5") },
+  ];
 
   const toggle = (index) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -27,7 +29,7 @@ export default function FAQ() {
 
   return (
     <View>
-      <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
+      <Text style={styles.sectionTitle}>{t("faq.sectionTitle")}</Text>
       <View style={styles.wrap}>
         {FAQS.map((item, index) => (
           <View key={index} style={styles.card}>

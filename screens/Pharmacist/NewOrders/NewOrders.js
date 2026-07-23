@@ -1,4 +1,3 @@
-// screens/pharmacist/NewOrders.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -14,11 +13,13 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import PharmacistHeader from "../../Components/header/PharmacistHeader";
 import Footer from "../../Components/footer/Footer";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
 
 export default function NewOrders() {
+  const { t } = useTranslation();
   const [prescriptions, setPrescriptions] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -61,7 +62,7 @@ export default function NewOrders() {
         }
       );
 
-      if (!response.ok) throw new Error("Request failed");
+      if (!response.ok) throw new Error(t("newOrdersScreen.requestFailed"));
 
       const data = await response.json();
       console.log("prescriptions: ", data);
@@ -69,7 +70,7 @@ export default function NewOrders() {
       setPage(data.meta.current_page);
       setTotalPages(data.meta.last_page);
     } catch (err) {
-      setError("Failed to load prescriptions");
+      setError(t("newOrdersScreen.loadPrescriptionsFailed"));
     } finally {
       setLoading(false);
     }
@@ -93,7 +94,6 @@ export default function NewOrders() {
           Authorization: `Bearer ${token}`,
         },
       };
-
       if (manualDrugs && manualDrugs.length > 0) {
         const uniqueDrugNames = [...new Set(manualDrugs.map((d) => d.toLowerCase()))]
           .map((lower) => manualDrugs.find((d) => d.toLowerCase() === lower));
@@ -217,14 +217,14 @@ export default function NewOrders() {
     );
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result.message || "Failed to add price");
+      throw new Error(result.message || t("newOrdersScreen.addPriceFailed"));
     }
-    Alert.alert("Success", "Medicine Prices Added successfully");
+    Alert.alert("Success", t("newOrdersScreen.pricesAddedSuccess"));
   };
 
   const handleReject = async (prescription_id) => {
     if (!RejectReason) {
-      Alert.alert("Error", "Please enter your rejection reason");
+      Alert.alert("Error", t("newOrdersScreen.enterRejectionReason"));
       return;
     }
     setRejectLoading(true);
@@ -245,7 +245,7 @@ export default function NewOrders() {
       const result = await response.json();
       console.log("reject response: ", result);
       if (!response.ok || result.status !== "success") {
-        throw new Error(result.message || "Reject failed");
+        throw new Error(result.message || t("newOrdersScreen.rejectFailed"));
       }
       const rejectedId = result.data.prescription_id;
       setPrescriptions((prev) =>
@@ -287,7 +287,7 @@ export default function NewOrders() {
 
       <ScrollView style={{ backgroundColor: "#f9fafb" }} contentContainerStyle={{ paddingBottom: 30 }}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Prescription Orders</Text>
+          <Text style={styles.sectionTitle}>{t("newOrdersScreen.title")}</Text>
 
           {loading ? (
             <ActivityIndicator size="large" color="#39CCCC" style={{ marginVertical: 20 }} />
@@ -296,8 +296,7 @@ export default function NewOrders() {
               {prescriptions.map((item) => (
                 <View key={item.prescription_id} style={styles.card}>
                   <Text style={styles.patientName}>{item.patient}</Text>
-                  <Text style={styles.sourceText}>Source: {item.source}</Text>
-
+                  <Text style={styles.sourceText}>{t("newOrdersScreen.source")} {item.source}</Text>
                   {item.medicines && item.medicines.length > 0 ? (
                     <View style={{ marginTop: 8 }}>
                       {item.medicines.map((m, i) => (
@@ -342,7 +341,7 @@ export default function NewOrders() {
                         }
                       }}
                     >
-                      <Text style={styles.acceptText}>Accept</Text>
+                      <Text style={styles.acceptText}>{t("newOrdersScreen.accept")}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -352,7 +351,7 @@ export default function NewOrders() {
                         setRejectReason("");
                       }}
                     >
-                      <Text style={styles.rejectText}>Reject</Text>
+                      <Text style={styles.rejectText}>{t("newOrdersScreen.reject")}</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -368,9 +367,8 @@ export default function NewOrders() {
           ) : error ? (
             <Text style={styles.errorText}>{error}</Text>
           ) : (
-            <Text style={styles.emptyText}>No Receipts Found</Text>
+            <Text style={styles.emptyText}>{t("newOrdersScreen.noReceiptsFound")}</Text>
           )}
-
           <View style={styles.paginationRow}>
             <TouchableOpacity
               onPress={handlePrevious}
@@ -383,7 +381,7 @@ export default function NewOrders() {
                   (page === 1 || loading || !!error) && styles.pageBtnTextDisabled,
                 ]}
               >
-                Previous
+                {t("newOrdersScreen.previous")}
               </Text>
             </TouchableOpacity>
 
@@ -403,15 +401,15 @@ export default function NewOrders() {
                     styles.pageBtnTextDisabled,
                 ]}
               >
-                Next
+                {t("common.next")}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        <Footer />
+      
       </ScrollView>
-
+  <Footer />
       {/* Image Preview */}
       <Modal
         visible={!!selectedImage}
@@ -444,7 +442,7 @@ export default function NewOrders() {
             <ScrollView showsVerticalScrollIndicator={false}>
               {selectedItem?.medicines && selectedItem.medicines.length > 0 ? (
                 <>
-                  <Text style={styles.popupTitle}>Enter Price</Text>
+                  <Text style={styles.popupTitle}>{t("newOrdersScreen.enterPrice")}</Text>
                   {selectedItem.medicines.map((med, index) => (
                     <View key={index} style={{ marginBottom: 12 }}>
                       <Text style={styles.fieldLabel}>
@@ -452,16 +450,15 @@ export default function NewOrders() {
                       </Text>
                       <TextInput
                         keyboardType="numeric"
-                        placeholder="Enter price"
+                        placeholder={t("newOrdersScreen.enterPricePlaceholder")}
                         value={prices[index] || ""}
-                        onChangeText={(t) =>
-                          setPrices((prev) => ({ ...prev, [index]: t }))
+                        onChangeText={(t2) =>
+                          setPrices((prev) => ({ ...prev, [index]: t2 }))
                         }
                         style={styles.input}
                       />
                     </View>
                   ))}
-
                   <View style={styles.popupBtnRow}>
                     <TouchableOpacity
                       onPress={() => handleAccept(selectedItem.prescription_id)}
@@ -471,7 +468,7 @@ export default function NewOrders() {
                         isSaveDisabled() && styles.saveBtnDisabled,
                       ]}
                     >
-                      <Text style={styles.saveBtnText}>Save</Text>
+                      <Text style={styles.saveBtnText}>{t("newOrdersScreen.save")}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -481,31 +478,31 @@ export default function NewOrders() {
                       }}
                       style={styles.cancelBtn}
                     >
-                      <Text style={styles.cancelBtnText}>Cancel</Text>
+                      <Text style={styles.cancelBtnText}>{t("common.cancel")}</Text>
                     </TouchableOpacity>
                   </View>
                 </>
               ) : !manualSafetyChecked ? (
                 <>
-                  <Text style={styles.popupTitle}>Enter Medicine Names</Text>
+                  <Text style={styles.popupTitle}>{t("newOrdersScreen.enterMedicineNames")}</Text>
 
                   {manualDrugNames.map((name, index) => (
                     <View key={index} style={{ marginBottom: 12 }}>
                       <TextInput
-                        placeholder="Medicine Name"
+                        placeholder={t("newOrdersScreen.medicineNamePlaceholder")}
                         value={name}
-                        onChangeText={(t) => {
+                        onChangeText={(t2) => {
                           const updated = [...manualDrugNames];
-                          updated[index] = t;
+                          updated[index] = t2;
                           setManualDrugNames(updated);
-                          checkDrugName(t, `manual-${index}`);
+                          checkDrugName(t2, `manual-${index}`);
                         }}
                         style={styles.input}
                       />
                       {suggestion?.field === `manual-${index}` && (
                         <View style={styles.suggestionBox}>
                           <Text style={styles.suggestionText}>
-                            Did you mean{" "}
+                            {t("drugSuggestion.didYouMean")}{" "}
                             <Text style={styles.suggestionValue}>
                               {suggestion.value}
                             </Text>
@@ -514,19 +511,18 @@ export default function NewOrders() {
                           <TouchableOpacity
                             onPress={() => acceptManualSuggestion(index)}
                           >
-                            <Text style={styles.suggestionUseBtn}>Use it</Text>
+                            <Text style={styles.suggestionUseBtn}>{t("drugSuggestion.useIt")}</Text>
                           </TouchableOpacity>
                         </View>
                       )}
                     </View>
                   ))}
-
                   <TouchableOpacity
                     onPress={() => setManualDrugNames([...manualDrugNames, ""])}
                     style={styles.addMedicineBtn}
                   >
                     <Text style={styles.addMedicineBtnText}>
-                      + Add Another Medicine
+                      {t("newOrdersScreen.addAnotherMedicine")}
                     </Text>
                   </TouchableOpacity>
 
@@ -544,7 +540,7 @@ export default function NewOrders() {
                       ]}
                     >
                       <Text style={styles.saveBtnText}>
-                        {safetyChecking ? "Checking Safety..." : "Check Safety & Continue"}
+                        {safetyChecking ? t("newOrdersScreen.checkingSafety") : t("newOrdersScreen.checkSafetyContinue")}
                       </Text>
                     </TouchableOpacity>
 
@@ -556,41 +552,40 @@ export default function NewOrders() {
                       }}
                       style={styles.cancelBtn}
                     >
-                      <Text style={styles.cancelBtnText}>Cancel</Text>
+                      <Text style={styles.cancelBtnText}>{t("common.cancel")}</Text>
                     </TouchableOpacity>
                   </View>
                 </>
               ) : (
                 <>
-                  <Text style={styles.popupTitle}>Enter Price</Text>
+                  <Text style={styles.popupTitle}>{t("newOrdersScreen.enterPrice")}</Text>
 
                   {dosages.map((item, index) => (
                     <View key={index} style={styles.dosageBox}>
                       <Text style={styles.fieldLabel}>{item.dosageName}</Text>
                       <TextInput
-                        placeholder="Add Dosage"
+                        placeholder={t("newOrdersScreen.addDosagePlaceholder")}
                         value={item.dosage}
-                        onChangeText={(t) => {
+                        onChangeText={(t2) => {
                           const newDosages = [...dosages];
-                          newDosages[index].dosage = t;
+                          newDosages[index].dosage = t2;
                           setDosages(newDosages);
                         }}
                         style={[styles.input, { marginBottom: 8 }]}
                       />
                       <TextInput
                         keyboardType="numeric"
-                        placeholder="Add price"
+                        placeholder={t("newOrdersScreen.addPricePlaceholder")}
                         value={item.price}
-                        onChangeText={(t) => {
+                        onChangeText={(t2) => {
                           const newDosages = [...dosages];
-                          newDosages[index].price = t;
+                          newDosages[index].price = t2;
                           setDosages(newDosages);
                         }}
                         style={styles.input}
                       />
                     </View>
                   ))}
-
                   <View style={styles.popupBtnRow}>
                     <TouchableOpacity
                       onPress={() => handleAccept(selectedItem.prescription_id)}
@@ -600,7 +595,7 @@ export default function NewOrders() {
                         isSaveDisabled() && styles.saveBtnDisabled,
                       ]}
                     >
-                      <Text style={styles.saveBtnText}>Save</Text>
+                      <Text style={styles.saveBtnText}>{t("newOrdersScreen.save")}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -612,7 +607,7 @@ export default function NewOrders() {
                       }}
                       style={styles.cancelBtn}
                     >
-                      <Text style={styles.cancelBtnText}>Cancel</Text>
+                      <Text style={styles.cancelBtnText}>{t("common.cancel")}</Text>
                     </TouchableOpacity>
                   </View>
                 </>
@@ -631,11 +626,11 @@ export default function NewOrders() {
       >
         <View style={styles.overlay}>
           <View style={styles.rejectCard}>
-            <Text style={styles.popupTitle}>Reject Reason</Text>
+            <Text style={styles.popupTitle}>{t("newOrdersScreen.rejectReason")}</Text>
             <TextInput
               value={RejectReason}
               onChangeText={setRejectReason}
-              placeholder="Medicine not available..."
+              placeholder={t("newOrdersScreen.rejectReasonPlaceholder")}
               multiline
               numberOfLines={3}
               style={[styles.input, styles.textarea]}
@@ -647,7 +642,7 @@ export default function NewOrders() {
                 style={[styles.rejectConfirmBtn, rejectLoading && styles.saveBtnDisabled]}
               >
                 <Text style={styles.saveBtnText}>
-                  {rejectLoading ? "Rejecting..." : "Reject"}
+                  {rejectLoading ? t("newOrdersScreen.rejecting") : t("newOrdersScreen.reject")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -655,13 +650,12 @@ export default function NewOrders() {
                 onPress={() => setShowRejectPopup(false)}
                 style={styles.cancelBtn}
               >
-                <Text style={styles.cancelBtnText}>Cancel</Text>
+                <Text style={styles.cancelBtnText}>{t("common.cancel")}</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-
       {/* Safety Warnings Popup */}
       <Modal
         visible={showSafetyPopup && !!safetyWarnings}
@@ -672,11 +666,11 @@ export default function NewOrders() {
         <View style={styles.overlay}>
           <View style={styles.safetyCard}>
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.safetyTitle}>⚠️ Safety Warnings</Text>
+              <Text style={styles.safetyTitle}>{t("newOrdersScreen.safetyWarningsTitle")}</Text>
 
               {safetyWarnings?.interactions.length > 0 && (
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={styles.safetySectionTitle}>🔴 Drug Interactions</Text>
+                  <Text style={styles.safetySectionTitle}>{t("newOrdersScreen.drugInteractions")}</Text>
                   {safetyWarnings.interactions.map((w, i) => (
                     <View
                       key={i}
@@ -703,24 +697,23 @@ export default function NewOrders() {
                         ]}
                       >
                         {w.severity === "Major"
-                          ? "Major 🔴"
+                          ? t("newOrdersScreen.major")
                           : w.severity === "Minor"
-                          ? "Minor 🟡"
-                          : "Moderate 🟠"}
+                          ? t("newOrdersScreen.minor")
+                          : t("newOrdersScreen.moderate")}
                       </Text>
                       {w.severity_confidence === "UNCERTAIN" && (
                         <Text style={styles.uncertainNote}>
-                          Model estimate only — verify clinically.
+                          {t("createPrescription.uncertainNote")}
                         </Text>
                       )}
                     </View>
                   ))}
                 </View>
               )}
-
               {safetyWarnings?.allergies && safetyWarnings.allergies.length > 0 && (
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={styles.safetySectionTitle}>🤧 Allergy Warnings</Text>
+                  <Text style={styles.safetySectionTitle}>{t("newOrdersScreen.allergyWarnings")}</Text>
                   {safetyWarnings.allergies.map((a, i) => (
                     <View key={i} style={styles.allergyCard}>
                       <Text style={styles.allergyText}>
@@ -728,12 +721,12 @@ export default function NewOrders() {
                       </Text>
                       <Text style={styles.allergyNote}>{a.note}</Text>
                       {a.risk && (
-                        <Text style={styles.allergyRisk}>Risk: {a.risk}</Text>
+                        <Text style={styles.allergyRisk}>{t("newOrdersScreen.risk")} {a.risk}</Text>
                       )}
                       {a.cross_reactive_drugs && a.cross_reactive_drugs.length > 0 && (
                         <View style={styles.crossReactiveSection}>
                           <Text style={styles.crossReactiveLabel}>
-                            Drugs that may cause similar reaction:
+                            {t("newOrdersScreen.similarReactionDrugs")}
                           </Text>
                           <View style={styles.crossReactiveChips}>
                             {a.cross_reactive_drugs.slice(0, 5).map((drug, j) => (
@@ -751,11 +744,11 @@ export default function NewOrders() {
 
               {safetyWarnings?.pregnancy.length > 0 && (
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={styles.safetySectionTitle}>🤰 Pregnancy Risk</Text>
+                  <Text style={styles.safetySectionTitle}>{t("newOrdersScreen.pregnancyRisk")}</Text>
                   {safetyWarnings.pregnancy.map((p, i) => (
                     <View key={i} style={styles.pregnancyCard}>
                       <Text style={styles.pregnancyText}>
-                        {p.medication} — Category {p.category}
+                        {p.medication} {t("newOrdersScreen.category")} {p.category}
                       </Text>
                       <Text style={styles.pregnancySubText}>{p.warning}</Text>
                     </View>
@@ -764,7 +757,7 @@ export default function NewOrders() {
               )}
 
               <Text style={styles.reviewNote}>
-                Review carefully before dispensing. Consult the patient if needed.
+                {t("newOrdersScreen.reviewNote")}
               </Text>
 
               {safetyCheckStage === "manualBeforePricing" ? (
@@ -779,7 +772,7 @@ export default function NewOrders() {
                   style={styles.reviewedBtn}
                 >
                   <Text style={styles.reviewedBtnText}>
-                    Reviewed — Continue to Pricing
+                    {t("newOrdersScreen.reviewedContinuePricing")}
                   </Text>
                 </TouchableOpacity>
               ) : (
@@ -792,11 +785,10 @@ export default function NewOrders() {
                   style={styles.reviewedBtn}
                 >
                   <Text style={styles.reviewedBtnText}>
-                    Reviewed — Continue to Pricing
+                    {t("newOrdersScreen.reviewedContinuePricing")}
                   </Text>
                 </TouchableOpacity>
               )}
-
               <TouchableOpacity
                 onPress={() => {
                   setShowSafetyPopup(false);
@@ -804,7 +796,7 @@ export default function NewOrders() {
                 }}
                 style={styles.safetyCancelBtn}
               >
-                <Text style={styles.saveBtnText}>Cancel</Text>
+                <Text style={styles.saveBtnText}>{t("common.cancel")}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>

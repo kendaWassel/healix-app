@@ -13,12 +13,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
+import { apiFetch } from "../../../utils/apiClient";
 import PatientHeader from "../../Components/header/PatientHeader";
 import Footer from "../../Components/footer/Footer";
 
 export default function DoctorConsultation() {
   const navigation = useNavigation();
-  const { t } = useTranslation();
+ const { t, i18n } = useTranslation();
 
   const [selected, setSelected] = useState("");
   const [error, setError] = useState(null);
@@ -32,30 +33,20 @@ export default function DoctorConsultation() {
   });
 
   const fetchSpecializations = async (page, perPage) => {
-    setIsLoading(true);
-    setError(null);
+  setIsLoading(true);
+  setError(null);
 
-    const token = await AsyncStorage.getItem("token");
+  try {
+    const response = await apiFetch(
+      `/api/patient/specializations?page=${page}&per_page=${perPage}`
+    );
 
-    try {
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/specializations?page=${page}&per_page=${perPage}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    if (!response.ok) {
+      const serverError = await response.json().catch(() => ({}));
+      throw new Error(serverError.message || "Specializations request failed");
+    }
 
-      if (!response.ok) {
-        const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Specializations request failed");
-      }
-
-      const data = await response.json();
+    const data = await response.json();
       console.log("success getting specs: ", data);
 
       setSpecialitytypes(data.data);
@@ -88,7 +79,7 @@ export default function DoctorConsultation() {
 
   useEffect(() => {
     fetchSpecializations(pagination.currentPage, pagination.itemsPerPage);
-  }, [pagination.currentPage, pagination.itemsPerPage]);
+  }, [pagination.currentPage, pagination.itemsPerPage , i18n.language]);
 
   const renderSpeciality = ({ item: type }) => {
     const isSelected = selected === type.id;
@@ -176,7 +167,7 @@ export default function DoctorConsultation() {
             </TouchableOpacity>
 
             <Text style={styles.pageInfo}>
-              {pagination.currentPage} of {pagination.totalPages}
+              {t("common.pageOf", { page: pagination.currentPage, total: pagination.totalPages })}
             </Text>
 
             <TouchableOpacity
