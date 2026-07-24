@@ -773,10 +773,12 @@
   "rejectFailed": "Reject failed"
 },
 
+
 "pharmacistHomePage": {
   "accountInfo": "Account Information",
   "viewOrUpdate": "View or update your information",
   "update": "Update",
+  "loadingProfile": "Loading profile information...",
   "fullName": "Full Name",
   "email": "Email",
   "phone": "Phone Number",
@@ -789,8 +791,11 @@
   "locationInMap": "Location in map",
   "workingHoursFrom": "Working hours: From",
   "workingHoursTo": "Working hours: To",
-  "medicalCertificateFile": "Medical certificate File",
-  "viewFile": "View File"
+  "medicalCertificateFile": "License Certificate File",
+  "viewFile": "View File",
+  "loadProfileFailed": "Failed to load profile information.",
+  "updateFailed": "Failed to update profile. Please try again.",
+  "updateSuccess": "Profile updated successfully!"
 },
 
 "aiAssistant": {
@@ -808,7 +813,12 @@
   "connectionError": "Connection error. Please try again.",
     "transcribing": "Transcribing...",
   "interviewFinished": "Interview completed. Thank you!",
-  "detectedSymptoms": "Detected Symptoms:"
+  "detectedSymptoms": "Detected Symptoms:",
+   "previousChats": "Previous Chats",
+  "noPreviousChats": "No previous chats",
+  "newChat": "New Chat",
+  "completed": "Completed",
+  "inProgress": "In progress"
 },
 
 "forgotPassword": {

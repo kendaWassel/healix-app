@@ -9,7 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import PatientHeader from "../../Components/header/PatientHeader";
 import Footer from "../../Components/footer/Footer";
 import FAID from "./FAID/FAID";
-import AI_Medical_Assistant from "../AIMedicalAssistant/AIMedicalAssistant";
+import AI_Medical_Assistant from "../AIMedicalAssistant/AI_Medical_Assistant";
 import { LinearGradient } from "expo-linear-gradient";
 
 export default function PatientHomePage() {

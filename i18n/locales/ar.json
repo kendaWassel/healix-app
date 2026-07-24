@@ -775,10 +775,12 @@
   "rejectFailed": "فشل الرفض"
 },
 
+
 "pharmacistHomePage": {
   "accountInfo": "معلومات الحساب",
   "viewOrUpdate": "عرض أو تعديل معلوماتك",
   "update": "تحديث",
+  "loadingProfile": "جارٍ تحميل معلومات الملف الشخصي...",
   "fullName": "الاسم الكامل",
   "email": "البريد الإلكتروني",
   "phone": "رقم الهاتف",
@@ -791,10 +793,12 @@
   "locationInMap": "الموقع على الخريطة",
   "workingHoursFrom": "ساعات العمل: من",
   "workingHoursTo": "ساعات العمل: إلى",
-  "medicalCertificateFile": "ملف الشهادة الطبية",
-  "viewFile": "عرض الملف"
+  "medicalCertificateFile": "ملف ترخيص الصيدلية",
+  "viewFile": "عرض الملف",
+  "loadProfileFailed": "فشل تحميل معلومات الملف الشخصي.",
+  "updateFailed": "فشل تحديث الملف الشخصي. حاول مرة أخرى.",
+  "updateSuccess": "تم تحديث الملف الشخصي بنجاح!"
 },
-
 "aiAssistant": {
   "title": "المساعد الطبي الذكي",
   "subtitle": "إرشادات مدعومة بالذكاء الاصطناعي",
@@ -810,7 +814,12 @@
   "connectionError": "خطأ في الاتصال. حاول مرة أخرى.",
    "transcribing": "جارٍ تحويل الصوت لنص...",
   "interviewFinished": "اكتملت المقابلة. شكراً لك!",
-   "detectedSymptoms": "الأعراض المكتشفة:"
+   "detectedSymptoms": "الأعراض المكتشفة:",
+     "previousChats": "المحادثات السابقة",
+  "noPreviousChats": "لا توجد محادثات سابقة",
+  "newChat": "محادثة جديدة",
+  "completed": "مكتملة",
+  "inProgress": "جارية"
 },
 "forgotPassword": {
   "linkText": "نسيت كلمة المرور؟",

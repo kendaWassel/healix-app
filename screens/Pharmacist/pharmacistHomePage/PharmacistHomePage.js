@@ -1,34 +1,174 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
-  Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as DocumentPicker from "expo-document-picker";
 import PharmacistHeader from "../../Components/header/PharmacistHeader";
 import Footer from "../../Components/footer/Footer";
 
 const PharmacistHomePage = () => {
   const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMsg, setSuccessMsg] = useState(null);
 
-  const [physioData] = useState({
-    full_name: "kenda wassel",
-    email: "kendawassel14@gmail.com",
-    phone: "0943779128",
-    password: "123456",
-    pharmacy_name: "Al Shefaa",
-    cr_number: "123123",
-    working_hours_from: "",
-    working_hours_to: "",
+  const [pharmacistData, setPharmacistData] = useState({
+    full_name: "",
+    email: "",
+    phone: "",
+    pharmacy_name: "",
+    cr_number: "",
+    address: "",
+    latitude: null,
+    longitude: null,
+    from: "",
+    to: "",
+    license_file: null,
+    rating_avg: 0,
   });
 
-  const [licenseFileName] = useState("");
+  const [newLicenseFile, setNewLicenseFile] = useState(null);
+
+  const fetchPharmacistProfile = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch(
+        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/profile",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept : "application/json",
+            "ngrok-skip-browser-warning": "true",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+      console.log("Pharmacist profile:", data);
+
+      if (!response.ok || data.status !== "success") {
+        throw new Error(data.message || t("pharmacistHomePage.loadProfileFailed"));
+      }
+
+      const profile = data.data;
+      setPharmacistData({
+        full_name: profile.full_name || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
+        pharmacy_name: profile.pharmacy_name || "",
+        cr_number: profile.cr_number || "",
+        address: profile.address || "",
+        latitude: profile.latitude,
+        longitude: profile.longitude,
+        from: profile.from || "",
+        to: profile.to || "",
+        license_file: profile.license_file || null,
+        rating_avg: profile.rating_avg || 0,
+      });
+    } catch (err) {
+      console.error("Failed fetching pharmacist profile:", err);
+      setError(err.message || t("pharmacistHomePage.loadProfileFailed"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPharmacistProfile();
+  }, []);
+
+  // 🔹 اختيار ملف الترخيص الجديد (PDF أو صورة)
+  const handlePickLicenseFile = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ["application/pdf", "image/jpeg", "image/png"],
+    });
+
+    if (result.canceled || !result.assets?.length) return;
+
+    setNewLicenseFile(result.assets[0]);
+  };
+
+  const handleUpdate = async () => {
+    setIsUpdating(true);
+    setError(null);
+    setSuccessMsg(null);
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      // 🔹 نفس حل _method Spoofing المطبَّق في DoctorHomePage
+      const formData = new FormData();
+      formData.append("_method", "PUT");
+      formData.append("full_name", pharmacistData.full_name);
+      formData.append("phone", pharmacistData.phone);
+      formData.append("pharmacy_name", pharmacistData.pharmacy_name);
+      formData.append("address", pharmacistData.address);
+      formData.append("from", pharmacistData.from);
+      formData.append("to", pharmacistData.to);
+
+      if (pharmacistData.latitude != null) {
+        formData.append("latitude", String(pharmacistData.latitude));
+      }
+      if (pharmacistData.longitude != null) {
+        formData.append("longitude", String(pharmacistData.longitude));
+      }
+
+      if (newLicenseFile) {
+        formData.append("license_file", {
+          uri: newLicenseFile.uri,
+          name: newLicenseFile.name,
+          type: newLicenseFile.mimeType || "application/pdf",
+        });
+      }
+
+      const response = await fetch(
+        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/profile",
+        {
+          method: "POST",
+          headers: {
+                   Accept : "application/json",
+            "ngrok-skip-browser-warning": "true",
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+      console.log("Update result:", data);
+
+      if (!response.ok || data.status !== "success") {
+        throw new Error(data.message || t("pharmacistHomePage.updateFailed"));
+      }
+
+      setSuccessMsg(t("pharmacistHomePage.updateSuccess"));
+      setNewLicenseFile(null);
+      setTimeout(() => {
+        setSuccessMsg(null);
+        fetchPharmacistProfile();
+      }, 2000);
+    } catch (err) {
+      setError(err.message || t("pharmacistHomePage.updateFailed"));
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -39,118 +179,113 @@ const PharmacistHomePage = () => {
             <Text style={styles.title}>{t("pharmacistHomePage.accountInfo")}</Text>
             <Text style={styles.subtitle}>{t("pharmacistHomePage.viewOrUpdate")}</Text>
           </View>
-          <TouchableOpacity style={styles.updateBtn} disabled>
-            <Text style={styles.updateBtnText}>{t("pharmacistHomePage.update")}</Text>
+          <TouchableOpacity
+            style={[styles.updateBtn, (isUpdating || isLoading) && styles.updateBtnDisabled]}
+            onPress={handleUpdate}
+            disabled={isUpdating || isLoading}
+          >
+            {isUpdating ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Text style={styles.updateBtnText}>{t("pharmacistHomePage.update")}</Text>
+            )}
           </TouchableOpacity>
         </View>
 
-        {/* Full Name */}
-        <Field
-          label={t("pharmacistHomePage.fullName")}
-          icon="person-outline"
-          value={physioData.full_name}
-        />
+        {error && <Text style={styles.errorBox}>{error}</Text>}
+        {successMsg && <Text style={styles.successBox}>{successMsg}</Text>}
 
-        {/* Email */}
-        <Field
-          label={t("pharmacistHomePage.email")}
-          icon="mail-outline"
-          value={physioData.email}
-          keyboardType="email-address"
-        />
-
-        {/* Phone */}
-        <Field
-          label={t("pharmacistHomePage.phone")}
-          icon="call-outline"
-          value={physioData.phone}
-          keyboardType="phone-pad"
-        />
-
-        {/* Password */}
-        <View style={styles.fieldWrapper}>
-          <Text style={styles.label}>{t("pharmacistHomePage.passwordLabel")}</Text>
-          <View style={styles.inputRow}>
-            <Ionicons name="lock-closed-outline" size={20} color="#39CCCC" />
-            <TextInput
-              value={physioData.password}
-              secureTextEntry={!passwordShown}
-              editable={false}
-              placeholder={t("pharmacistHomePage.passwordPlaceholder")}
-              style={styles.input}
+        {isLoading ? (
+          <Text style={styles.loadingText}>{t("pharmacistHomePage.loadingProfile")}</Text>
+        ) : (
+          <>
+            {/* Full Name */}
+            <Field
+              label={t("pharmacistHomePage.fullName")}
+              icon="person-outline"
+              value={pharmacistData.full_name}
+              onChangeText={(t2) => setPharmacistData({ ...pharmacistData, full_name: t2 })}
             />
-            <TouchableOpacity onPress={() => setPasswordShown(!passwordShown)}>
-              <Ionicons
-                name={passwordShown ? "eye-off-outline" : "eye-outline"}
-                size={20}
-                color="#767676"
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-        {/* Pharmacy Name */}
-        <Field
-          label={t("pharmacistHomePage.pharmacyName")}
-          icon="business-outline"
-          value={physioData.pharmacy_name}
-        />
 
-        {/* CR Number */}
-        <Field
-          label={t("pharmacistHomePage.crNumber")}
-          icon="ribbon-outline"
-          value={physioData.cr_number}
-          keyboardType="numeric"
-        />
-
-        {/* Address */}
-        <View style={styles.fieldWrapper}>
-          <Text style={styles.label}>{t("pharmacistHomePage.address")}</Text>
-          <View style={styles.inputRow}>
-            <Ionicons name="location-outline" size={20} color="#39CCCC" />
-            <TextInput
-              placeholder={t("pharmacistHomePage.addressPlaceholder")}
+            {/* Email — للعرض فقط، غير قابل للتحديث من الباك اند */}
+            <Field
+              label={t("pharmacistHomePage.email")}
+              icon="mail-outline"
+              value={pharmacistData.email}
+              keyboardType="email-address"
               editable={false}
-              style={styles.input}
             />
-          </View>
-        </View>
 
-        {/* Location in map */}
-        <View style={styles.fieldWrapper}>
-          <Text style={styles.label}>{t("pharmacistHomePage.locationInMap")}</Text>
-          <TouchableOpacity style={styles.fileRow} disabled>
-            <Ionicons name="map-outline" size={20} color="#39CCCC" />
-            <Text style={styles.fileText}>{t("pharmacistHomePage.locationInMap")}</Text>
-          </TouchableOpacity>
-        </View>
+            {/* Phone */}
+            <Field
+              label={t("pharmacistHomePage.phone")}
+              icon="call-outline"
+              value={pharmacistData.phone}
+              onChangeText={(t2) => setPharmacistData({ ...pharmacistData, phone: t2 })}
+              keyboardType="phone-pad"
+            />
 
-        {/* Working hours: From */}
-        <Field
-          label={t("pharmacistHomePage.workingHoursFrom")}
-          icon="time-outline"
-          value={physioData.working_hours_from}
-          placeholder="--:--"
-        />
+            {/* Pharmacy Name */}
+            <Field
+              label={t("pharmacistHomePage.pharmacyName")}
+              icon="business-outline"
+              value={pharmacistData.pharmacy_name}
+              onChangeText={(t2) => setPharmacistData({ ...pharmacistData, pharmacy_name: t2 })}
+            />
 
-        {/* Working hours: To */}
-        <Field
-          label={t("pharmacistHomePage.workingHoursTo")}
-          icon="time-outline"
-          value={physioData.working_hours_to}
-          placeholder="--:--"
-        />
+            {/* CR Number — للعرض فقط، غير قابل للتحديث من الباك اند */}
+            <Field
+              label={t("pharmacistHomePage.crNumber")}
+              icon="ribbon-outline"
+              value={pharmacistData.cr_number}
+              keyboardType="numeric"
+              editable={false}
+            />
 
-        {/* Medical certificate */}
-        <View style={styles.fieldWrapper}>
-          <Text style={styles.label}>{t("pharmacistHomePage.medicalCertificateFile")}</Text>
-          <TouchableOpacity style={styles.fileRow} disabled>
-            <Ionicons name="document-outline" size={20} color="#39CCCC" />
-            <Text style={styles.fileText}>
-              {licenseFileName || t("pharmacistHomePage.viewFile")}
-            </Text>
-          </TouchableOpacity>
-        </View>
+            {/* Address */}
+            <View style={styles.fieldWrapper}>
+              <Text style={styles.label}>{t("pharmacistHomePage.address")}</Text>
+              <View style={styles.inputRow}>
+                <Ionicons name="location-outline" size={20} color="#39CCCC" />
+                <TextInput
+                  placeholder={t("pharmacistHomePage.addressPlaceholder")}
+                  value={pharmacistData.address}
+                  onChangeText={(t2) => setPharmacistData({ ...pharmacistData, address: t2 })}
+                  style={styles.input}
+                />
+              </View>
+            </View>
+
+            {/* Working hours: From */}
+            <Field
+              label={t("pharmacistHomePage.workingHoursFrom")}
+              icon="time-outline"
+              value={pharmacistData.from}
+              onChangeText={(t2) => setPharmacistData({ ...pharmacistData, from: t2 })}
+              placeholder="--:--"
+            />
+
+            {/* Working hours: To */}
+            <Field
+              label={t("pharmacistHomePage.workingHoursTo")}
+              icon="time-outline"
+              value={pharmacistData.to}
+              onChangeText={(t2) => setPharmacistData({ ...pharmacistData, to: t2 })}
+              placeholder="--:--"
+            />
+
+            {/* Medical/License certificate */}
+            <View style={styles.fieldWrapper}>
+              <Text style={styles.label}>{t("pharmacistHomePage.medicalCertificateFile")}</Text>
+              <TouchableOpacity onPress={handlePickLicenseFile} style={styles.fileRow}>
+                <Ionicons name="document-outline" size={20} color="#39CCCC" />
+                <Text style={styles.fileText}>
+                  {newLicenseFile?.name || t("pharmacistHomePage.viewFile")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
 
         <Footer />
       </ScrollView>
@@ -158,22 +293,24 @@ const PharmacistHomePage = () => {
   );
 };
 
-// مكوّن حقل بسيط قابل لإعادة الاستخدام
-const Field = ({ label, icon, value, placeholder, keyboardType }) => (
+const Field = ({ label, icon, value, placeholder, keyboardType, onChangeText, editable = true }) => (
   <View style={styles.fieldWrapper}>
     <Text style={styles.label}>{label}</Text>
     <View style={styles.inputRow}>
       <Ionicons name={icon} size={20} color="#39CCCC" />
       <TextInput
         value={value}
-        editable={false}
+        editable={editable}
         placeholder={placeholder}
         keyboardType={keyboardType}
+        onChangeText={onChangeText}
         style={styles.input}
       />
     </View>
   </View>
 );
+
+export default PharmacistHomePage;
 
 const styles = StyleSheet.create({
   container: {
@@ -202,12 +339,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 10,
-    opacity: 0.5,
   },
+  updateBtnDisabled: { opacity: 0.5 },
   updateBtnText: {
     color: "#fff",
     fontWeight: "600",
   },
+  errorBox: {
+    backgroundColor: "#fee2e2", borderWidth: 1, borderColor: "#fca5a5",
+    color: "#b91c1c", padding: 10, borderRadius: 8, marginBottom: 12,
+  },
+  successBox: {
+    backgroundColor: "#dcfce7", borderWidth: 1, borderColor: "#86efac",
+    color: "#15803d", padding: 10, borderRadius: 8, marginBottom: 12,
+  },
+  loadingText: { textAlign: "center", color: "#888", paddingVertical: 20 },
   fieldWrapper: {
     marginBottom: 16,
   },
@@ -241,12 +387,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     gap: 10,
-    opacity: 0.6,
   },
   fileText: {
     fontSize: 14,
     color: "#767676",
   },
 });
-
-export default PharmacistHomePage;

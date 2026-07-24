@@ -80,55 +80,54 @@ export default function NewOrders() {
     fetchPrescriptions(page);
   }, [page]);
 
-  const runSafetyCheck = async (prescriptionId, manualDrugs = null) => {
-    const result = { interactions: [], pregnancy: [], allergies: [], hasWarning: false };
+  const runSafetyCheck = async (prescriptionId, drugNames) => {
+  const result = { interactions: [], pregnancy: [], allergies: [], hasWarning: false };
 
-    try {
-      const token = await AsyncStorage.getItem("token");
+  try {
+    const token = await AsyncStorage.getItem("token");
 
-      const options = {
+    const uniqueDrugNames = [...new Set(drugNames.map((d) => d.toLowerCase()))]
+      .map((lower) => drugNames.find((d) => d.toLowerCase() === lower));
+
+    const res = await fetch(
+      `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/prescriptions/${prescriptionId}/verify`,
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
           "ngrok-skip-browser-warning": "true",
           Authorization: `Bearer ${token}`,
         },
-      };
-      if (manualDrugs && manualDrugs.length > 0) {
-        const uniqueDrugNames = [...new Set(manualDrugs.map((d) => d.toLowerCase()))]
-          .map((lower) => manualDrugs.find((d) => d.toLowerCase() === lower));
-        options.body = JSON.stringify({ medications: uniqueDrugNames });
+        body: JSON.stringify({ medications: uniqueDrugNames }),
       }
+    );
 
-      const res = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/prescriptions/${prescriptionId}/verify`,
-        options
+    if (res.ok) {
+      const result_json = await res.json();
+      console.log("Verify result:", result_json);
+      const data = result_json.data || result_json;
+
+      result.interactions = (data.drug_interactions || []).filter(
+        (f) =>
+          f.severity === "Major" ||
+          f.severity === "Moderate" ||
+          f.severity_confidence === "UNCERTAIN"
       );
-
-      if (res.ok) {
-        const result_json = await res.json();
-        console.log("Verify result:", result_json);
-        const data = result_json.data || result_json;
-
-        result.interactions = (data.drug_interactions || []).filter(
-          (f) =>
-            f.severity === "Major" ||
-            f.severity === "Moderate" ||
-            f.severity_confidence === "UNCERTAIN"
-        );
-        result.pregnancy = data.pregnancy_warnings || [];
-        result.allergies = data.allergy_warnings || [];
-        result.hasWarning = data.safe === false;
-      } else {
-        console.log("Verify failed:", res.status);
-      }
-
-      return result;
-    } catch (err) {
-      console.error("Safety check failed:", err);
-      return result;
+      result.pregnancy = data.pregnancy_warnings || [];
+      result.allergies = data.allergy_warnings || [];
+      result.hasWarning = data.safe === false;
+    } else {
+      const errData = await res.json().catch(() => ({}));
+      console.log("Verify failed:", res.status, errData);
     }
-  };
+
+    return result;
+  } catch (err) {
+    console.error("Safety check failed:", err);
+    return result;
+  }
+};
 
   const handleCheckManualDrugs = async () => {
     const validNames = manualDrugNames.filter((n) => n.trim() !== "");
@@ -316,30 +315,34 @@ export default function NewOrders() {
 
                   <View style={styles.actionsRow}>
                     <TouchableOpacity
-                      onPress={async () => {
-                        setSelectedItem(item);
-                        setPrices({});
-                        setDosages([]);
-                        setManualDrugNames([""]);
-                        setManualSafetyChecked(false);
+                    onPress={async () => {
+  setSelectedItem(item);
+  setPrices({});
+  setDosages([]);
+  setManualDrugNames([""]);
+  setManualSafetyChecked(false);
 
-                        if (!item.medicines || item.medicines.length === 0) {
-                          setShowAcceptPopup(true);
-                          return;
-                        }
+  if (!item.medicines || item.medicines.length === 0) {
+    setShowAcceptPopup(true);
+    return;
+  }
 
-                        setSafetyChecking(true);
-                        const safety = await runSafetyCheck(item.prescription_id);
-                        setSafetyChecking(false);
+  const drugNames = item.medicines
+    .map((m) => m.name)
+    .filter((n) => n && n.trim() !== "");
 
-                        if (safety.hasWarning) {
-                          setSafetyWarnings(safety);
-                          setSafetyCheckStage("initial");
-                          setShowSafetyPopup(true);
-                        } else {
-                          setShowAcceptPopup(true);
-                        }
-                      }}
+  setSafetyChecking(true);
+  const safety = await runSafetyCheck(item.prescription_id, drugNames);
+  setSafetyChecking(false);
+
+  if (safety.hasWarning) {
+    setSafetyWarnings(safety);
+    setSafetyCheckStage("initial");
+    setShowSafetyPopup(true);
+  } else {
+    setShowAcceptPopup(true);
+  }
+}}
                     >
                       <Text style={styles.acceptText}>{t("newOrdersScreen.accept")}</Text>
                     </TouchableOpacity>
