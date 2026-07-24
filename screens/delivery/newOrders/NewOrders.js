@@ -187,6 +187,7 @@ const NewOrders = () => {
 
         <FlatList
           data={orders}
+          style={styles.order}
           keyExtractor={(item) => String(item.order_id)}
           renderItem={renderCard}
           contentContainerStyle={{ gap: 16 }}
@@ -267,6 +268,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: colors.gray50 },
   title: { fontSize: 26, fontWeight: "bold", color: "#0a3460" },
   subtitle: { color: colors.gray500, marginTop: 6 },
+  order:{
+    marginBottom:20
+  },
   centerText: { textAlign: "center", color: colors.gray500, marginBottom: 12 },
   card: {
     backgroundColor: colors.white,
