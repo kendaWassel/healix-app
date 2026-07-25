@@ -17,6 +17,7 @@ import DeliveryHeader from "../../Components/header/DeliveryHeader";
 import Footer from "../../Components/footer/Footer";
 import { colors } from "../../../constants/colors";
 import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+import i18n from "../../../i18n/i18n";
 
 const NewOrders = () => {
   const { t } = useTranslation();
@@ -40,6 +41,7 @@ const NewOrders = () => {
           headers: {
             Accept: "application/json",
             ...NGROK_HEADERS,
+            "accept-language":i18n.language,
             Authorization: `Bearer ${token}`,
           },
         },
