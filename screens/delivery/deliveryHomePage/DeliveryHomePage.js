@@ -12,6 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n/i18n";
 
 import DeliveryHeader from "../../Components/header/DeliveryHeader";
 import Footer from "../../Components/footer/Footer";
@@ -51,6 +52,7 @@ const DeliveryHomePage = () => {
         headers: {
           "Content-Type": "application/json",
           ...NGROK_HEADERS,
+          "accept-language": i18n.language,
           Authorization: `Bearer ${token}`,
         },
       });

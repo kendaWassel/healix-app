@@ -18,6 +18,7 @@ import NurseHeader from "../../Components/header/NurseHeader";
 import Footer from "../../Components/footer/Footer";
 import { colors } from "../../../constants/colors";
 import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+import i18n from "../../../i18n/i18n";
 
 const NurseHomePage = () => {
   const { t } = useTranslation();
@@ -52,6 +53,7 @@ const NurseHomePage = () => {
         headers: {
           "Content-Type": "application/json",
           ...NGROK_HEADERS,
+          "accept-language":i18n.language,
           Authorization: `Bearer ${token}`,
         },
       });
