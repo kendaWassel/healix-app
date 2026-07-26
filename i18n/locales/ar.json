@@ -19,7 +19,8 @@
   "patient": "مريض",
   "mySchedules": "مواعيدي",
   "doctor": "طبيب",
-  "pharmacist": "صيدلي"
+  "pharmacist": "صيدلي",
+  "physio": "أخصائي علاج طبيعي"
 },
   "deliveryHome": {
     "title": "معلومات الحساب",
@@ -860,6 +861,76 @@
   "payNow": "ادفع الآن",
   "paymentSuccessful": "تم الدفع بنجاح!",
   "paymentSuccessText": "تمت معالجة دفعتك بنجاح."
+},
+"physioHome": {
+  "title": "معلومات الحساب",
+  "subtitle": "عرض أو تعديل معلوماتك",
+  "update": "تحديث",
+  "updating": "جارٍ التحديث...",
+  "loading": "جارٍ تحميل معلومات الملف الشخصي...",
+  "fullName": "الاسم الكامل",
+  "email": "البريد الإلكتروني",
+  "phone": "رقم الهاتف",
+  "password": "كلمة المرور",
+  "passwordPlaceholder": "اتركه فارغًا للاحتفاظ بكلمة المرور الحالية",
+  "gender": "الجنس",
+  "sessionFee": "أجرة الجلسة",
+  "licenseFile": "ملف الرخصة",
+  "viewFile": "عرض الملف",
+  "viewCurrent": "عرض الحالي",
+  "currentLicense": "الرخصة الحالية",
+  "updateSuccess": "تم تحديث الملف الشخصي بنجاح!",
+  "updateFail": "فشل تحديث الملف الشخصي. حاول مرة أخرى.",
+  "fetchFail": "فشل تحميل معلومات الملف الشخصي.",
+  "uploadFail": "فشل رفع الملف"
+},
+"physioNewOrders": {
+  "title": "الطلبات الجديدة",
+  "subtitle": "تحقق من طلباتك الجديدة هنا",
+  "loading": "جارٍ تحميل الطلبات...",
+  "service": "الخدمة:",
+  "accept": "قبول",
+  "accepting": "جارٍ القبول",
+  "noOrders": "لا توجد طلبات",
+  "previous": "السابق",
+  "next": "التالي",
+  "pageOf": "{{page}} من {{lastPage}}",
+  "cancel": "إلغاء",
+  "loadFail": "فشل تحميل الطلبات.",
+  "acceptFail": "فشل قبول الطلب",
+  "acceptError": "خطأ أثناء قبول الطلب. حاول مرة أخرى."
+},
+"physioSchedules": {
+  "title": "مواعيدي",
+  "subtitle": "عرض زيارات مرضاك",
+  "filter": "تصفية:",
+  "filterAll": "الكل",
+  "loading": "جارٍ تحميل الطلبات...",
+  "noSchedules": "لا توجد مواعيد",
+  "service": "الخدمة:",
+  "at": "في:",
+  "status": "الحالة:",
+  "viewDetails": "عرض التفاصيل",
+  "loadingDetails": "جارٍ التحميل...",
+  "startSession": "بدء الجلسة",
+  "starting": "جارٍ البدء...",
+  "endSession": "إنهاء الجلسة",
+  "ending": "جارٍ الإنهاء...",
+  "previous": "السابق",
+  "next": "التالي",
+  "pageOf": "{{page}} من {{lastPage}}",
+  "loadFail": "فشل تحميل المواعيد.",
+  "startFail": "فشل بدء الجلسة",
+  "detailsFail": "فشل تحميل التفاصيل"
+},
+"careProviderEndSession": {
+  "title": "إنهاء الجلسة",
+  "subtitle": "اترك ملاحظة ختامية لهذه الجلسة",
+  "notesPlaceholder": "أدخل ملاحظات الجلسة...",
+  "save": "حفظ",
+  "saving": "جارٍ الحفظ...",
+  "cancel": "إلغاء",
+  "saveFail": "فشل حفظ ملاحظات الجلسة"
 }
 }
 

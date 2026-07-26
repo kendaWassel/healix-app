@@ -19,7 +19,8 @@
     "patient": "Patient",
     "mySchedules": "My Schedules",
     "doctor": "Doctor",
-    "pharmacist": "Pharmacist"
+    "pharmacist": "Pharmacist",
+    "physio": "Physiotherapist"
   },
   "deliveryHome": {
     "title": "Account Information",
@@ -860,6 +861,76 @@
   "payNow": "Pay Now",
   "paymentSuccessful": "Payment Successful!",
   "paymentSuccessText": "Your payment has been processed successfully."
+},
+"physioHome": {
+  "title": "Account Information",
+  "subtitle": "View or update your information",
+  "update": "Update",
+  "updating": "Updating...",
+  "loading": "Loading profile information...",
+  "fullName": "Full Name",
+  "email": "Email",
+  "phone": "Phone Number",
+  "password": "Password",
+  "passwordPlaceholder": "Leave empty to keep current password",
+  "gender": "Gender",
+  "sessionFee": "Session Fee",
+  "licenseFile": "License File",
+  "viewFile": "View File",
+  "viewCurrent": "View Current",
+  "currentLicense": "Current License",
+  "updateSuccess": "Profile updated successfully!",
+  "updateFail": "Failed to update profile. Please try again.",
+  "fetchFail": "Failed to load profile information.",
+  "uploadFail": "File upload failed"
+},
+"physioNewOrders": {
+  "title": "New Orders",
+  "subtitle": "Check your new orders here",
+  "loading": "Loading orders...",
+  "service": "Service:",
+  "accept": "Accept",
+  "accepting": "Accepting",
+  "noOrders": "No Orders Found",
+  "previous": "Previous",
+  "next": "Next",
+  "pageOf": "{{page}} of {{lastPage}}",
+  "cancel": "Cancel",
+  "loadFail": "Failed to load orders.",
+  "acceptFail": "Failed to accept order",
+  "acceptError": "Error accepting order. Please try again."
+},
+"physioSchedules": {
+  "title": "My Schedules",
+  "subtitle": "View your patient visits",
+  "filter": "Filter:",
+  "filterAll": "All",
+  "loading": "Loading orders...",
+  "noSchedules": "No Schedules Found",
+  "service": "Service:",
+  "at": "At:",
+  "status": "Status:",
+  "viewDetails": "View details",
+  "loadingDetails": "Loading...",
+  "startSession": "Start Session",
+  "starting": "Starting...",
+  "endSession": "End Session",
+  "ending": "Ending...",
+  "previous": "Previous",
+  "next": "Next",
+  "pageOf": "{{page}} of {{lastPage}}",
+  "loadFail": "Failed to load schedules.",
+  "startFail": "Failed to start session",
+  "detailsFail": "Failed to load Details"
+},
+"careProviderEndSession": {
+  "title": "End Session",
+  "subtitle": "Leave a closing note for this session",
+  "notesPlaceholder": "Enter session notes...",
+  "save": "Save",
+  "saving": "Saving...",
+  "cancel": "Cancel",
+  "saveFail": "Failed to save session notes"
 }
 
 }
