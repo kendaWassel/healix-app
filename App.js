@@ -16,6 +16,7 @@ import Doctor from "./screens/doctor/Doctor";
 import Pharmacist from "./screens/Pharmacist/Pharmacist";
 import Delivery from "./screens/delivery/Delivery";
 import Nurse from "./screens/nurse/Nurse";
+import Physio from "./screens/physio/Physio";
 
 const Stack = createNativeStackNavigator();
 
@@ -54,6 +55,8 @@ export default function App() {
         <Stack.Screen name="Pharmacist" component={Pharmacist} />
         <Stack.Screen name="Delivery" component={Delivery} />
         <Stack.Screen name="Nurse" component={Nurse} />
+        <Stack.Screen name="Physio" component={Physio} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

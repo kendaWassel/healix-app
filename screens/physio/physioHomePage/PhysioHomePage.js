@@ -4,36 +4,36 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
   ScrollView,
+  Image,
+  Linking,
   StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import i18n from "../../../i18n/i18n";
 
-import DeliveryHeader from "../../Components/header/DeliveryHeader";
 import Footer from "../../Components/footer/Footer";
+import PhysioHeader from "../../Components/header/PhysioHeader";
 import { colors } from "../../../constants/colors";
 import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
 
-const DeliveryHomePage = () => {
+const PhysioHomePage = () => {
   const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
-  const [nurseData, setNurseData] = useState({
+  const [physioData, setPhysioData] = useState({
     full_name: "kenda wassel",
     email: "kendawassel14@gmail.com",
     phone: "0943779128",
     password: "123456",
     available_time: "",
     session_fee: "100",
-    type: "nurse",
+    type: "physio",
     gender: "female",
     license_file: null,
   });
@@ -42,7 +42,7 @@ const DeliveryHomePage = () => {
   const [licenseFilePreview, setLicenseFilePreview] = useState(null);
 
 
-  const fetchNurseProfile = async () => {
+  const fetchPhysioProfile = async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -50,22 +50,21 @@ const DeliveryHomePage = () => {
       const response = await fetch(`${BASE_URL}/provider/nurse/profile`, {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
+          Accept: "application/json",
           ...NGROK_HEADERS,
-          "accept-language": i18n.language,
           Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Failed to fetch profile");
+        throw new Error(serverError.message || t("physioHome.fetchFail"));
       }
 
-      const data = await response.json();
-      if (data.status === "success" && data.data) {
-        const profile = data.data;
-        setNurseData({
+      const result = await response.json();
+      if (result.status === "success" && result.data) {
+        const profile = result.data;
+        setPhysioData({
           full_name: profile.full_name || "",
           email: profile.email || "",
           phone: profile.phone || "",
@@ -73,16 +72,17 @@ const DeliveryHomePage = () => {
           available_time: profile.available_time || "",
           session_fee: profile.session_fee || "",
           type: profile.type || "",
+          gender: profile.gender || "",
           license_file: null,
         });
         if (profile.license_file_url) {
           setLicenseFilePreview(profile.license_file_url);
-          setLicenseFileName(profile.license_file_name || "Current License");
+          setLicenseFileName(profile.license_file_name || t("physioHome.currentLicense"));
         }
       }
     } catch (err) {
       console.error("Failed to fetch profile:", err);
-      setError(err.message || t("deliveryHome.loadFail"));
+      setError(err.message || t("physioHome.fetchFail"));
     } finally {
       setIsLoading(false);
     }
@@ -90,8 +90,8 @@ const DeliveryHomePage = () => {
 
   const uploadFile = async (file) => {
     if (!file) return null;
-    const token = await AsyncStorage.getItem("token");
 
+    const token = await AsyncStorage.getItem("token");
     const formData = new FormData();
     formData.append("file", {
       uri: file.uri,
@@ -105,15 +105,13 @@ const DeliveryHomePage = () => {
       headers: {
         ...NGROK_HEADERS,
         Authorization: `Bearer ${token}`,
-        // NOTE: do NOT set Content-Type manually for multipart in RN —
-        // fetch sets the correct boundary automatically.
       },
       body: formData,
     });
 
     if (!response.ok) {
       const errData = await response.json();
-      throw new Error(errData.message || t("deliveryHome.uploadFail"));
+      throw new Error(errData.message || t("physioHome.uploadFail"));
     }
     const data = await response.json();
     return data.file_id;
@@ -125,31 +123,33 @@ const DeliveryHomePage = () => {
     setSuccessMsg(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
       let licenseFileId = null;
       if (licenseFile) {
         licenseFileId = await uploadFile(licenseFile);
       }
 
       const updateData = {
-        full_name: nurseData.full_name,
-        email: nurseData.email,
-        phone: nurseData.phone,
-        available_time: nurseData.available_time,
-        session_fee: parseInt(nurseData.session_fee) || 0,
-        type: nurseData.type,
+        full_name: physioData.full_name,
+        email: physioData.email,
+        phone: physioData.phone,
+        available_time: physioData.available_time,
+        session_fee: parseInt(physioData.session_fee) || 0,
+        type: physioData.type,
       };
 
-      if (nurseData.password) {
-        updateData.password = nurseData.password;
+      if (physioData.password) {
+        updateData.password = physioData.password;
       }
+
       if (licenseFileId) {
         updateData.license_file_id = licenseFileId;
       }
 
+      const token = await AsyncStorage.getItem("token");
       const response = await fetch(`${BASE_URL}/provider/nurse/profile`, {
         method: "PUT",
         headers: {
+          Accept: "application/json",
           "Content-Type": "application/json",
           ...NGROK_HEADERS,
           Authorization: `Bearer ${token}`,
@@ -159,65 +159,70 @@ const DeliveryHomePage = () => {
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Update failed");
+        throw new Error(serverError.message || t("physioHome.updateFail"));
       }
 
-      const data = await response.json();
-      if (data.status === "success") {
-        setSuccessMsg(t("deliveryHome.updateSuccess"));
-        setNurseData({ ...nurseData, password: "" });
-        if (licenseFile) setLicenseFile(null);
+      const result = await response.json();
+      if (result.status === "success") {
+        setSuccessMsg(t("physioHome.updateSuccess"));
+        setPhysioData({ ...physioData, password: "" });
+        if (licenseFile) {
+          setLicenseFile(null);
+        }
         setTimeout(() => {
           setSuccessMsg(null);
-          fetchNurseProfile();
+          fetchPhysioProfile();
         }, 2000);
       }
     } catch (err) {
       console.error("Update error:", err);
-      setError(err.message || t("deliveryHome.updateFail"));
+      setError(err.message || t("physioHome.updateFail"));
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const pickLicenseFile = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: [
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      ],
-    });
-    if (result.canceled) return;
-    const file = result.assets[0];
-    setLicenseFile(file);
-    setLicenseFileName(file.name);
-    setLicenseFilePreview(null);
+  const handlePickLicenseFile = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ],
+      });
+      if (result.canceled) return;
+      const file = result.assets[0];
+      setLicenseFile(file);
+      setLicenseFileName(file.name);
+      setLicenseFilePreview(null);
+    } catch (err) {
+      console.error("Error picking license file:", err);
+    }
   };
-
-console.log(t("header.home"));
 
   return (
     <View style={{ flex: 1 }}>
-      <DeliveryHeader />
+      <PhysioHeader />
       <ScrollView contentContainerStyle={styles.container}>
-        <View>
-        <View style={styles.updateContainer}>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.title}>{t("physioHome.title")}</Text>
+            <Text style={styles.subtitle}>{t("physioHome.subtitle")}</Text>
+          </View>
+
           <TouchableOpacity
-            style={[styles.updateBtn, (isUpdating || isLoading) && styles.disabledBtn]}
+            style={[
+              styles.updateBtn,
+              (isUpdating || isLoading) && styles.updateBtnDisabled,
+            ]}
             onPress={handleSubmit}
             disabled={isUpdating || isLoading}
           >
             <Text style={styles.updateBtnText}>
-              {isUpdating ? t("deliveryHome.updating") : t("deliveryHome.update")}
+              {isUpdating ? t("physioHome.updating") : t("physioHome.update")}
             </Text>
           </TouchableOpacity>
-        </View>
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.title}>{t("deliveryHome.title")}</Text>
-            <Text style={styles.subtitle}>{t("deliveryHome.subtitle")}</Text>
-          </View>
         </View>
 
         {error && (
@@ -232,133 +237,137 @@ console.log(t("header.home"));
         )}
 
         {isLoading ? (
-          <View style={{ paddingVertical: 32 }}>
-            <Text style={{ textAlign: "center", color: colors.gray500 }}>
-              {t("deliveryHome.loadingProfile")}
-            </Text>
-          </View>
+          <Text style={styles.centerText}>{t("physioHome.loading")}</Text>
         ) : (
-          <View style={{ gap: 22 }}>
-            {/* Photo */}
-            <View style={styles.photoWrapper}>
+          <View style={{ gap: 20 }}>
+            <View style={styles.photoWrap}>
               <Image
                 source={require("../../../assets/gallery-7.png")}
-                style={styles.photoImage}
+                style={styles.photo}
               />
             </View>
 
-            {/* Full Name */}
             <View>
-              <Text style={styles.label}>{t("deliveryHome.fullName")}</Text>
-              <View style={styles.inputGroup}>
-                <FontAwesome5 name="user-circle" size={20} color={colors.cyan} />
+              <Text style={styles.label}>{t("physioHome.fullName")}</Text>
+              <View style={styles.inputRow}>
+                <FontAwesome5 name="user" size={16} color={colors.cyan} />
                 <TextInput
                   style={styles.input}
-                  value={nurseData.full_name}
+                  value={physioData.full_name}
                   onChangeText={(val) =>
-                    setNurseData({ ...nurseData, full_name: val })
+                    setPhysioData({ ...physioData, full_name: val })
                   }
                   editable={false}
                 />
               </View>
             </View>
 
-            {/* Email */}
             <View>
-              <Text style={styles.label}>{t("deliveryHome.email")}</Text>
-              <View style={styles.inputGroup}>
-                <FontAwesome5 name="envelope" size={18} color={colors.cyan} />
+              <Text style={styles.label}>{t("physioHome.email")}</Text>
+              <View style={styles.inputRow}>
+                <FontAwesome5 name="envelope" size={16} color={colors.cyan} />
                 <TextInput
                   style={styles.input}
-                  value={nurseData.email}
-                  onChangeText={(val) => setNurseData({ ...nurseData, email: val })}
-                  editable={false}
                   keyboardType="email-address"
-                />
-              </View>
-            </View>
-
-            {/* Phone */}
-            <View>
-              <Text style={styles.label}>{t("deliveryHome.phone")}</Text>
-              <View style={styles.inputGroup}>
-                <FontAwesome5 name="phone-alt" size={18} color={colors.cyan} />
-                <TextInput
-                  style={styles.input}
-                  value={nurseData.phone}
-                  onChangeText={(val) => setNurseData({ ...nurseData, phone: val })}
-                  editable={false}
-                  keyboardType="phone-pad"
-                />
-              </View>
-            </View>
-
-            {/* Password */}
-            <View>
-              <Text style={styles.label}>{t("deliveryHome.password")}</Text>
-              <View style={styles.inputGroup}>
-                <FontAwesome5 name="lock" size={18} color={colors.cyan} />
-                <TextInput
-                  style={styles.input}
-                  value={nurseData.password}
+                  value={physioData.email}
                   onChangeText={(val) =>
-                    setNurseData({ ...nurseData, password: val })
+                    setPhysioData({ ...physioData, email: val })
                   }
-                  placeholder={t("deliveryHome.passwordPlaceholder")}
+                  editable={false}
+                />
+              </View>
+            </View>
+
+            <View>
+              <Text style={styles.label}>{t("physioHome.phone")}</Text>
+              <View style={styles.inputRow}>
+                <FontAwesome5 name="phone" size={16} color={colors.cyan} />
+                <TextInput
+                  style={styles.input}
+                  keyboardType="phone-pad"
+                  value={physioData.phone}
+                  onChangeText={(val) =>
+                    setPhysioData({ ...physioData, phone: val })
+                  }
+                  editable={false}
+                />
+              </View>
+            </View>
+
+            <View>
+              <Text style={styles.label}>{t("physioHome.password")}</Text>
+              <View style={styles.inputRow}>
+                <FontAwesome5 name="lock" size={16} color={colors.cyan} />
+                <TextInput
+                  style={styles.input}
                   secureTextEntry={!passwordShown}
+                  value={physioData.password}
+                  onChangeText={(val) =>
+                    setPhysioData({ ...physioData, password: val })
+                  }
+                  placeholder={t("physioHome.passwordPlaceholder")}
                   editable={false}
                 />
                 <TouchableOpacity onPress={() => setPasswordShown(!passwordShown)}>
                   <FontAwesome5
                     name={passwordShown ? "eye-slash" : "eye"}
-                    size={18}
+                    size={16}
                     color={colors.gray500}
                   />
                 </TouchableOpacity>
               </View>
             </View>
 
-            {/* Vehicle type */}
             <View>
-              <Text style={styles.label}>{t("deliveryHome.vehicleType")}</Text>
-              <View style={styles.inputGroup}>
-                <FontAwesome5 name="car" size={18} color={colors.cyan} />
-                <TextInput style={styles.input} value="Toyota" editable={false} />
+              <Text style={styles.label}>{t("physioHome.gender")}</Text>
+              <View style={styles.inputRow}>
+                <FontAwesome5 name="venus-mars" size={16} color={colors.cyan} />
+                <Text style={styles.readonlyValue}>
+                  {physioData.gender
+                    ? physioData.gender.charAt(0).toUpperCase() +
+                      physioData.gender.slice(1)
+                    : t("physioHome.gender")}
+                </Text>
               </View>
             </View>
 
-            {/* Plate Number */}
             <View>
-              <Text style={styles.label}>{t("deliveryHome.plateNumber")}</Text>
-              <View style={styles.inputGroup}>
-                <FontAwesome5 name="hashtag" size={18} color={colors.cyan} />
+              <Text style={styles.label}>{t("physioHome.sessionFee")}</Text>
+              <View style={styles.inputRow}>
+                <FontAwesome5 name="hand-holding-usd" size={16} color={colors.cyan} />
                 <TextInput
                   style={styles.input}
-                  value="123123"
-                  editable={false}
                   keyboardType="numeric"
+                  value={String(physioData.session_fee)}
+                  onChangeText={(val) =>
+                    setPhysioData({ ...physioData, session_fee: val })
+                  }
+                  editable={false}
                 />
+                <Text style={styles.readonlyValue}>$</Text>
               </View>
             </View>
 
-            {/* License File */}
             <View>
-              <Text style={styles.label}>{t("deliveryHome.licenseFile")}</Text>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+              <Text style={styles.label}>{t("physioHome.licenseFile")}</Text>
+              <View style={styles.licenseRow}>
                 <TouchableOpacity
-                  style={styles.fileBtn}
-                  onPress={pickLicenseFile}
-                  disabled // matches original: input was disabled
+                  style={styles.licensePicker}
+                  onPress={handlePickLicenseFile}
+                  disabled
                 >
-                  <FontAwesome5 name="file-upload" size={20} color={colors.cyan} />
-                  <Text style={styles.fileBtnText}>
-                    {licenseFileName || t("deliveryHome.viewFile")}
+                  <FontAwesome5 name="file-upload" size={16} color={colors.cyan} />
+                  <Text style={styles.licenseFileName}>
+                    {licenseFileName || t("physioHome.viewFile")}
                   </Text>
                 </TouchableOpacity>
+
                 {licenseFilePreview && !licenseFile && (
-                  <TouchableOpacity>
-                    <Text style={styles.viewCurrentLink}>
-                      {t("deliveryHome.viewCurrent")}
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL(licenseFilePreview)}
+                  >
+                    <Text style={styles.viewCurrentText}>
+                      {t("physioHome.viewCurrent")}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -366,22 +375,16 @@ console.log(t("header.home"));
             </View>
           </View>
         )}
-        </View>
-      <Footer />
       </ScrollView>
+      <Footer />
     </View>
   );
 };
 
-export default DeliveryHomePage;
+export default PhysioHomePage;
 
 const styles = StyleSheet.create({
-  container: { padding: 24, flexGrow: 1 },
-
-  updateContainer:{
-    alignSelf:"flex-start",
-    marginBottom:20
-  },
+  container: { flexGrow: 1, padding: 20, backgroundColor: colors.gray50 },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -389,45 +392,45 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: { fontSize: 24, fontWeight: "bold", color: "#0a3460" },
-  subtitle: { color: colors.textColor, fontWeight: "500", marginTop: 8, fontSize: 15 },
+  subtitle: { color: colors.gray700, fontWeight: "500", marginTop: 8, fontSize: 15 },
   updateBtn: {
-    backgroundColor: "#0a3460",
+    backgroundColor: colors.darkBlue,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
   },
-  disabledBtn: { opacity: 0.5 },
+  updateBtnDisabled: { opacity: 0.5 },
   updateBtnText: { color: colors.white, fontWeight: "600" },
   errorBox: {
-    backgroundColor: colors.dangerBg,
+    backgroundColor: "#fee2e2",
     borderWidth: 1,
-    borderColor: colors.dangerBorder,
+    borderColor: "#f87171",
     borderRadius: 6,
     padding: 12,
     marginBottom: 14,
   },
-  errorText: { color: colors.danger },
+  errorText: { color: "#b91c1c" },
   successBox: {
-    backgroundColor: colors.successBg,
+    backgroundColor: "#dcfce7",
     borderWidth: 1,
-    borderColor: colors.successBorder,
+    borderColor: "#4ade80",
     borderRadius: 6,
     padding: 12,
     marginBottom: 14,
   },
-  successText: { color: colors.success },
-  photoWrapper: {
+  successText: { color: "#15803d" },
+  centerText: { textAlign: "center", color: colors.gray500, marginVertical: 20 },
+  photoWrap: {
     width: 90,
     height: 90,
     borderRadius: 45,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
     overflow: "hidden",
-    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderColor: colors.gray300,
   },
-  photoImage: { width: "100%", height: "100%" },
-  label: { fontSize: 14, fontWeight: "600", color: colors.gray700, marginBottom: 8 },
-  inputGroup: {
+  photo: { width: "100%", height: "100%" },
+  label: { fontSize: 13, fontWeight: "500", color: colors.gray700, marginBottom: 8 },
+  inputRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
@@ -437,8 +440,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
-  input: { flex: 1, fontSize: 15, color: colors.gray800 },
-  fileBtn: {
+  input: { flex: 1, color: colors.gray800 },
+  readonlyValue: { color: colors.gray800, fontWeight: "500" },
+  licenseRow: { flexDirection: "row", alignItems: "center", gap: 16 },
+  licensePicker: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
@@ -447,8 +452,8 @@ const styles = StyleSheet.create({
     borderColor: colors.gray300,
     borderRadius: 10,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
-  fileBtnText: { fontSize: 14, color: colors.gray700 },
-  viewCurrentLink: { color: colors.cyan, fontSize: 14, textDecorationLine: "underline" },
+  licenseFileName: { fontSize: 13, color: colors.gray700 },
+  viewCurrentText: { fontSize: 13, color: colors.cyan, fontWeight: "500" },
 });
