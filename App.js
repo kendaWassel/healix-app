@@ -2,6 +2,7 @@ import "./i18n/i18n"
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { StripeProvider } from "@stripe/stripe-react-native";
 
 import UserLogin from "./screens/login/UserLogin";
 import NewAccountSetup from "./screens/registers/newaccountsetup/NewAccountSetup";
@@ -20,8 +21,11 @@ import Physio from "./screens/physio/Physio";
 
 const Stack = createNativeStackNavigator();
 
+const STRIPE_PUBLISHABLE_KEY = "pk_test_51Sb7QiADj5gMi232iI6BqSWfA8HBIm1VFNrlZxAtk1U0gPLuZ7KxgQipkKw0Jv2QzcDq1Mjc4lISxsrjcYnY5GpH00wseIAv7q";
+
 export default function App() {
   return (
+    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Landing"
@@ -59,5 +63,6 @@ export default function App() {
 
       </Stack.Navigator>
     </NavigationContainer>
+    </StripeProvider>
   );
 }

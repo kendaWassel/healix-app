@@ -862,6 +862,21 @@
   "paymentSuccessful": "Payment Successful!",
   "paymentSuccessText": "Your payment has been processed successfully."
 },
+"logout": {
+  "menuItem": "Logout",
+  "confirmTitle": "Log Out",
+  "confirmMessage": "Are you sure you want to log out?",
+  "loggingOut": "Logging out...",
+  "failed": "Failed to log out. Please try again."
+},
+"payment": {
+  "payNow": "Pay Now",
+  "error": "Error",
+  "failed": "Payment Failed",
+  "processing": "Processing",
+  "processingHint": "Payment received, confirming now. You'll be notified shortly.",
+  "connectionError": "Failed to connect to server"
+},
 "physioHome": {
   "title": "Account Information",
   "subtitle": "View or update your information",

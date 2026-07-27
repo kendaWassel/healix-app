@@ -862,6 +862,21 @@
   "paymentSuccessful": "تم الدفع بنجاح!",
   "paymentSuccessText": "تمت معالجة دفعتك بنجاح."
 },
+"logout": {
+  "menuItem": "تسجيل الخروج",
+  "confirmTitle": "تسجيل الخروج",
+  "confirmMessage": "هل أنت متأكد من تسجيل الخروج؟",
+  "loggingOut": "جارٍ تسجيل الخروج...",
+  "failed": "فشل تسجيل الخروج. حاول مرة أخرى."
+},
+"payment": {
+  "payNow": "ادفع الآن",
+  "error": "خطأ",
+  "failed": "فشل الدفع",
+  "processing": "قيد المعالجة",
+  "processingHint": "تم الدفع، جارٍ التأكيد. ستصلك رسالة خلال لحظات.",
+  "connectionError": "تعذّر الاتصال بالخادم"
+},
 "physioHome": {
   "title": "معلومات الحساب",
   "subtitle": "عرض أو تعديل معلوماتك",
