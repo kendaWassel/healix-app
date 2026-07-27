@@ -55,8 +55,8 @@
           }
         }
       ],
-      "./withDisableForceDark.js",
-      "@stripe/stripe-react-native"
+      "./withDisableForceDark.js"
+     
     ],
     "extra": {
       "eas": {

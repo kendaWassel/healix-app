@@ -6,7 +6,8 @@
    "next": "التالي",
    "cancel": "إلغاء",
    "confirm": "تأكيد",
-   "pageOf": "{{page}} من {{total}}"
+   "pageOf": "{{page}} من {{total}}",
+   "ok": "حسناً"
   },
   "header": {
   "home": "الرئيسية",

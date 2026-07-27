@@ -6,7 +6,8 @@
     "next": "Next",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "pageOf": "{{page}} of {{total}}"
+    "pageOf": "{{page}} of {{total}}",
+    "ok": "OK"
   },
  "header": {
     "home": "Home",
