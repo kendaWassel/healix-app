@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Healix-app",
+    "name": "Healix",
     "slug": "medical-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/Logo-dark.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -21,7 +21,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#052443"
       },
       "config": {
         "googleMaps": {
@@ -30,14 +30,6 @@
       },
       "edgeToEdgeEnabled": true,
       "queries": [
-        {
-          "intent": {
-            "action": "android.intent.action.DIAL",
-            "data": {
-              "scheme": "tel"
-            }
-          }
-        },
         {
           "intent": {
             "action": "android.intent.action.DIAL",
@@ -54,7 +46,22 @@
     },
     "plugins": [
       "@react-native-community/datetimepicker",
-      "expo-localization"
-    ]
+      "expo-localization",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35
+          }
+        }
+      ],
+      "./withDisableForceDark.js"
+     
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "36d3082b-6d5b-44ea-ada0-fc60d255ccbb"
+      }
+    }
   }
 }

@@ -21,7 +21,7 @@ import SendToPharmacy from "./SendtoPharmacy";
 import ReceiptDetails from "./ReceiptsDetails";
 import YouAreDone from "./YouAreDone";
 import Modal from "./Modal";
-import PaymentModal from "../../Components/servicesCard/PayementModal";
+import PaymentScreen from "../../Components/servicesCard/PaymentScreen";
 import RatingModal from "../DoctorConsultation/booking/RatingModal";
 import DoneModal from "../DoctorConsultation/booking/DoneModal";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -147,7 +147,6 @@ export default function Receipts() {
           },
         }
       );
-
       const data = await response.json();
       console.log("pharmacist receipts: ", data);
 
@@ -331,7 +330,6 @@ export default function Receipts() {
           body: formData,
         }
       );
-
       const data = await response.json();
       console.log("receipt details: ", data);
       console.log("image url specifically:", data.data?.prescription_image_url);
@@ -725,12 +723,33 @@ export default function Receipts() {
             : ""
         }
       />
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        onPaymentSuccess={handlePaymentSuccess}
-        paymentType="delivery"
-      />
+
+
+      {showPaymentModal && (
+        <RNModal
+          visible
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowPaymentModal(false)}
+        >
+          <View style={styles.overlay}>
+            <View style={styles.paymentCard}>
+              <PaymentScreen
+                payableType="order"
+                payableId={selectedOrderId}
+                onSuccess={() => {
+                  setShowPaymentModal(false);
+                  handlePaymentSuccess();
+                }}
+              />
+              <TouchableOpacity onPress={() => setShowPaymentModal(false)}>
+                <Text style={styles.paymentCancelText}>{t("common.cancel")}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </RNModal>
+      )}
+
       <DoneModal
         isOpen={showBookingDone}
         onHome={() => {
@@ -766,7 +785,7 @@ export default function Receipts() {
                 {suggestion?.field === "drugA" && (
                   <View style={styles.suggestionBox}>
                     <Text style={styles.suggestionText}>
-                    {t("drugSuggestion.didYouMean")}{" "}
+                      {t("drugSuggestion.didYouMean")}{" "}
                       <Text style={styles.suggestionValue}>
                         {suggestion.value}
                       </Text>
@@ -778,7 +797,7 @@ export default function Receipts() {
                         clearSuggestion();
                       }}
                     >
-                       <Text style={styles.suggestionUseBtn}>{t("drugSuggestion.useIt")}</Text>
+                      <Text style={styles.suggestionUseBtn}>{t("drugSuggestion.useIt")}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -797,7 +816,7 @@ export default function Receipts() {
                 {suggestion?.field === "drugB" && (
                   <View style={styles.suggestionBox}>
                     <Text style={styles.suggestionText}>
-                      Did you mean{" "}
+                      {t("drugSuggestion.didYouMean")}{" "}
                       <Text style={styles.suggestionValue}>
                         {suggestion.value}
                       </Text>
@@ -809,7 +828,7 @@ export default function Receipts() {
                         clearSuggestion();
                       }}
                     >
-                      <Text style={styles.suggestionUseBtn}>Use it</Text>
+                      <Text style={styles.suggestionUseBtn}>{t("drugSuggestion.useIt")}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -889,6 +908,7 @@ export default function Receipts() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   section: {
     paddingHorizontal: 20,
@@ -1145,6 +1165,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  paymentCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    width: "90%",
+    maxWidth: 400,
+  },
+  paymentCancelText: {
+    textAlign: "center",
+    marginTop: 12,
+    color: "#767676",
+  },
   checkerCard: {
     backgroundColor: "#fff",
     borderRadius: 14,
@@ -1247,30 +1279,30 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   suggestionBox: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  backgroundColor: "#fffbeb",
-  borderWidth: 1,
-  borderColor: "#fde68a",
-  borderRadius: 6,
-  paddingHorizontal: 8,
-  paddingVertical: 6,
-  marginTop: 6,
-},
-suggestionText: {
-  fontSize: 12,
-  color: "#92400e",
-  flex: 1,
-},
-suggestionValue: {
-  fontWeight: "700",
-},
-suggestionUseBtn: {
-  fontSize: 12,
-  fontWeight: "700",
-  color: "#92400e",
-  textDecorationLine: "underline",
-  marginLeft: 8,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#fffbeb",
+    borderWidth: 1,
+    borderColor: "#fde68a",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    marginTop: 6,
+  },
+  suggestionText: {
+    fontSize: 12,
+    color: "#92400e",
+    flex: 1,
+  },
+  suggestionValue: {
+    fontWeight: "700",
+  },
+  suggestionUseBtn: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#92400e",
+    textDecorationLine: "underline",
+    marginLeft: 8,
+  },
 });

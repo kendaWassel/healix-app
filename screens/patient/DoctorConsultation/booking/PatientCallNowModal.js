@@ -1,13 +1,6 @@
-// screens/patient/DoctorConsultation/Booking/PatientCallNowModal.js
 import React, { useState, useEffect, useRef } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  Linking,
-  AppState,
-  StyleSheet,
+  View, Text, TouchableOpacity, Modal, Linking, AppState, StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -15,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import PatientEndCallModal from "./PatientEndCallModal";
 import RatingModal from "./RatingModal";
 import DoneModal from "./DoneModal";
-import PaymentModal from "../../../Components/servicesCard/PayementModal";
+import PaymentScreen from "../../../Components/servicesCard/PaymentScreen";
 
 export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfirm }) {
   const { t } = useTranslation();
@@ -127,26 +120,26 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
     }
   };
 
-const handleCallClick = async () => {
-  const phone = doctorPhone;
-  if (!phone) {
-    setError(t("patientCallNow.phoneMissing"));
-    return;
-  }
+  const handleCallClick = async () => {
+    const phone = doctorPhone;
+    if (!phone) {
+      setError(t("patientCallNow.phoneMissing"));
+      return;
+    }
 
-  triggerCallApi();
+    triggerCallApi();
 
-  const url = `tel:${phone}`;
+    const url = `tel:${phone}`;
 
-  try {
-    callWasOpenedRef.current = true;
-    await Linking.openURL(url);  
-    if (onConfirm) onConfirm();
-  } catch (err) {
-    callWasOpenedRef.current = false;
-    setError(t("patientCallNow.dialerUnavailable"));
-  }
-};
+    try {
+      callWasOpenedRef.current = true;
+      await Linking.openURL(url);
+      if (onConfirm) onConfirm();
+    } catch (err) {
+      callWasOpenedRef.current = false;
+      setError(t("patientCallNow.dialerUnavailable"));
+    }
+  };
 
   const handleEndCallSuccess = () => {
     setShowEndCallModal(false);
@@ -215,12 +208,33 @@ const handleCallClick = async () => {
           consultationId={consultationId}
           onEndSuccess={handleEndCallSuccess}
         />
-        <PaymentModal
-          isOpen={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
-          onPaymentSuccess={handlePaymentSuccess}
-          paymentType="doctor"
-        />
+
+        {/* 👇 نافذة الدفع — نمط Stripe الجديد */}
+        {showPaymentModal && (
+          <Modal
+            visible
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowPaymentModal(false)}
+          >
+            <View style={styles.overlay}>
+              <View style={styles.paymentCard}>
+                <PaymentScreen
+                  payableType="consultation"
+                  payableId={consultationId}
+                  onSuccess={() => {
+                    setShowPaymentModal(false);
+                    handlePaymentSuccess();
+                  }}
+                />
+                <TouchableOpacity onPress={() => setShowPaymentModal(false)}>
+                  <Text style={styles.paymentCancelText}>{t("common.cancel")}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        )}
+
         <RatingModal
           isOpen={showRatingModal}
           onClose={handleRatingSkip}
@@ -233,6 +247,7 @@ const handleCallClick = async () => {
           }}
           message={t("patientCallNow.rateTheDoctor")}
         />
+
         <DoneModal
           isOpen={showBookingDone}
           onHome={() => {
@@ -335,5 +350,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     textAlign: "center",
+  },
+  paymentCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    width: "90%",
+    maxWidth: 400,
+  },
+  paymentCancelText: {
+    textAlign: "center",
+    marginTop: 12,
+    color: "#767676",
   },
 });

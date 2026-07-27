@@ -1,4 +1,3 @@
-// screens/patient/mySchedules/MySchedules.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -7,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Modal as RNModal,
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,7 +18,7 @@ import PatientScheduleCall from "./PatientScheduleCall";
 import PatientScheduleSession from "./PatientScheduleSession";
 import RatingModal from "../DoctorConsultation/booking/RatingModal";
 import DoneModal from "../DoctorConsultation/booking/DoneModal";
-import PaymentModal from "../../Components/servicesCard/PayementModal";
+import PaymentScreen from "../../Components/servicesCard/PaymentScreen";
 import { apiFetch } from "../../../utils/apiClient";
 
 const MySchedules = () => {
@@ -40,7 +40,7 @@ const MySchedules = () => {
   const [selectedCpId, setSelectedCpId] = useState(null);
   const [showBookingDone, setShowBookingDone] = useState(false);
   const [cpLoadBtn, setCpLoadBtn] = useState(false);
-  
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
     itemsPerPage: 3,
@@ -58,13 +58,12 @@ const MySchedules = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const token = await AsyncStorage.getItem("token");
       const response = await apiFetch(
-      `/api/patient/my-schedules?page=${pagination.currentPage}&per_page=3`
-    );
+        `/api/patient/my-schedules?page=${pagination.currentPage}&per_page=3`
+      );
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-           throw new Error(serverError.message || t("mySchedules.loadFail"));
+        throw new Error(serverError.message || t("mySchedules.loadFail"));
       }
       const data = await response.json();
       setSchedules(data.data);
@@ -84,21 +83,12 @@ const MySchedules = () => {
     setCpIsLoading(true);
     setCpError(null);
     try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/care-provider-schedules?page=${cpPagination.currentPage}&per_page=3`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiFetch(
+        `/api/patient/care-provider-schedules?page=${cpPagination.currentPage}&per_page=3`
       );
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Request failed");
+        throw new Error(serverError.message || t("mySchedules.loadFail"));
       }
       const data = await response.json();
       setCpSchedules(data.data);
@@ -384,10 +374,10 @@ const MySchedules = () => {
             <Text style={styles.emptyText}>{t("mySchedules.noSchedulesFound")}</Text>
           )}
         </View>
-
-     
       </ScrollView>
-   <Footer />
+
+      <Footer />
+
       <PatientScheduleCall
         isOpen={showCallModal}
         onClose={() => {
@@ -400,12 +390,33 @@ const MySchedules = () => {
         doctorId={selectedDoctorId}
         doctorPhone={selectedDoctorPhone}
       />
-      <PaymentModal
-        isOpen={showPayModal}
-        onClose={() => setShowPayModal(false)}
-        onPaymentSuccess={handlePaymentSuccess}
-        paymentType="careprovider"
-      />
+
+      {/* Payment Modal — نمط Stripe الجديد */}
+      {showPayModal && (
+        <RNModal
+          visible
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowPayModal(false)}
+        >
+          <View style={styles.overlay}>
+            <View style={styles.paymentCard}>
+              <PaymentScreen
+                payableType="home_visit"
+                payableId={selectedSessionId}
+                onSuccess={() => {
+                  setShowPayModal(false);
+                  handlePaymentSuccess();
+                }}
+              />
+              <TouchableOpacity onPress={() => setShowPayModal(false)}>
+                <Text style={styles.paymentCancelText}>{t("common.cancel")}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </RNModal>
+      )}
+
       <RatingModal
         isOpen={showRateModal}
         onClose={handleRatingSkip}
@@ -441,8 +452,6 @@ const MySchedules = () => {
     </View>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   section: {
@@ -614,6 +623,24 @@ const styles = StyleSheet.create({
   pageInfo: {
     color: "#374151",
     fontWeight: "600",
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  paymentCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    width: "90%",
+    maxWidth: 400,
+  },
+  paymentCancelText: {
+    textAlign: "center",
+    marginTop: 12,
+    color: "#767676",
   },
 });
 
