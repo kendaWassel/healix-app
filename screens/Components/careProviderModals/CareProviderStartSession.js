@@ -5,8 +5,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import PatientDetailsModal from "../../screens/doctor/doctorSchedules/PatientDetailsModal";
 import CareProviderModifyMedicalReport from "./CareProviderModifyMedicalReport";
 import DoneModal from "../../screens/patient/doctorConsultation/booking/DoneModal";
-import { colors } from "../../constants/colors";
-import { BASE_URL, NGROK_HEADERS } from "../../constants/api";
+import { colors } from "../../../constants/colors";
+import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
 
 export default function CareProviderStartSession({
   isOpen,

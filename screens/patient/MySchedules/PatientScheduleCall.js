@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import PatientEndCallModal from "../DoctorConsultation/booking/PatientEndCallModal";
 import RatingModal from "../DoctorConsultation/booking/RatingModal";
 import DoneModal from "../DoctorConsultation/booking/DoneModal";
-
+import {BASE_URL,NGROK_HEADERS} from "../../../constants/api"
 export default function PatientScheduleCall({
   isOpen,
   onClose,
@@ -57,12 +57,12 @@ export default function PatientScheduleCall({
 
       try {
         const response = await fetch(
-          `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/consultations/${consultationId}/call`,
+          `${BASE_URL}/consultations/${consultationId}/call`,
           {
             method: "POST",
             headers: {
+              ...NGROK_HEADERS,
               "Content-Type": "application/json",
-              "ngrok-skip-browser-warning": "true",
               Authorization: `Bearer ${token}`,
             },
           }

@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next";
 import PatientDetailsModal from "../doctorSchedules/PatientDetailsModal";
 import CreatePrescription from "../prescription/CreatePrescription";
 import ModifyMedicalReport from "../doctorSchedules/ModifyMedicalReport";
-
+import {BASE_URL,NGROK_HEADERS} from '../../../constants/api'
 export default function DoctorEndCallModal({
   isOpen,
   onClose,
@@ -63,14 +63,14 @@ export default function DoctorEndCallModal({
 
     try {
       const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patients/${patientId}/view-details`,
+        `${BASE_URL}/patients/${patientId}/view-details`,
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
         }
       );
 
@@ -113,14 +113,14 @@ export default function DoctorEndCallModal({
         const token = await AsyncStorage.getItem("token");
         try {
           const response = await fetch(
-            `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patients/${patientId}/view-details`,
+            `${BASE_URL}/patients/${patientId}/view-details`,
             {
               method: "GET",
               headers: {
-                "Content-Type": "application/json",
-                "ngrok-skip-browser-warning": "true",
-                Authorization: `Bearer ${token}`,
-              },
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             }
           );
           if (response.ok) {
@@ -150,14 +150,14 @@ export default function DoctorEndCallModal({
 
     try {
       const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/consultations/${consultationId}/end`,
+        `${BASE_URL}/consultations/${consultationId}/end`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
         }
       );
 
@@ -197,14 +197,14 @@ export default function DoctorEndCallModal({
 
     try {
       const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/doctor/home-visit/request`,
+        `${BASE_URL}/doctor/home-visit/request`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           body: JSON.stringify({
             consultation_id: consultationId,
             patient_id: patientId,

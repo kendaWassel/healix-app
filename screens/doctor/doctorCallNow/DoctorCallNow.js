@@ -13,7 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import DoctorEndCallModal from "./DoctorEndCallModal";
 import DoneModal from "../../patient/DoctorConsultation/booking/DoneModal";
-
+import {BASE_URL, NGROK_HEADERS} from '../../../constants/api';
 
 export default function DoctorCallNow({
   isOpen,
@@ -62,12 +62,12 @@ export default function DoctorCallNow({
 
       try {
         const response = await fetch(
-          `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/consultations/${consultationId}/call`,
+          `${BASE_URL}/consultations/${consultationId}/call`,
           {
             method: "POST",
             headers: {
+              ...NGROK_HEADERS,
               "Content-Type": "application/json",
-              "ngrok-skip-browser-warning": "true",
               Authorization: `Bearer ${token}`,
             },
           }

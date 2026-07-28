@@ -1,10 +1,9 @@
-// screens/doctorSchedules/ModifyMedicalReports.js
 import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import MedicalReportModal from "../../registers/patient/MedicalReportModal";
-
+import {BASE_URL , NGROK_HEADERS} from "../../../constants/api";
 export default function ModifyMedicalReport({
   isOpen,
   onClose,
@@ -50,14 +49,14 @@ export default function ModifyMedicalReport({
       };
 
       const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patients/${patientId}/medical-record/update`,
+        `${BASE_URL}/patients/${patientId}/medical-record/update`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           body: JSON.stringify(dataToSubmit),
         }
       );

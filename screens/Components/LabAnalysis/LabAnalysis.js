@@ -86,9 +86,9 @@ export default function LabAnalysis() {
             </View>
           )
         )}
+      <Footer />
       </ScrollView>
 
-      <Footer />
     </View>
   );
 }

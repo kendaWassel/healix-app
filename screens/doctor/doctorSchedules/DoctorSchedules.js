@@ -14,7 +14,7 @@ import DoctorHeader from "../../Components/header/DoctorHeader";
 import Footer from "../../Components/footer/Footer";
 import PatientDetailsModal from "./PatientDetailsModal";
 import DoctorCallNow from "../doctorCallNow/DoctorCallNow";
-
+import {BASE_URL,NGROK_HEADERS} from "../../../constants/api";
 export default function DoctorSchedules() {
   const { t } = useTranslation();
 
@@ -50,18 +50,18 @@ export default function DoctorSchedules() {
     setError(null);
     try {
       const token = await AsyncStorage.getItem("token");
-      let url = `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/doctor/my-schedules?page=${page}&per_page=${perPage}`;
+      let url = `${BASE_URL}/doctor/my-schedules?page=${page}&per_page=${perPage}`;
       if (selectedFilter !== "All") {
         url += `&status=${selectedFilter}`;
       }
 
       const response = await fetch(url, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-          Authorization: `Bearer ${token}`,
-        },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
       });
 
       if (!response.ok) {
@@ -124,14 +124,14 @@ export default function DoctorSchedules() {
     try {
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patients/${patientId}/view-details`,
+        `${BASE_URL}/patients/${patientId}/view-details`,
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
         }
       );
 

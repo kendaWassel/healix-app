@@ -9,7 +9,7 @@ import PatientEndCallModal from "./PatientEndCallModal";
 import RatingModal from "./RatingModal";
 import DoneModal from "./DoneModal";
 import PaymentScreen from "../../../Components/servicesCard/PaymentScreen";
-
+import {BASE_URL,NGROK_HEADERS} from '../../../../constants/api';
 export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfirm }) {
   const { t } = useTranslation();
   const [isCreatingConsultation, setIsCreatingConsultation] = useState(false);
@@ -48,12 +48,12 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
 
       try {
         const response = await fetch(
-          `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/consultations/book`,
+          `${BASE_URL}/patient/consultations/book`,
           {
             method: "POST",
             headers: {
+              ...NGROK_HEADERS,
               "Content-Type": "application/json",
-              "ngrok-skip-browser-warning": "true",
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
@@ -105,14 +105,14 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
     const token = await AsyncStorage.getItem("token");
     try {
       await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/consultations/${consultationId}/call`,
+        `${BASE_URL}/consultations/${consultationId}/call`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
         }
       );
     } catch (err) {

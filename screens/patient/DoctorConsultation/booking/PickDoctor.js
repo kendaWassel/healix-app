@@ -1,4 +1,3 @@
-// screens/patient/DoctorConsultation/PickDoctor/PickDoctor.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -8,6 +7,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Platform,
+  Modal
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -20,7 +20,9 @@ import BookingOption from "../booking/BookingOption";
 import DoneModal from "../booking/DoneModal";
 import ScheduleLaterModal from "../booking/ScheduleLaterModal";
 import PatientCallNowModal from "../booking/PatientCallNowModal";
-
+import LabTestOptionModal from "../booking/LabTestOptionModal";
+import LabUploadHandler from "../booking/LabUploadHandler";
+import {BASE_URL,NGROK_HEADERS} from "../../../../constants/api";
 const PickDoctor = () => {
   const route = useRoute();
   const navigation = useNavigation();
@@ -42,6 +44,11 @@ const PickDoctor = () => {
     totalPages: 1,
   });
 
+  const [openLabOption, setOpenLabOption] = useState(false);
+  const [openLabUpload, setOpenLabUpload] = useState(false);
+  const [pendingBooking, setPendingBooking] = useState(null);
+  const [processingLab, setProcessingLab] = useState(false);
+
   const fetchDoctors = async (page, perPage) => {
     setIsLoading(true);
     setError(null);
@@ -50,15 +57,15 @@ const PickDoctor = () => {
 
     try {
       const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/doctors/by-specialization?specialization_id=${id}&page=${page}&per_page=${perPage}`,
+        `${BASE_URL}/patient/doctors/by-specialization?specialization_id=${id}&page=${page}&per_page=${perPage}`,
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+        },
       );
 
       if (!response.ok) {
@@ -108,20 +115,36 @@ const PickDoctor = () => {
   }, [id, pagination.currentPage, pagination.itemsPerPage]);
 
   const handleConfirm = async (option) => {
-    if (option === "Schedule For later") {
-      setOpenPickOption(false);
-      setTimeout(() => setOpenScheduleLater(true), 200);
-    } else if (option === "Call Now") {
+    setPendingBooking(option);
+
+    if (option === "Call Now") {
       if (selected === null || !doctors[selected]) {
         setError(t("pickDoctor.selectDoctorFirst"));
         setOpenPickOption(false);
         return;
       }
-      setOpenPickOption(false);
-      setTimeout(() => setOpenCallNow(true), 200);
+    }
+
+    setOpenPickOption(false);
+
+    setTimeout(() => {
+      setOpenLabOption(true);
+    }, 200);
+  };
+
+  const continueBooking = () => {
+    if (pendingBooking === "Schedule For later") {
+      setTimeout(() => {
+        setOpenScheduleLater(true);
+      }, 200);
+    } else if (pendingBooking === "Call Now") {
+      setTimeout(() => {
+        setOpenCallNow(true);
+      }, 200);
     } else {
-      setOpenPickOption(false);
-      setTimeout(() => setOpenModalDone(true), 400);
+      setTimeout(() => {
+        setOpenModalDone(true);
+      }, 400);
     }
   };
 
@@ -146,7 +169,7 @@ const PickDoctor = () => {
   };
 
   return (
-     <View style={{ flex: 1, backgroundColor: "#fafbfc" }}>
+    <View style={{ flex: 1, backgroundColor: "#fafbfc" }}>
       <PatientHeader />
 
       <View style={styles.headerSection}>
@@ -196,7 +219,9 @@ const PickDoctor = () => {
         columnWrapperStyle={{ justifyContent: "space-between" }}
         ListEmptyComponent={
           !isLoading ? (
-            <Text style={styles.emptyText}>{t("pickDoctor.noDoctorsFound")}</Text>
+            <Text style={styles.emptyText}>
+              {t("pickDoctor.noDoctorsFound")}
+            </Text>
           ) : null
         }
         ListFooterComponent={
@@ -269,6 +294,56 @@ const PickDoctor = () => {
 
       <Footer />
 
+      <LabTestOptionModal
+        isOpen={openLabOption}
+        processing={processingLab}
+        onClose={() => {
+          setOpenLabOption(false);
+        }}
+        onChoose={(choice) => {
+          if (choice === "yes") {
+            setOpenLabOption(false);
+
+            setTimeout(() => {
+              setOpenLabUpload(true);
+            }, 300);
+          } else {
+            continueBooking();
+          }
+        }}
+      />
+
+      {openLabUpload && (
+        <Modal visible transparent animationType="fade">
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              backgroundColor: "rgba(0,0,0,.5)",
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: "#fff",
+                margin: 20,
+                padding: 20,
+                borderRadius: 15,
+              }}
+            >
+              <LabUploadHandler
+                onFinished={() => {
+                  setOpenLabUpload(false);
+
+                  setTimeout(() => {
+                    continueBooking();
+                  }, 500);
+                }}
+              />
+            </View>
+          </View>
+        </Modal>
+      )}
+
       <BookingOption
         isOpen={openPickOption}
         onClose={() => setOpenPickOption(false)}
@@ -285,7 +360,11 @@ const PickDoctor = () => {
           setTimeout(() => setOpenModalDone(true), 300);
         }}
       />
-      <DoneModal isOpen={openModalDone} onHome={handleGoHome} message={t("pickDoctor.bookingDone")} />
+      <DoneModal
+        isOpen={openModalDone}
+        onHome={handleGoHome}
+        message={t("pickDoctor.bookingDone")}
+      />
       <PatientCallNowModal
         onClose={() => setOpenCallNow(false)}
         isOpen={openCallNow}
@@ -299,10 +378,10 @@ const PickDoctor = () => {
 };
 
 const styles = StyleSheet.create({
-headerSection: {
-  paddingTop: 4,         
-  paddingHorizontal: 16,
-},
+  headerSection: {
+    paddingTop: 4,
+    paddingHorizontal: 16,
+  },
   backBtn: {
     marginBottom: 12,
   },

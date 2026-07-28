@@ -1,9 +1,8 @@
-// screens/patient/DoctorConsultation/Booking/PatientEndCallModal.js
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-
+import {BASE_URL,NGROK_HEADERS} from '../../../../constants/api'
 export default function PatientEndCallModal({
   isOpen,
   onClose,
@@ -25,14 +24,14 @@ export default function PatientEndCallModal({
     const token = await AsyncStorage.getItem("token");
     try {
       const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/consultations/${consultationId}/end`,
+        `${BASE_URL}/consultations/${consultationId}/end`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
         }
       );
 

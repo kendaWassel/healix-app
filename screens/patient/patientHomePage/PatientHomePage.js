@@ -10,7 +10,9 @@ import PatientHeader from "../../Components/header/PatientHeader";
 import Footer from "../../Components/footer/Footer";
 import FAID from "./FAID/FAID";
 import AI_Medical_Assistant from "../AIMedicalAssistant/AI_Medical_Assistant";
+import PatientMedicalReport from "../../Components/PatientMedicalReport/PatientMedicalReport";
 import { LinearGradient } from "expo-linear-gradient";
+import {BASE_URL,NGROK_HEADERS} from "../../../constants/api"
 
 export default function PatientHomePage() {
   const { t } = useTranslation();
@@ -40,14 +42,14 @@ export default function PatientHomePage() {
     try {
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(
-        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/profile",
+        `${BASE_URL}/patient/profile`,
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
         }
       );
 
@@ -105,14 +107,14 @@ export default function PatientHomePage() {
       }
 
       const response = await fetch(
-        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/profile",
+        `${BASE_URL}/patient/profile`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           body: JSON.stringify(updateData),
         }
       );
@@ -160,7 +162,6 @@ export default function PatientHomePage() {
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
-        {/* الرأس + زر التحديث */}
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.title}>{t("patientHome.title")}</Text>
@@ -186,7 +187,6 @@ export default function PatientHomePage() {
           <Text style={styles.loadingText}>{t("patientHome.loadingProfile")}</Text>
         ) : (
           <View style={styles.form}>
-            {/* الاسم الكامل */}
             <View style={styles.field}>
               <Text style={styles.label}>{t("patientHome.fullName")}</Text>
               <View style={styles.inputGroup}>
@@ -199,7 +199,6 @@ export default function PatientHomePage() {
               </View>
             </View>
 
-            {/* الإيميل */}
             <View style={styles.field}>
               <Text style={styles.label}>{t("patientHome.email")}</Text>
               <View style={styles.inputGroup}>
@@ -213,7 +212,6 @@ export default function PatientHomePage() {
               </View>
             </View>
 
-            {/* الهاتف */}
             <View style={styles.field}>
               <Text style={styles.label}>{t("patientHome.phone")}</Text>
               <View style={styles.inputGroup}>
@@ -226,7 +224,6 @@ export default function PatientHomePage() {
               </View>
             </View>
 
-            {/* تاريخ الميلاد */}
             <View style={styles.field}>
               <Text style={styles.label}>{t("patientHome.birthDate")}</Text>
               <View style={styles.inputGroup}>
@@ -242,7 +239,6 @@ export default function PatientHomePage() {
 
          
 
-            {/* الجنس */}
             <View style={styles.field}>
               <Text style={styles.label}>{t("patientHome.gender")}</Text>
               <View style={styles.inputGroup}>
@@ -255,7 +251,6 @@ export default function PatientHomePage() {
               </View>
             </View>
 
-            {/* العنوان */}
             <View style={styles.field}>
               <Text style={styles.label}>{t("patientHome.address")}</Text>
               <View style={styles.inputGroup}>
@@ -272,6 +267,7 @@ export default function PatientHomePage() {
          
           </View>
         )}
+        <PatientMedicalReport />
         <FAID />
         <Footer />
       </ScrollView>
