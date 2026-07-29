@@ -16,7 +16,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import DoctorHeader from "../../Components/header/DoctorHeader";
 import Footer from "../../Components/footer/Footer";
-
+import {BASE_URL,NGROK_HEADERS} from "../../../constants/api";
 const DoctorHomePage = () => {
   const { t } = useTranslation();
 
@@ -37,7 +37,6 @@ const DoctorHomePage = () => {
     image: null,
   });
 
-  // 🔹 ملف الصورة الجديد المُختار (لم يُرفع بعد)، يُحمَل عند الضغط "Update" فقط
   const [newImageAsset, setNewImageAsset] = useState(null);
 
   const fetchDoctorProfile = async () => {
@@ -47,14 +46,14 @@ const DoctorHomePage = () => {
     try {
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(
-        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/doctor/profile",
+        `${BASE_URL}/doctor/profile`,
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
         }
       );
 
@@ -107,7 +106,6 @@ const DoctorHomePage = () => {
 
     if (result.canceled || !result.assets?.length) return;
 
-    // تحويل لـ JPEG لضمان توافق mimes: jpeg,png,jpg,gif
     const manipulated = await ImageManipulator.manipulateAsync(
       result.assets[0].uri,
       [],
@@ -145,14 +143,14 @@ const DoctorHomePage = () => {
       }
 
       const response = await fetch(
-        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/doctor/profile",
+        `${BASE_URL}/doctor/profile`,
         {
           method: "POST",
-          headers: {
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-            // ⚠️ لا تضعي Content-Type يدوياً — fetch يحددها تلقائياً مع FormData (multipart/form-data + boundary)
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           body: formData,
         }
       );

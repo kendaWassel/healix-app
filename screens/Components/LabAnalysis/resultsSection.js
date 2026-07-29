@@ -3,10 +3,6 @@ import { useTranslation } from "react-i18next";
 
 import { colors } from "../../../constants/colors";
 
-// NOTE: the web version imported FAIDCard but never rendered it (dead
-// import), so it's dropped here. Let me know if you actually want a
-// first-aid card shown somewhere in this screen.
-
 const severityColors = {
   normal: { bg: "#dcfce7", text: "#15803d" },
   mild: { bg: "#fef9c3", text: "#a16207" },

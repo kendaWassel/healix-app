@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-
+import {BASE_URL, NGROK_HEADERS} from "../../../../constants/api";
 export default function RatingModal({ isOpen, onClose, url, message, onRatingSuccess }) {
   const { t } = useTranslation();
   const [rating, setRating] = useState(0);
@@ -29,14 +29,14 @@ export default function RatingModal({ isOpen, onClose, url, message, onRatingSuc
 
     try {
       const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/${url}`,
+        `${BASE_URL}/patient/${url}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           body: JSON.stringify({
             stars: rating,
           }),

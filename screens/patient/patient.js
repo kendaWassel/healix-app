@@ -2,7 +2,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import PatientHomePage from "./patientHomePage/PatientHomePage";
 import DoctorConsultation from "./DoctorConsultation/DoctorConsultation";
-import PickDoctor from "./DoctorConsultation/pickDoctor/PickDoctor";
+import PickDoctor from "./DoctorConsultation/booking/PickDoctor";
 import MySchedules from "./MySchedules/MySchedules";
 import Receipts from "./Receipts/Receipts";
 

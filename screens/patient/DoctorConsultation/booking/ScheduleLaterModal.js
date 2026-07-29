@@ -13,7 +13,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-
+import {BASE_URL,NGROK_HEADERS} from "../../../../constants/api"
 export default function ScheduleLaterModal({
   isOpen,
   onClose,
@@ -50,14 +50,14 @@ export default function ScheduleLaterModal({
 
     try {
       const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/consultations/book`,
+        `${BASE_URL}/patient/consultations/book`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           body: JSON.stringify({
             doctor_id: doctorId,
             scheduled_at: formattedDateTime,
@@ -103,7 +103,7 @@ export default function ScheduleLaterModal({
       setLoading(true);
       setError(null);
       try {
-        const url = `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/doctors/${doctorId}/available-slots?date=${selectedDate}`;
+        const url = `${BASE_URL}/patient/doctors/${doctorId}/available-slots?date=${selectedDate}`;
         const res = await fetch(url, {
           method: "GET",
           headers: {

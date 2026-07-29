@@ -12,7 +12,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
-
+import {BASE_URL,NGROK_HEADERS} from "../../../constants/api";
 const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId }) => {
   const { t } = useTranslation();
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
@@ -80,14 +80,14 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
 
     try {
       const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/doctor/prescriptions/verify`,
+        `${BASE_URL}/doctor/prescriptions/verify`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           body: JSON.stringify({ medications: uniqueDrugNames, patient_id: patientId }),
         }
       );
@@ -143,14 +143,14 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
     const token = await AsyncStorage.getItem("token");
     try {
       const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/doctor/prescriptions`,
+        `${BASE_URL}/doctor/prescriptions`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
+            headers: {
+              ...NGROK_HEADERS,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           body: JSON.stringify({
             consultation_id: consultationId,
             diagnosis,

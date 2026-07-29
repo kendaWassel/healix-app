@@ -375,8 +375,8 @@ const PhysioHomePage = () => {
             </View>
           </View>
         )}
-      </ScrollView>
       <Footer />
+      </ScrollView>
     </View>
   );
 };

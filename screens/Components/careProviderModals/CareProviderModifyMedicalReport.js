@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MedicalReportModal from "../../../screens/registers/patient/MedicalReportModal";
 import { colors } from "../../../constants/colors";
-import { BASE_URL, NGROK_HEADERS } from "../../../constants/colors";
+import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
 
 export default function CareProviderModifyMedicalReport({
   isOpen,

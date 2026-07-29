@@ -7,7 +7,12 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "pageOf": "{{page}} of {{total}}",
-    "ok": "OK"
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+        "edit":"Edit",
+    "save":"Save",
+    "none":"None"
   },
  "header": {
     "home": "Home",
@@ -22,6 +27,57 @@
     "doctor": "Doctor",
     "pharmacist": "Pharmacist",
     "physio": "Physiotherapist"
+  },
+  "labAnalysis": {
+    "title": "AI Lab Analysis",
+    "subtitle": "Upload your laboratory report and get an AI-powered analysis of your results.",
+
+    "viewSupportedTests": "View Supported Tests",
+    "loadingSupportedTests": "Loading supported tests...",
+    "supportedTestsTitle": "Supported Laboratory Tests",
+    "testsCount": "{{count}} tests",
+
+    "uploadTitle": "Upload Laboratory Report",
+    "uploadFile": "Upload File",
+    "selectedFile": "Selected file:",
+    "analyzeReport": "Analyze Report",
+    "analyzing": "Analyzing...",
+
+    "testsAnalyzed": "Tests Analyzed",
+    "normal": "Normal",
+    "abnormal": "Abnormal",
+    "severity": "Severity",
+
+    "summaryTitle": "Analysis Summary",
+    "possibleConditions": "Possible Conditions",
+    "confidence": "Confidence",
+    "recommendations": "Recommendations",
+
+    "testResults": "Detailed Test Results",
+    "test": "Test",
+    "value": "Value",
+    "status": "Status",
+    "waitingMessage": "Analyzing your medical tests, please wait..."
+  },
+
+  "labOption": {
+    "uploadQuestion": "Do you want to upload a laboratory report?",
+    "processing": "Processing your laboratory report..."
+  },
+    "patientMedicalReport": {
+
+    "title":"My Medical Report",
+    "editTitle":"Edit Medical Report",
+
+    "diagnosis":"Diagnosis",
+    "chronicDiseases":"Chronic Diseases",
+    "previousSurgeries":"Previous Surgeries",
+    "allergies":"Allergies",
+    "currentMedications":"Current Medications",
+    "treatmentPlan":"Treatment Plan",
+
+    "noReport":"No medical report available",
+    "updateSuccess":"Medical report updated successfully"
   },
   "deliveryHome": {
     "title": "Account Information",

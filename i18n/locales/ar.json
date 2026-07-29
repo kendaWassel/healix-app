@@ -7,7 +7,12 @@
    "cancel": "إلغاء",
    "confirm": "تأكيد",
    "pageOf": "{{page}} من {{total}}",
-   "ok": "حسناً"
+   "ok": "حسناً",
+       "yes": "نعم",
+    "no": "لا",
+        "edit": "تعديل",
+    "save": "حفظ",
+    "none": "لا يوجد"
   },
   "header": {
   "home": "الرئيسية",
@@ -23,6 +28,57 @@
   "pharmacist": "صيدلي",
   "physio": "أخصائي علاج طبيعي"
 },
+ "labAnalysis": {
+    "title": "تحليل الفحوصات المخبرية بالذكاء الاصطناعي",
+    "subtitle": "قم برفع تقريرك المخبري واحصل على تحليل مدعوم بالذكاء الاصطناعي لنتائجك.",
+
+    "viewSupportedTests": "عرض الفحوصات المدعومة",
+    "loadingSupportedTests": "جاري تحميل الفحوصات المدعومة...",
+    "supportedTestsTitle": "الفحوصات المخبرية المدعومة",
+    "testsCount": "{{count}} فحص",
+
+    "uploadTitle": "رفع التقرير المخبري",
+    "uploadFile": "رفع ملف",
+    "selectedFile": "الملف المحدد:",
+    "analyzeReport": "تحليل التقرير",
+    "analyzing": "جاري التحليل...",
+
+    "testsAnalyzed": "عدد الفحوصات المحللة",
+    "normal": "طبيعي",
+    "abnormal": "غير طبيعي",
+    "severity": "درجة الخطورة",
+
+    "summaryTitle": "ملخص التحليل",
+    "possibleConditions": "الحالات المحتملة",
+    "confidence": "نسبة الثقة",
+    "recommendations": "التوصيات",
+
+    "testResults": "النتائج التفصيلية للفحوصات",
+    "test": "الفحص",
+    "value": "القيمة",
+    "status": "الحالة",
+    "waitingMessage": "Analyzing your medical tests, please wait..."
+  },
+
+  "labOption": {
+    "uploadQuestion": "هل تريد رفع تقرير مخبري؟",
+    "processing": "جاري معالجة التقرير المخبري..."
+  },
+    "patientMedicalReport": {
+    "title": "تقاريري الطبية",
+    "editTitle": "تعديل التقرير الطبي",
+
+    "diagnosis": "التشخيص",
+    "chronicDiseases": "الأمراض المزمنة",
+    "previousSurgeries": "العمليات الجراحية السابقة",
+    "allergies": "الحساسيات",
+    "currentMedications": "الأدوية الحالية",
+    "treatmentPlan": "الخطة العلاجية",
+
+    "noReport": "لا يوجد تقرير طبي متاح",
+
+    "updateSuccess": "تم تحديث التقرير الطبي بنجاح"
+  },
   "deliveryHome": {
     "title": "معلومات الحساب",
     "subtitle": "عرض أو تعديل معلوماتك",
