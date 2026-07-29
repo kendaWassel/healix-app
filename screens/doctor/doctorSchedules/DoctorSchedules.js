@@ -8,12 +8,12 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import DoctorHeader from "../../Components/header/DoctorHeader";
 import Footer from "../../Components/footer/Footer";
 import PatientDetailsModal from "./PatientDetailsModal";
 import DoctorCallNow from "../doctorCallNow/DoctorCallNow";
+import { apiFetch } from "../../../utils/apiClient";
 
 export default function DoctorSchedules() {
   const { t } = useTranslation();
@@ -46,50 +46,42 @@ export default function DoctorSchedules() {
   const [selectedConsultationId, setSelectedConsultationId] = useState(null);
 
   const fetchSchedules = async (page, perPage) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const token = await AsyncStorage.getItem("token");
-      let url = `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/doctor/my-schedules?page=${page}&per_page=${perPage}`;
-      if (selectedFilter !== "All") {
-        url += `&status=${selectedFilter}`;
-      }
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || t("doctorSchedules.requestFailed"));
-      }
-
-      const data = await response.json();
-      console.log("Schedules fetched:", data);
-      if (data.status === "success" && Array.isArray(data.data)) {
-        setSchedules(data.data);
-        const totalItems = data.meta?.total || data.total || 0;
-        const totalPages = Math.ceil(totalItems / (perPage || 6));
-        setPagination((prev) => ({
-          ...prev,
-          totalItems,
-          totalPages,
-        }));
-      } else {
-        throw new Error(t("doctorSchedules.invalidResponse"));
-      }
-    } catch (err) {
-      console.error("Failed fetching schedules:", err);
-      setError(err.message || t("doctorSchedules.loadFailed"));
-    } finally {
-      setIsLoading(false);
+  setIsLoading(true);
+  setError(null);
+  try {
+    let url = `/api/doctor/my-schedules?page=${page}&per_page=${perPage}`;
+    if (selectedFilter !== "All") {
+      url += `&status=${selectedFilter}`;
     }
-  };
+
+    const response = await apiFetch(url);
+
+    if (!response.ok) {
+      const serverError = await response.json().catch(() => ({}));
+      throw new Error(serverError.message || t("doctorSchedules.requestFailed"));
+    }
+
+    const data = await response.json();
+    console.log("Schedules fetched:", data);
+    if (data.status === "success" && Array.isArray(data.data)) {
+      setSchedules(data.data);
+      const totalItems = data.meta?.total || data.total || 0;
+      const totalPages = Math.ceil(totalItems / (perPage || 6));
+      setPagination((prev) => ({
+        ...prev,
+        totalItems,
+        totalPages,
+      }));
+    } else {
+      throw new Error(t("doctorSchedules.invalidResponse"));
+    }
+  } catch (err) {
+    console.error("Failed fetching schedules:", err);
+    setError(err.message || t("doctorSchedules.loadFailed"));
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchSchedules(pagination.currentPage, pagination.itemsPerPage);
@@ -122,18 +114,8 @@ export default function DoctorSchedules() {
     setDetails(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patients/${patientId}/view-details`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  
+      const response = await apiFetch( `/api/patients/${patientId}/view-details`);
 
       if (!response.ok) throw new Error(t("doctorSchedules.fetchDetailsFailed"));
 
