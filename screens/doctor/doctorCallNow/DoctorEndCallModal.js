@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import PatientDetailsModal from "../doctorSchedules/PatientDetailsModal";
 import CreatePrescription from "../prescription/CreatePrescription";
 import ModifyMedicalReport from "../doctorSchedules/ModifyMedicalReport";
+import { apiFetch } from "../../../utils/apiClient";
 
 export default function DoctorEndCallModal({
   isOpen,
@@ -62,17 +63,7 @@ export default function DoctorEndCallModal({
     const token = await AsyncStorage.getItem("token");
 
     try {
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patients/${patientId}/view-details`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiFetch( `/api/patients/${patientId}/view-details`);
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
@@ -112,17 +103,7 @@ export default function DoctorEndCallModal({
       const fetchMedicalReport = async () => {
         const token = await AsyncStorage.getItem("token");
         try {
-          const response = await fetch(
-            `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patients/${patientId}/view-details`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                "ngrok-skip-browser-warning": "true",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const response = await apiFetch(`/api/patients/${patientId}/view-details`);
           if (response.ok) {
             const data = await response.json();
             setCurrentMedicalReport(
@@ -146,20 +127,12 @@ export default function DoctorEndCallModal({
     setIsEnding(true);
     setError(null);
 
-    const token = await AsyncStorage.getItem("token");
 
-    try {
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/consultations/${consultationId}/end`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+
+try {
+  const response = await apiFetch(`/api/consultations/${consultationId}/end`, {
+    method: "POST",
+  });
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
@@ -179,56 +152,47 @@ export default function DoctorEndCallModal({
     }
   };
 
-  const handleCareProviderRequest = async () => {
-    if (!type) {
-      setError(t("doctorEndCall.selectServiceType"));
-      return;
-    }
-    if (!serviceReason.trim()) {
-      setError(t("doctorEndCall.enterReason"));
-      return;
-    }
-    if (!scheduledTime) {
-      setError(t("doctorEndCall.selectScheduledTime"));
-      return;
-    }
-    setIsSendingRequest(true);
-    const token = await AsyncStorage.getItem("token");
+const handleCareProviderRequest = async () => {
+  if (!type) {
+    setError(t("doctorEndCall.selectServiceType"));
+    return;
+  }
+  if (!serviceReason.trim()) {
+    setError(t("doctorEndCall.enterReason"));
+    return;
+  }
+  if (!scheduledTime) {
+    setError(t("doctorEndCall.selectScheduledTime"));
+    return;
+  }
+  setIsSendingRequest(true);
 
-    try {
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/doctor/home-visit/request`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            consultation_id: consultationId,
-            patient_id: patientId,
-            service_type: type,
-            reason: serviceReason,
-            scheduled_at: scheduledTime,
-          }),
-        }
-      );
-      if (response.ok) {
-        console.log(`${type} requested successfully`);
-        setShowCareProviderPopup(false);
-        setShowPrescriptionPopup(true);
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        setError(errorData.message || t("doctorEndCall.requestServiceFailed"));
-      }
-    } catch (err) {
-      console.error(`Failed to request ${type}:`, err);
-      setError(t("doctorEndCall.requestServiceFailedRetry"));
-    }
-    setIsSendingRequest(false);
-  };
+  try {
+    const response = await apiFetch("/api/doctor/home-visit/request", {
+      method: "POST",
+      body: JSON.stringify({
+        consultation_id: consultationId,
+        patient_id: patientId,
+        service_type: type,
+        reason: serviceReason,
+        scheduled_at: scheduledTime,
+      }),
+    });
 
+    if (response.ok) {
+      console.log(`${type} requested successfully`);
+      setShowCareProviderPopup(false);
+      setShowPrescriptionPopup(true);
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      setError(errorData.message || t("doctorEndCall.requestServiceFailed"));
+    }
+  } catch (err) {
+    console.error(`Failed to request ${type}:`, err);
+    setError(t("doctorEndCall.requestServiceFailedRetry"));
+  }
+  setIsSendingRequest(false);
+};
   const handleSkipCareProvider = () => {
     setShowCareProviderPopup(false);
     setShowPrescriptionPopup(true);
@@ -441,6 +405,17 @@ export default function DoctorEndCallModal({
             setMedicalReport(null);
             setReportError(null);
           }}
+        />
+      )}
+
+        
+      {showPrescriptionPopup && (
+        <CreatePrescription
+          isOpen={showPrescriptionPopup}
+          onClose={handlePrescriptionSkip}
+          onSave={handlePrescriptionComplete}
+          consultationId={consultationId}
+          patientId={patientId}
         />
       )}
     
