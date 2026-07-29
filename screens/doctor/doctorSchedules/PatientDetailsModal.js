@@ -67,7 +67,12 @@ export default function PatientDetailsModal({ details, onClose }) {
               <Text style={styles.value}>{details.birth_date || t("patientDetailsModal.notAvailable")}</Text>
             </View>
 
-            {details.gender === "female" && (
+            {/* 
+              يعتمد على is_pregnant بدل gender، لأن الباك اند يُرجع gender مترجماً
+              ("أنثى" بالعربية)، فمقارنته بـ "female" تفشل خارج الإنجليزية.
+              الحقل يُملأ للإناث فقط أصلاً، فوجود قيمة له كافٍ.
+            */}
+            {isPregnant && (
               <View style={styles.row}>
                 <Text style={styles.label}>{t("patientDetailsModal.pregnancyStatus")}</Text>
                 <Text style={styles.value}>
@@ -79,6 +84,7 @@ export default function PatientDetailsModal({ details, onClose }) {
                 </Text>
               </View>
             )}
+
             <View style={styles.group}>
               <Text style={styles.label}>{t("patientDetailsModal.chronicDiseases")}</Text>
               {renderList(chronicDiseases)}
@@ -136,6 +142,7 @@ export default function PatientDetailsModal({ details, onClose }) {
               )}
             </View>
           </ScrollView>
+
           <View style={styles.footer}>
             <TouchableOpacity onPress={onClose} style={styles.footerButton}>
               <Text style={styles.footerButtonText}>{t("patientDetailsModal.close")}</Text>
