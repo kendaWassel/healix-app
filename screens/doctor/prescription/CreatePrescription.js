@@ -9,10 +9,11 @@ import {
   Alert,
   StyleSheet,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { useTranslation } from "react-i18next";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
-import {BASE_URL,NGROK_HEADERS} from "../../../constants/api";
+import { apiFetch } from "../../../utils/apiClient";
+
 const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId }) => {
   const { t } = useTranslation();
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
@@ -76,21 +77,13 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
 
     if (uniqueDrugNames.length < 2) return { hasWarning: false };
 
-    const token = await AsyncStorage.getItem("token");
 
-    try {
-      const response = await fetch(
-        `${BASE_URL}/doctor/prescriptions/verify`,
-        {
-          method: "POST",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          body: JSON.stringify({ medications: uniqueDrugNames, patient_id: patientId }),
-        }
-      );
+
+   try {
+  const response = await apiFetch(`/api/doctor/prescriptions/verify`, {
+    method: "POST",
+    body: JSON.stringify({ medications: uniqueDrugNames, patient_id: patientId }),
+  });
 
       if (!response.ok) return { hasWarning: false };
       const result_json = await response.json();
@@ -140,26 +133,17 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
   };
 
   const saveToServer = async () => {
-    const token = await AsyncStorage.getItem("token");
-    try {
-      const response = await fetch(
-        `${BASE_URL}/doctor/prescriptions`,
-        {
-          method: "POST",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          body: JSON.stringify({
-            consultation_id: consultationId,
-            diagnosis,
-            notes,
-            medicines,
-          }),
-        }
-      );
 
+try {
+  const response = await apiFetch(`/api/doctor/prescriptions`, {
+    method: "POST",
+    body: JSON.stringify({
+      consultation_id: consultationId,
+      diagnosis,
+      notes,
+      medicines,
+    }),
+  });
       if (response.ok) {
         const data = await response.json();
         console.log("Prescription saved:", data);

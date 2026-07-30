@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import MedicalReportModal from "../../registers/patient/MedicalReportModal";
-import {BASE_URL , NGROK_HEADERS} from "../../../constants/api";
 export default function ModifyMedicalReport({
   isOpen,
   onClose,
@@ -40,7 +38,7 @@ export default function ModifyMedicalReport({
   }, [isOpen, medicalReport]);
 
   const handleLocalSubmit = async (formFields) => {
-    const token = await AsyncStorage.getItem("token");
+
     try {
       const dataToSubmit = {
         ...formFields,
@@ -48,18 +46,10 @@ export default function ModifyMedicalReport({
         consultation_id: consultationId,
       };
 
-      const response = await fetch(
-        `${BASE_URL}/patients/${patientId}/medical-record/update`,
-        {
-          method: "PUT",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          body: JSON.stringify(dataToSubmit),
-        }
-      );
+ const response = await apiFetch(`/api/patients/${patientId}/medical-record/update`, {
+  method: "PUT",
+  body: JSON.stringify(dataToSubmit),
+});
 
       if (response.ok) {
         const data = await response.json();

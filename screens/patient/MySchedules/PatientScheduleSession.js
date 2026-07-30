@@ -10,7 +10,8 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-import {BASE_URL,NGROK_HEADERS} from "../../../constants/api"
+import { apiFetch } from "../../../utils/apiClient";
+
 export default function PatientScheduleSession({
   isOpen,
   onClose,
@@ -48,21 +49,16 @@ export default function PatientScheduleSession({
     if (!selectedDate) {
       return;
     }
-    const token = await AsyncStorage.getItem("token");
+ 
 
     const formattedDateTime = `${formatDate(selectedDate)} ${formatTime(selectedTime)}`;
     console.log("formated date: ", formattedDateTime);
 
     try {
-      const response = await fetch(
-        `${BASE_URL}/patient/home-visits/${sessionId}/request-new-care-provider`,
+      const response = await apiFetch(
+        `/api/patient/home-visits/${sessionId}/request-new-care-provider`,
         {
           method: "POST",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
           body: JSON.stringify({
             scheduled_at: formattedDateTime,
           }),
