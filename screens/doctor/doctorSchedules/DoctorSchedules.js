@@ -13,12 +13,8 @@ import DoctorHeader from "../../Components/header/DoctorHeader";
 import Footer from "../../Components/footer/Footer";
 import PatientDetailsModal from "./PatientDetailsModal";
 import DoctorCallNow from "../doctorCallNow/DoctorCallNow";
-<<<<<<< HEAD
-import {BASE_URL,NGROK_HEADERS} from "../../../constants/api";
-=======
 import { apiFetch } from "../../../utils/apiClient";
 
->>>>>>> 815898f6b3d1f12d50071b25e166b27dddce36a8
 export default function DoctorSchedules() {
   const { t } = useTranslation();
 
@@ -49,26 +45,16 @@ export default function DoctorSchedules() {
   const [selectedCardId, setSelectedCardId] = useState(null);
   const [selectedConsultationId, setSelectedConsultationId] = useState(null);
 
-  const fetchSchedules = async (page, perPage) => {
-<<<<<<< HEAD
-    setIsLoading(true);
-    setError(null);
-    try {
-      const token = await AsyncStorage.getItem("token");
-      let url = `${BASE_URL}/doctor/my-schedules?page=${page}&per_page=${perPage}`;
-      if (selectedFilter !== "All") {
-        url += `&status=${selectedFilter}`;
-      }
+const fetchSchedules = async (page, perPage) => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    let url = `/api/doctor/my-schedules?page=${page}&per_page=${perPage}`;
+    if (selectedFilter !== "All") {
+      url += `&status=${selectedFilter}`;
+    }
 
-      const response = await fetch(url, {
-        method: "GET",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-      });
-
+    const response = await apiFetch(url);
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
         throw new Error(serverError.message || t("doctorSchedules.requestFailed"));
@@ -93,44 +79,8 @@ export default function DoctorSchedules() {
       setError(err.message || t("doctorSchedules.loadFailed"));
     } finally {
       setIsLoading(false);
-=======
-  setIsLoading(true);
-  setError(null);
-  try {
-    let url = `/api/doctor/my-schedules?page=${page}&per_page=${perPage}`;
-    if (selectedFilter !== "All") {
-      url += `&status=${selectedFilter}`;
->>>>>>> 815898f6b3d1f12d50071b25e166b27dddce36a8
     }
-
-    const response = await apiFetch(url);
-
-    if (!response.ok) {
-      const serverError = await response.json().catch(() => ({}));
-      throw new Error(serverError.message || t("doctorSchedules.requestFailed"));
-    }
-
-    const data = await response.json();
-    console.log("Schedules fetched:", data);
-    if (data.status === "success" && Array.isArray(data.data)) {
-      setSchedules(data.data);
-      const totalItems = data.meta?.total || data.total || 0;
-      const totalPages = Math.ceil(totalItems / (perPage || 6));
-      setPagination((prev) => ({
-        ...prev,
-        totalItems,
-        totalPages,
-      }));
-    } else {
-      throw new Error(t("doctorSchedules.invalidResponse"));
-    }
-  } catch (err) {
-    console.error("Failed fetching schedules:", err);
-    setError(err.message || t("doctorSchedules.loadFailed"));
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     fetchSchedules(pagination.currentPage, pagination.itemsPerPage);
@@ -163,23 +113,8 @@ export default function DoctorSchedules() {
     setDetails(null);
 
     try {
-<<<<<<< HEAD
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `${BASE_URL}/patients/${patientId}/view-details`,
-        {
-          method: "GET",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-        }
-      );
-=======
-  
-      const response = await apiFetch( `/api/patients/${patientId}/view-details`);
->>>>>>> 815898f6b3d1f12d50071b25e166b27dddce36a8
+
+      const response = await apiFetch(`/api/patients/${patientId}/view-details`);
 
       if (!response.ok) throw new Error(t("doctorSchedules.fetchDetailsFailed"));
 
@@ -332,11 +267,9 @@ export default function DoctorSchedules() {
               </TouchableOpacity>
             </View>
           ) : (
-          <Footer />  
+            <Footer />
           )
-          
         }
-        
       />
 
       {details && (

@@ -9,11 +9,12 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { useTranslation } from "react-i18next";
 import DoctorEndCallModal from "./DoctorEndCallModal";
 import DoneModal from "../../patient/DoctorConsultation/booking/DoneModal";
-import {BASE_URL, NGROK_HEADERS} from '../../../constants/api';
+import { apiFetch } from "../../../utils/apiClient";
+
 
 export default function DoctorCallNow({
   isOpen,
@@ -58,20 +59,15 @@ export default function DoctorCallNow({
       setError(null);
       setCanCall(false);
 
-      const token = await AsyncStorage.getItem("token");
 
       try {
-        const response = await fetch(
-          `${BASE_URL}/consultations/${consultationId}/call`,
+        const response = await apiFetch(
+          `/api/consultations/${consultationId}/call`,
           {
             method: "POST",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
           }
         );
+
         const data = await response.json();
         console.log("Call initiation response: ", data);
 

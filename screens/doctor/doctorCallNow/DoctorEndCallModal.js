@@ -10,18 +10,13 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTranslation } from "react-i18next";
 import PatientDetailsModal from "../doctorSchedules/PatientDetailsModal";
 import CreatePrescription from "../prescription/CreatePrescription";
 import ModifyMedicalReport from "../doctorSchedules/ModifyMedicalReport";
-<<<<<<< HEAD
-import {BASE_URL,NGROK_HEADERS} from '../../../constants/api'
-=======
 import { apiFetch } from "../../../utils/apiClient";
 
->>>>>>> 815898f6b3d1f12d50071b25e166b27dddce36a8
 export default function DoctorEndCallModal({
   isOpen,
   onClose,
@@ -64,24 +59,11 @@ export default function DoctorEndCallModal({
     setReportError(null);
     setMedicalReport(null);
 
-    const token = await AsyncStorage.getItem("token");
+    
 
     try {
-<<<<<<< HEAD
-      const response = await fetch(
-        `${BASE_URL}/patients/${patientId}/view-details`,
-        {
-          method: "GET",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-        }
-      );
-=======
-      const response = await apiFetch( `/api/patients/${patientId}/view-details`);
->>>>>>> 815898f6b3d1f12d50071b25e166b27dddce36a8
+      const response = await apiFetch(
+        `/api/patients/${patientId}/view-details`);
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
@@ -94,9 +76,7 @@ export default function DoctorEndCallModal({
       setMedicalReport(data.data || data);
       setShowReportModal(true);
     } catch (err) {
-      setReportError(
-        err.message || t("doctorEndCall.loadReportFailedRetry")
-      );
+      setReportError(err.message || t("doctorEndCall.loadReportFailedRetry"));
     } finally {
       setIsLoadingReport(false);
     }
@@ -119,23 +99,11 @@ export default function DoctorEndCallModal({
   useEffect(() => {
     if (showModifyReport && patientId && !currentMedicalReport) {
       const fetchMedicalReport = async () => {
-        const token = await AsyncStorage.getItem("token");
+
         try {
-<<<<<<< HEAD
-          const response = await fetch(
-            `${BASE_URL}/patients/${patientId}/view-details`,
-            {
-              method: "GET",
-              headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            }
-          );
-=======
-          const response = await apiFetch(`/api/patients/${patientId}/view-details`);
->>>>>>> 815898f6b3d1f12d50071b25e166b27dddce36a8
+          const response = await apiFetch(
+            `/api/patients/${patientId}/view-details`);
+
           if (response.ok) {
             const data = await response.json();
             setCurrentMedicalReport(
@@ -160,26 +128,11 @@ export default function DoctorEndCallModal({
     setError(null);
 
 
-<<<<<<< HEAD
     try {
-      const response = await fetch(
-        `${BASE_URL}/consultations/${consultationId}/end`,
-        {
-          method: "POST",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-        }
+      const response = await apiFetch(
+        `/api/consultations/${consultationId}/end`,
+        { method: "POST", }
       );
-=======
-
-try {
-  const response = await apiFetch(`/api/consultations/${consultationId}/end`, {
-    method: "POST",
-  });
->>>>>>> 815898f6b3d1f12d50071b25e166b27dddce36a8
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
@@ -199,48 +152,45 @@ try {
     }
   };
 
-const handleCareProviderRequest = async () => {
-  if (!type) {
-    setError(t("doctorEndCall.selectServiceType"));
-    return;
-  }
-  if (!serviceReason.trim()) {
-    setError(t("doctorEndCall.enterReason"));
-    return;
-  }
-  if (!scheduledTime) {
-    setError(t("doctorEndCall.selectScheduledTime"));
-    return;
-  }
-  setIsSendingRequest(true);
+  const handleCareProviderRequest = async () => {
+    if (!type) {
+      setError(t("doctorEndCall.selectServiceType"));
+      return;
+    }
+    if (!serviceReason.trim()) {
+      setError(t("doctorEndCall.enterReason"));
+      return;
+    }
+    if (!scheduledTime) {
+      setError(t("doctorEndCall.selectScheduledTime"));
+      return;
+    }
+    setIsSendingRequest(true);
 
-<<<<<<< HEAD
-    try {
-      const response = await fetch(
-        `${BASE_URL}/doctor/home-visit/request`,
-        {
-          method: "POST",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          body: JSON.stringify({
-            consultation_id: consultationId,
-            patient_id: patientId,
-            service_type: type,
-            reason: serviceReason,
-            scheduled_at: scheduledTime,
-          }),
-        }
-      );
+   
+
+try {
+  const response = await apiFetch(`/api/doctor/home-visit/request`, {
+    method: "POST",
+    body: JSON.stringify({
+      consultation_id: consultationId,
+      patient_id: patientId,
+      service_type: type,
+      reason: serviceReason,
+      scheduled_at: scheduledTime,
+    }),
+  });
+
+      console.log("RESPONSE STATUS:", response.status);
+      const responseBody = await response.json().catch(() => ({}));
+      console.log("RESPONSE BODY:", responseBody);
+
       if (response.ok) {
         console.log(`${type} requested successfully`);
         setShowCareProviderPopup(false);
         setShowPrescriptionPopup(true);
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        setError(errorData.message || t("doctorEndCall.requestServiceFailed"));
+        setError(responseBody.message || t("doctorEndCall.requestServiceFailed"));
       }
     } catch (err) {
       console.error(`Failed to request ${type}:`, err);
@@ -248,34 +198,8 @@ const handleCareProviderRequest = async () => {
     }
     setIsSendingRequest(false);
   };
-=======
-  try {
-    const response = await apiFetch("/api/doctor/home-visit/request", {
-      method: "POST",
-      body: JSON.stringify({
-        consultation_id: consultationId,
-        patient_id: patientId,
-        service_type: type,
-        reason: serviceReason,
-        scheduled_at: scheduledTime,
-      }),
-    });
->>>>>>> 815898f6b3d1f12d50071b25e166b27dddce36a8
 
-    if (response.ok) {
-      console.log(`${type} requested successfully`);
-      setShowCareProviderPopup(false);
-      setShowPrescriptionPopup(true);
-    } else {
-      const errorData = await response.json().catch(() => ({}));
-      setError(errorData.message || t("doctorEndCall.requestServiceFailed"));
-    }
-  } catch (err) {
-    console.error(`Failed to request ${type}:`, err);
-    setError(t("doctorEndCall.requestServiceFailedRetry"));
-  }
-  setIsSendingRequest(false);
-};
+
   const handleSkipCareProvider = () => {
     setShowCareProviderPopup(false);
     setShowPrescriptionPopup(true);
@@ -491,7 +415,6 @@ const handleCareProviderRequest = async () => {
         />
       )}
 
-        
       {showPrescriptionPopup && (
         <CreatePrescription
           isOpen={showPrescriptionPopup}
@@ -501,7 +424,7 @@ const handleCareProviderRequest = async () => {
           patientId={patientId}
         />
       )}
-    
+
       {showModifyReport && (
         <ModifyMedicalReport
           isOpen={showModifyReport}
@@ -513,7 +436,6 @@ const handleCareProviderRequest = async () => {
         />
       )}
     </Modal>
-    
   );
 }
 

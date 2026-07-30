@@ -9,10 +9,9 @@ import {
   StyleSheet,
 } from "react-native";
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useTranslation } from "react-i18next";
-import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+import { apiFetch } from "../../../utils/apiClient";
 
 
 export default function EditMedicalReportModal({
@@ -47,20 +46,13 @@ export default function EditMedicalReportModal({
 
   const updateReport = async () => {
     try {
-      const token = await AsyncStorage.getItem("token");
-
-      const response = await fetch(
-        `${BASE_URL}/patient/medical-record`,
+   
+      const response = await apiFetch(
+        `api/patient/medical-record`,
 
         {
           method: "PUT",
-
-          headers: {
-            ...NGROK_HEADERS,
-            "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-          body: JSON.stringify(fields),
+         body: JSON.stringify(fields),
         },
       );
 

@@ -9,12 +9,13 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { useTranslation } from "react-i18next";
 import PatientEndCallModal from "../DoctorConsultation/booking/PatientEndCallModal";
 import RatingModal from "../DoctorConsultation/booking/RatingModal";
 import DoneModal from "../DoctorConsultation/booking/DoneModal";
-import {BASE_URL,NGROK_HEADERS} from "../../../constants/api"
+import { apiFetch } from "../../../utils/apiClient";
+
 export default function PatientScheduleCall({
   isOpen,
   onClose,
@@ -53,19 +54,13 @@ export default function PatientScheduleCall({
       setError(null);
       setCanCall(false);
 
-      const token = await AsyncStorage.getItem("token");
 
       try {
-        const response = await fetch(
-          `${BASE_URL}/consultations/${consultationId}/call`,
+        const response = await apiFetch(
+          `/api/consultations/${consultationId}/call`,
           {
             method: "POST",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        }
         );
 
         const data = await response.json();

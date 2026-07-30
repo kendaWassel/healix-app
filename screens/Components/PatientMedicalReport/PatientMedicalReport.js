@@ -7,10 +7,10 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import EditMedicalReportModal from "./EditMedicalReportModal";
-import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+import { apiFetch } from "../../../utils/apiClient";
+
 
 
 export default function PatientMedicalReport() {
@@ -24,18 +24,9 @@ export default function PatientMedicalReport() {
     try {
       setLoading(true);
 
-      const token = await AsyncStorage.getItem("token");
 
-      const response = await fetch(
-        `${BASE_URL}/patient/medical-record`,
-        {
-          method: "GET",
-        headers: {
-          ...NGROK_HEADERS,
-          Authorization: `Bearer ${token}`,
-        },
-        },
-      );
+
+      const response = await apiFetch(`/api/patient/medical-record`);
 
       const data = await response.json();
 
