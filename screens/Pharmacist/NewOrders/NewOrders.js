@@ -12,11 +12,11 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import PharmacistHeader from "../../Components/header/PharmacistHeader";
 import Footer from "../../Components/footer/Footer";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
+import { apiFetch } from "../../../utils/apiClient";
 
 export default function NewOrders() {
   const { t } = useTranslation();
@@ -44,23 +44,17 @@ export default function NewOrders() {
   const [safetyChecking, setSafetyChecking] = useState(false);
   const [safetyCheckStage, setSafetyCheckStage] = useState(null);
   const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
+  const [conditionWarnings, setConditionWarnings] = useState([]);
+  const [conditionCheckAvailable, setConditionCheckAvailable] = useState(true);
+  
 
   const fetchPrescriptions = async (pageNumber = 1) => {
     setLoading(true);
     setError(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/prescriptions?page=${pageNumber}&per_page=3`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
+
+      const response = await apiFetch(`/api/pharmacist/prescriptions?page=${pageNumber}&per_page=3`);
 
       if (!response.ok) throw new Error(t("newOrdersScreen.requestFailed"));
 
@@ -81,7 +75,15 @@ export default function NewOrders() {
   }, [page]);
 
   const runSafetyCheck = async (prescriptionId, drugNames) => {
-  const result = { interactions: [], pregnancy: [], allergies: [], hasWarning: false };
+  const result = {
+     interactions: [], 
+     pregnancy: [],
+      allergies: [], 
+      hasWarning: false,
+      conditions: [],               
+      conditionAvailable: true,
+    
+    };
 
   try {
     const token = await AsyncStorage.getItem("token");
@@ -89,16 +91,9 @@ export default function NewOrders() {
     const uniqueDrugNames = [...new Set(drugNames.map((d) => d.toLowerCase()))]
       .map((lower) => drugNames.find((d) => d.toLowerCase() === lower));
 
-    const res = await fetch(
-      `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/prescriptions/${prescriptionId}/verify`,
+    const res = await apiFetch(`/api/pharmacist/prescriptions/${prescriptionId}/verify`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "ngrok-skip-browser-warning": "true",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({ medications: uniqueDrugNames }),
       }
     );
@@ -117,6 +112,8 @@ export default function NewOrders() {
       result.pregnancy = data.pregnancy_warnings || [];
       result.allergies = data.allergy_warnings || [];
       result.hasWarning = data.safe === false;
+      result.conditions = data.condition_warnings || [];                 
+      result.conditionAvailable = data.condition_check_available !== false; 
     } else {
       const errData = await res.json().catch(() => ({}));
       console.log("Verify failed:", res.status, errData);
@@ -140,6 +137,8 @@ export default function NewOrders() {
     if (safety.hasWarning) {
       setSafetyWarnings(safety);
       setSafetyCheckStage("manualBeforePricing");
+      setConditionWarnings(safety.conditions || []);                  
+      setConditionCheckAvailable(safety.conditionAvailable !== false);
       setShowAcceptPopup(false);
       setShowSafetyPopup(true);
     } else {
@@ -163,15 +162,9 @@ export default function NewOrders() {
     try {
       const token = await AsyncStorage.getItem("token");
 
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/prescriptions/${prescription_id}/accept`,
+      const response = await apiFetch(`/api/pharmacist/prescriptions/${prescription_id}/accept`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-          },
         }
       );
       const result = await response.json();
@@ -202,15 +195,9 @@ export default function NewOrders() {
       price: Number(d.price),
     }));
 
-    const response = await fetch(
-      `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/prescriptions/${order_id}/add-price`,
+    const response = await apiFetch(`/api/pharmacist/prescriptions/${order_id}/add-price`,
       {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
         body: JSON.stringify({ items }),
       }
     );
@@ -228,16 +215,10 @@ export default function NewOrders() {
     }
     setRejectLoading(true);
     try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/prescriptions/${prescription_id}/reject`,
+
+      const response = await apiFetch(`/api/pharmacist/prescriptions/${prescription_id}/reject`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-          },
           body: JSON.stringify({ reason: RejectReason }),
         }
       );
@@ -337,6 +318,8 @@ export default function NewOrders() {
 
   if (safety.hasWarning) {
     setSafetyWarnings(safety);
+    setConditionWarnings(safety.conditions || []);             
+    setConditionCheckAvailable(safety.conditionAvailable !== false); 
     setSafetyCheckStage("initial");
     setShowSafetyPopup(true);
   } else {
@@ -758,6 +741,42 @@ export default function NewOrders() {
                   ))}
                 </View>
               )}
+                {conditionWarnings.length > 0 && (
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={styles.safetySectionTitle}>
+                    {t("newOrdersScreen.conditionWarnings")}
+                  </Text>
+                  {conditionWarnings.map((c, i) => (
+                    <View key={`cond-${i}`} style={styles.conditionCard}>
+                      <Text style={styles.conditionText}>
+                        {c.medication}
+                        {c.resolved_ingredient &&
+                        c.resolved_ingredient !== c.medication.toLowerCase()
+                          ? ` (${c.resolved_ingredient})`
+                          : ""}
+                      </Text>
+                      <Text style={styles.conditionSubText}>
+                        {t("newOrdersScreen.conflictsWith")}{" "}
+                        <Text style={{ fontWeight: "700" }}>{c.condition}</Text>
+                      </Text>
+                      {c.source && (
+                        <Text style={styles.conditionSource}>
+                          {t("newOrdersScreen.source")} {c.source}
+                        </Text>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {!conditionCheckAvailable && (
+                <View style={styles.unavailableCard}>
+                  <Text style={styles.unavailableText}>
+                    {t("newOrdersScreen.conditionCheckUnavailable")}
+                  </Text>
+                </View>
+              )}
+
 
               <Text style={styles.reviewNote}>
                 {t("newOrdersScreen.reviewNote")}
@@ -1181,5 +1200,41 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: "center",
     marginTop: 10,
+  },
+  conditionCard: {
+    backgroundColor: "#fff7ed",
+    borderWidth: 1,
+    borderColor: "#fed7aa",
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 8,
+  },
+  conditionText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#9a3412",
+    marginBottom: 4,
+  },
+  conditionSubText: {
+    fontSize: 13,
+    color: "#7c2d12",
+  },
+  conditionSource: {
+    fontSize: 10,
+    color: "#a8a29e",
+    marginTop: 6,
+  },
+  unavailableCard: {
+    backgroundColor: "#f3f4f6",
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 16,
+  },
+  unavailableText: {
+    fontSize: 11,
+    color: "#6b7280",
+    textAlign: "center",
   },
 });

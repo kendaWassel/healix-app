@@ -31,6 +31,8 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
   const [checking, setChecking] = useState(false);
 
   const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
+  const [conditionWarnings, setConditionWarnings] = useState([]);
+  const [conditionCheckAvailable, setConditionCheckAvailable] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
@@ -85,7 +87,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
     body: JSON.stringify({ medications: uniqueDrugNames, patient_id: patientId }),
   });
 
-      if (!response.ok) return { hasWarning: false };
+      if (!response.ok) return { hasWarning: false , conditionAvailable: true };
       const result_json = await response.json();
       console.log("verify result", result_json);
 
@@ -108,11 +110,13 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
         interactions: withAlternatives,
         allergies: data.allergy_warnings || [],
         pregnancy: data.pregnancy_warnings || [],
+        conditions: data.condition_warnings || [],          
+        conditionAvailable: data.condition_check_available !== false,
         hasWarning: data.safe === false,
       };
     } catch (err) {
       console.error("DDI check failed:", err);
-      return { hasWarning: false };
+      return { hasWarning: false , conditionAvailable: true };
     }
   };
 
@@ -125,6 +129,8 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
       setInteractionWarnings(result.interactions || []);
       setAllergyWarnings(result.allergies || []);
       setPregnancyWarnings(result.pregnancy || []);
+      setConditionWarnings(result.conditions || []);                
+      setConditionCheckAvailable(result.conditionAvailable !== false); 
       setShowInteractionPopup(true);
       return;
     }
@@ -431,6 +437,33 @@ try {
                     <Text style={styles.pregnancySubText}>{p.warning}</Text>
                   </View>
                 ))}
+                {conditionWarnings.map((c, i) => (
+                  <View key={`cond-${i}`} style={styles.conditionCard}>
+                    <Text style={styles.conditionText}>
+                      ⚕️ {c.medication}
+                      {c.resolved_ingredient && c.resolved_ingredient !== c.medication.toLowerCase()
+                        ? ` (${c.resolved_ingredient})`
+                        : ""}
+                    </Text>
+                    <Text style={styles.conditionSubText}>
+                      {t("createPrescription.conflictsWith")}{" "}
+                      <Text style={{ fontWeight: "700" }}>{c.condition}</Text>
+                    </Text>
+                    {c.source && (
+                      <Text style={styles.conditionSource}>
+                        {t("createPrescription.source")} {c.source}
+                      </Text>
+                    )}
+                  </View>
+                ))}
+
+                {!conditionCheckAvailable && (
+                  <View style={styles.unavailableCard}>
+                    <Text style={styles.unavailableText}>
+                      {t("createPrescription.conditionCheckUnavailable")}
+                    </Text>
+                  </View>
+                )}
               </View>
               <View style={{ gap: 12 }}>
                 <TouchableOpacity onPress={saveToServer} style={styles.primaryBtn}>
@@ -710,6 +743,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#4b5563",
     marginTop: 2,
+  },
+  conditionCard: {
+    backgroundColor: "#fff7ed",
+    borderWidth: 1,
+    borderColor: "#fed7aa",
+    borderRadius: 10,
+    padding: 14,
+  },
+  conditionText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#9a3412",
+    marginBottom: 4,
+  },
+  conditionSubText: {
+    fontSize: 13,
+    color: "#7c2d12",
+  },
+  conditionSource: {
+    fontSize: 10,
+    color: "#a8a29e",
+    marginTop: 6,
+  },
+  unavailableCard: {
+    backgroundColor: "#f3f4f6",
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    padding: 10,
+  },
+  unavailableText: {
+    fontSize: 11,
+    color: "#6b7280",
+    textAlign: "center",
   },
 });
 
