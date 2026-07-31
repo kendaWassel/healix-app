@@ -434,8 +434,13 @@
   "fileUploadFailed": "File upload failed",
   "chronicDiseasesHint": "Select all that apply",
   "searchCondition": "Search conditions...",
+  "selectConditions": "Select conditions",
+  "conditionsSelected": "{{count}} selected",
+  "noConditionsFound": "No matching conditions",
+  "done": "Done",
   "otherConditions": "Other conditions",
-  "otherConditionsPlaceholder": "Any condition not listed above"
+  "otherConditionsPlaceholder": "Any condition not listed above",
+  "otherConditionsNote": "Shown to your doctor for review — not included in automatic contraindication checks"
 },
 "mapPicker": {
   "title": "Pick your location",

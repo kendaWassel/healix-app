@@ -461,7 +461,11 @@
   "imageUploadFailed": "فشل رفع الصورة",
   "fileUploadFailed": "فشل رفع الملف",
   "chronicDiseasesHint": "اختر كل ما ينطبق",
+  "selectConditions": "اختر الحالات",
+  "conditionsSelected": "{{count}} محدَّدة",
   "searchCondition": "ابحث عن حالة...",
+  "noConditionsFound": "لا توجد حالات مطابقة",
+  "done": "تم",
   "otherConditions": "حالات أخرى",
   "otherConditionsPlaceholder": "أي حالة غير مذكورة أعلاه",
   "otherConditionsNote": "تُعرض للطبيب للمراجعة، ولا تدخل في الفحص الآلي للتعارضات"
