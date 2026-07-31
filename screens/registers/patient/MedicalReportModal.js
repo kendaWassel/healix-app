@@ -8,8 +8,11 @@ import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { useTranslation } from "react-i18next";
+import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
+import { apiFetch } from "../../../utils/apiClient";
 
-const API = "https://unjuicy-schizogenous-gibson.ngrok-free.dev";
+
+
 
 export const uploadImage = async (photoFile) => {
   const formData = new FormData();
@@ -17,9 +20,8 @@ export const uploadImage = async (photoFile) => {
     uri: photoFile.uri, name: "photo.jpg", type: "image/jpeg",
   });
   formData.append("category", "report");
-  const res = await fetch(`${API}/api/uploads/image`, {
+  const res = await apiFetch(`/api/uploads/image`, {
     method: "POST",
-    headers: { "ngrok-skip-browser-warning": "true" },
     body: formData,
   });
   if (!res.ok) throw new Error("Image upload failed");
@@ -34,9 +36,8 @@ export const uploadFile = async (medicalFile) => {
     type: medicalFile.mimeType || "application/pdf",
   });
   formData.append("category", "report");
-  const res = await fetch(`${API}/api/uploads`, {
+  const res = await apiFetch(`/api/uploads`, {
     method: "POST",
-    headers: { "ngrok-skip-browser-warning": "true" },
     body: formData,
   });
   if (!res.ok) throw new Error("File upload failed");
@@ -53,10 +54,12 @@ export default function MedicalReportModal({
   errorMessage,
   gender,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); 
+  const [conditionSearch, setConditionSearch] = useState("");
   const [fields, setFields] = useState({
     diagnosis: "",
-    chronic_diseases: "",
+    chronic_diseases: [],
+    other_conditions: "",  
     previous_surgeries: "",
     allergies: "",
     current_medications: "",
@@ -71,7 +74,10 @@ export default function MedicalReportModal({
     if (open && initialValues) {
       setFields({
         diagnosis: initialValues.diagnosis || "",
-        chronic_diseases: initialValues.chronic_diseases || "",
+        chronic_diseases: Array.isArray(initialValues.chronic_diseases)
+        ? initialValues.chronic_diseases
+        : [],
+        other_conditions: initialValues.other_conditions || "",
         previous_surgeries: initialValues.previous_surgeries || "",
         allergies: initialValues.allergies || "",
         current_medications: initialValues.current_medications || "",
@@ -82,7 +88,8 @@ export default function MedicalReportModal({
     } else if (open) {
       setFields({
         diagnosis: "",
-        chronic_diseases: "",
+        chronic_diseases: [],
+        other_conditions: "",
         previous_surgeries: "",
         allergies: "",
         current_medications: "",
@@ -119,6 +126,23 @@ export default function MedicalReportModal({
   const handleSubmit = async () => {
     await onSubmit({ ...fields, photoFile, medicalFile });
   };
+
+  const filteredConditions = CHRONIC_CONDITIONS.filter((c) => {
+  const q = conditionSearch.trim().toLowerCase();
+  return !q || c.ar.includes(q) || c.en.toLowerCase().includes(q);
+});
+
+const toggleCondition = (value) => {
+  setFields((prev) => {
+    const current = prev.chronic_diseases || [];
+    return {
+      ...prev,
+      chronic_diseases: current.includes(value)
+        ? current.filter((c) => c !== value)
+        : [...current, value],
+    };
+  });
+};
 
   return (
     <Modal visible={open} animationType="slide" transparent>
@@ -174,15 +198,52 @@ export default function MedicalReportModal({
               editable={!isEdit}
             />
 
-            <Text style={styles.label}>{t("medicalReportModal.previousSurgeries")}</Text>
-            <TextInput
-              style={[styles.input, isEdit && styles.inputDisabled]}
-              placeholder={t("medicalReportModal.previousSurgeriesPlaceholder")}
-              value={fields.previous_surgeries}
-              onChangeText={(t2) => setFields({ ...fields, previous_surgeries: t2 })}
-              editable={!isEdit}
-            />
+                <Text style={styles.label}>{t("medicalReportModal.chronicDiseases")}</Text>
+          <Text style={styles.hint}>{t("medicalReportModal.chronicDiseasesHint")}</Text>
 
+          <TextInput
+            value={conditionSearch}
+            onChangeText={setConditionSearch}
+            placeholder={t("medicalReportModal.searchCondition")}
+            style={[styles.input, { marginBottom: 8 }, isEdit && styles.inputDisabled]}
+            editable={!isEdit}
+          />
+
+        
+          <View style={styles.chipsWrap}>
+            {filteredConditions.map((cond) => {
+              const selected = (fields.chronic_diseases || []).includes(cond.value);
+              const label = i18n.language?.startsWith("ar") ? cond.ar : cond.en;
+              return (
+                <TouchableOpacity
+                  key={cond.value}
+                  onPress={() => !isEdit && toggleCondition(cond.value)}
+                  disabled={isEdit}
+                  style={[
+                    styles.conditionChip,
+                    selected && styles.conditionChipSelected,
+                    isEdit && styles.conditionChipDisabled,
+                  ]}
+                >
+                  {selected && <Ionicons name="checkmark" size={13} color="#0e7490" />}
+                  <Text style={[styles.conditionChipText, selected && styles.conditionChipTextSelected]}>
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          
+        
+          <Text style={styles.label}>{t("medicalReportModal.otherConditions")}</Text>
+          <Text style={styles.hint}>{t("medicalReportModal.otherConditionsNote")}</Text> 
+          <TextInput
+            style={[styles.input, isEdit && styles.inputDisabled]}
+            placeholder={t("medicalReportModal.otherConditionsPlaceholder")}
+            value={fields.other_conditions}
+            onChangeText={(t2) => setFields({ ...fields, other_conditions: t2 })}
+            editable={!isEdit}
+          />
             <Text style={styles.label}>{t("medicalReportModal.allergies")}</Text>
             <TextInput
               style={[styles.input, isEdit && styles.inputDisabled]}
@@ -192,7 +253,7 @@ export default function MedicalReportModal({
               editable={!isEdit}
             />
 
-            {gender === "female" && (
+           {(gender === "female" || gender === "أنثى") && (
               <>
                 <Text style={styles.label}>{t("medicalReportModal.pregnancyStatus")}</Text>
                 <View style={styles.pickerWrapper}>
@@ -294,4 +355,41 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     flexShrink: 1,
   },
+  hint: {
+  fontSize: 11,
+  color: "#9ca3af",
+  marginBottom: 8,
+},
+chipsWrap: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 8,
+  marginBottom: 8,
+},
+conditionChip: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 4,
+  paddingHorizontal: 12,
+  paddingVertical: 7,
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: "#d1d5db",
+  backgroundColor: "#fff",
+},
+conditionChipSelected: {
+  backgroundColor: "#ecfeff",
+  borderColor: "#39CCCC",
+},
+conditionChipDisabled: {
+  opacity: 0.5,
+},
+conditionChipText: {
+  fontSize: 12,
+  color: "#374151",
+},
+conditionChipTextSelected: {
+  color: "#0e7490",
+  fontWeight: "600",
+},
 });

@@ -459,7 +459,12 @@
   "currentMedicationsPlaceholder": "اذكر الأدوية الحالية...",
   "saveReport": "حفظ التقرير",
   "imageUploadFailed": "فشل رفع الصورة",
-  "fileUploadFailed": "فشل رفع الملف"
+  "fileUploadFailed": "فشل رفع الملف",
+  "chronicDiseasesHint": "اختر كل ما ينطبق",
+  "searchCondition": "ابحث عن حالة...",
+  "otherConditions": "حالات أخرى",
+  "otherConditionsPlaceholder": "أي حالة غير مذكورة أعلاه",
+  "otherConditionsNote": "تُعرض للطبيب للمراجعة، ولا تدخل في الفحص الآلي للتعارضات"
 },
 "mapPicker": {
   "title": "اختر موقعك",
@@ -671,7 +676,10 @@
   "understoodRisks": "لقد فهمت المخاطر - حفظ الوصفة",
   "cancelEditDrugs": "إلغاء - تعديل الأدوية",
   "saveFailed": "فشل حفظ الوصفة",
-  "saveFailedRetry": "فشل حفظ الوصفة. حاول مرة أخرى."
+  "saveFailedRetry": "فشل حفظ الوصفة. حاول مرة أخرى.",
+  "conflictsWith": "يتعارض مع:",
+  "source": "المصدر:",
+  "conditionCheckUnavailable": "فحص الأمراض المزمنة غير متاح — لم يتم التحقق من التعارضات."
 },
 
 "userLogin": {
@@ -830,7 +838,10 @@
   "addPriceFailed": "فشل إضافة السعر",
   "pricesAddedSuccess": "تمت إضافة أسعار الأدوية بنجاح",
   "enterRejectionReason": "الرجاء إدخال سبب الرفض",
-  "rejectFailed": "فشل الرفض"
+  "rejectFailed": "فشل الرفض",
+  "conditionWarnings": "تعارضات مع الأمراض المزمنة",
+  "conflictsWith": "يتعارض مع:",
+  "conditionCheckUnavailable": "فحص الأمراض المزمنة غير متاح — لم يتم التحقق من التعارضات."
 },
 
 

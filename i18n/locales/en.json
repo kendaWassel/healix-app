@@ -431,7 +431,11 @@
   "currentMedicationsPlaceholder": "List current medications...",
   "saveReport": "Save Report",
   "imageUploadFailed": "Image upload failed",
-  "fileUploadFailed": "File upload failed"
+  "fileUploadFailed": "File upload failed",
+  "chronicDiseasesHint": "Select all that apply",
+  "searchCondition": "Search conditions...",
+  "otherConditions": "Other conditions",
+  "otherConditionsPlaceholder": "Any condition not listed above"
 },
 "mapPicker": {
   "title": "Pick your location",
@@ -669,7 +673,11 @@
   "understoodRisks": "I Understood the Risks - Save Prescription",
   "cancelEditDrugs": "Cancel - Edit Drugs",
   "saveFailed": "Failed to save prescription",
-  "saveFailedRetry": "Failed to save prescription. Please try again."
+  "saveFailedRetry": "Failed to save prescription. Please try again.",
+  "conflictsWith": "Contraindicated with:",
+  "source": "Source:",
+  "conditionCheckUnavailable": "Condition check unavailable — chronic condition conflicts were not verified.",
+  "otherConditionsNote": "Shown to your doctor for review — not included in automatic contraindication checks"
 },
 
 "userLogin": {
@@ -828,7 +836,10 @@
   "addPriceFailed": "Failed to add price",
   "pricesAddedSuccess": "Medicine Prices Added successfully",
   "enterRejectionReason": "Please enter your rejection reason",
-  "rejectFailed": "Reject failed"
+  "rejectFailed": "Reject failed",
+  "conditionWarnings": "Chronic Condition Conflicts",
+  "conflictsWith": "Contraindicated with:",
+  "conditionCheckUnavailable": "Condition check unavailable — chronic condition conflicts were not verified."
 },
 
 
