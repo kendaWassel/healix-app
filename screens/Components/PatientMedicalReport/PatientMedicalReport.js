@@ -10,11 +10,11 @@ import {
 import { useTranslation } from "react-i18next";
 import EditMedicalReportModal from "./EditMedicalReportModal";
 import { apiFetch } from "../../../utils/apiClient";
-
+import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
 
 
 export default function PatientMedicalReport() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -73,14 +73,34 @@ export default function PatientMedicalReport() {
             {report.diagnosis || t("common.none")}
           </Text>
 
-          <Text style={styles.label}>
-            {t("patientMedicalReport.chronicDiseases")}
-          </Text>
+           <Text style={styles.label}>
+        {t("patientMedicalReport.chronicDiseases")}
+      </Text>
 
-          <Text style={styles.value}>
-            {report.chronic_diseases || t("common.none")}
-          </Text>
+      {Array.isArray(report.chronic_diseases) && report.chronic_diseases.length > 0 ? (
+        <View style={styles.chipsRow}>
+          {report.chronic_diseases.map((value) => {
+            const cond = CHRONIC_CONDITIONS.find((c) => c.value === value);
+            const label = cond
+              ? (i18n.language?.startsWith("ar") ? cond.ar : cond.en)
+              : value;
+            return (
+              <View key={value} style={styles.chip}>
+                <Text style={styles.chipText}>{label}</Text>
+              </View>
+            );
+          })}
+        </View>
+      ) : (
+        <Text style={styles.value}>{t("common.none")}</Text>
+      )}
 
+      <Text style={styles.label}>
+  {t("medicalReportModal.otherConditions")}
+</Text>
+<Text style={styles.value}>
+  {report.other_conditions || t("common.none")}
+</Text>
           <Text style={styles.label}>
             {t("patientMedicalReport.previousSurgeries")}
           </Text>
@@ -177,4 +197,23 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: "#555",
   },
+  chipsRow: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 6,
+  marginTop: 4,
+},
+chip: {
+  backgroundColor: "#ecfeff",
+  borderWidth: 1,
+  borderColor: "#a5f3fc",
+  borderRadius: 12,
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+},
+chipText: {
+  fontSize: 12,
+  color: "#0e7490",
+  fontWeight: "600",
+},
 });

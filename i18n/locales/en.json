@@ -72,10 +72,14 @@
     "diagnosis":"Diagnosis",
     "chronicDiseases":"Chronic Diseases",
     "previousSurgeries":"Previous Surgeries",
-    "allergies":"Allergies",
+    "allergies":"Drug Allergies",
+    "otherConditions":"Other Conditions",
     "currentMedications":"Current Medications",
     "treatmentPlan":"Treatment Plan",
-
+    "addAllergy": "Add another allergy",
+    "addMedication": "Add another medication",
+    "allergiesPlaceholder": "e.g. Penicillin",
+    "currentMedicationsPlaceholder": "e.g. Metformin",
     "noReport":"No medical report available",
     "updateSuccess":"Medical report updated successfully"
   },
@@ -440,7 +444,9 @@
   "done": "Done",
   "otherConditions": "Other conditions",
   "otherConditionsPlaceholder": "Any condition not listed above",
-  "otherConditionsNote": "Shown to your doctor for review — not included in automatic contraindication checks"
+  "otherConditionsNote": "Shown to your doctor for review — not included in automatic contraindication checks",
+  "addAllergy": "Add another allergy",
+" addMedication": "Add another medication"
 },
 "mapPicker": {
   "title": "Pick your location",

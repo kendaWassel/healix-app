@@ -10,6 +10,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { useTranslation } from "react-i18next";
 import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
 import { apiFetch } from "../../../utils/apiClient";
+import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
 
 export const uploadImage = async (photoFile) => {
   const formData = new FormData();
@@ -54,21 +55,36 @@ export default function MedicalReportModal({
   const { t, i18n } = useTranslation();
   const [conditionSearch, setConditionSearch] = useState("");
   const [showConditionsPicker, setShowConditionsPicker] = useState(false);
+  const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
+
   const [fields, setFields] = useState({
     diagnosis: "",
     chronic_diseases: [],
     other_conditions: "",
     previous_surgeries: "",
-    allergies: "",
-    current_medications: "",
     is_pregnant: "",
   });
+
+  // Allergies and current medications are dynamic lists — each entry gets its
+  // own resolving check, instead of one free-text field where a typo in the
+  // second drug can't be matched against the whole string.
+  const [allergies, setAllergies] = useState([""]);
+  const [medications, setMedications] = useState([""]);
+
   const [photoFile, setPhotoFile] = useState(null);
   const [medicalFile, setMedicalFile] = useState(null);
   const [photoName, setPhotoName] = useState("");
   const [fileName, setFileName] = useState("");
 
   useEffect(() => {
+    const parseList = (value) => {
+      if (Array.isArray(value)) return value.length ? value : [""];
+      if (typeof value === "string" && value.trim()) {
+        return value.split(",").map((s) => s.trim()).filter(Boolean);
+      }
+      return [""];
+    };
+
     if (open && initialValues) {
       setFields({
         diagnosis: initialValues.diagnosis || "",
@@ -77,10 +93,10 @@ export default function MedicalReportModal({
           : [],
         other_conditions: initialValues.other_conditions || "",
         previous_surgeries: initialValues.previous_surgeries || "",
-        allergies: initialValues.allergies || "",
-        current_medications: initialValues.current_medications || "",
         is_pregnant: initialValues.is_pregnant || "",
       });
+      setAllergies(parseList(initialValues.allergies));
+      setMedications(parseList(initialValues.current_medications));
       setPhotoFile(initialValues.photoFile || null);
       setMedicalFile(initialValues.medicalFile || null);
     } else if (open) {
@@ -89,15 +105,16 @@ export default function MedicalReportModal({
         chronic_diseases: [],
         other_conditions: "",
         previous_surgeries: "",
-        allergies: "",
-        current_medications: "",
         is_pregnant: "",
       });
+      setAllergies([""]);
+      setMedications([""]);
       setPhotoFile(null);
       setMedicalFile(null);
       setPhotoName("");
       setFileName("");
     }
+    clearSuggestion();
   }, [open, initialValues]);
 
   const pickPhoto = async () => {
@@ -122,7 +139,13 @@ export default function MedicalReportModal({
   };
 
   const handleSubmit = async () => {
-    await onSubmit({ ...fields, photoFile, medicalFile });
+    await onSubmit({
+      ...fields,
+      allergies: allergies.map((a) => a.trim()).filter(Boolean),
+      current_medications: medications.map((m) => m.trim()).filter(Boolean),
+      photoFile,
+      medicalFile,
+    });
   };
 
   const toggleCondition = (value) => {
@@ -141,6 +164,76 @@ export default function MedicalReportModal({
     const q = conditionSearch.trim().toLowerCase();
     return !q || c.ar.includes(q) || c.en.toLowerCase().includes(q);
   });
+
+  // ── Dynamic list helpers (shared shape for allergies + medications) ──
+  const updateListItem = (setter, index, value, field) => {
+    setter((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+    checkDrugName(value, `${field}-${index}`);
+  };
+
+  const addListItem = (setter) => setter((prev) => [...prev, ""]);
+
+  const removeListItem = (setter, index) => {
+    setter((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+  };
+
+  const acceptSuggestion = (setter, index) => {
+    setter((prev) => {
+      const next = [...prev];
+      next[index] = suggestion.value;
+      return next;
+    });
+    clearSuggestion();
+  };
+
+  const renderDrugList = (list, setter, field, addLabel, placeholder, disabled) => (
+    <View style={{ marginBottom: 12 }}>
+      {list.map((value, index) => (
+        <View key={index} style={{ marginBottom: 8 }}>
+          <View style={styles.listRow}>
+            <TextInput
+              style={[styles.input, { flex: 1, marginBottom: 0 }, disabled && styles.inputDisabled]}
+              value={value}
+              placeholder={placeholder}
+              editable={!disabled}
+              onChangeText={(text) => updateListItem(setter, index, text, field)}
+            />
+            {!disabled && list.length > 1 && (
+              <TouchableOpacity
+                onPress={() => removeListItem(setter, index)}
+                style={styles.removeBtn}
+              >
+                <Ionicons name="close-circle" size={22} color="#dc2626" />
+              </TouchableOpacity>
+            )}
+          </View>
+          {suggestion?.field === `${field}-${index}` && (
+            <View style={styles.suggestionBox}>
+              <Text style={styles.suggestionText}>
+                {t("drugSuggestion.didYouMean")}{" "}
+                <Text style={styles.suggestionValue}>{suggestion.value}</Text>?
+              </Text>
+              <TouchableOpacity onPress={() => acceptSuggestion(setter, index)}>
+                <Text style={styles.suggestionUseBtn}>
+                  {t("drugSuggestion.useIt")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      ))}
+      {!disabled && (
+        <TouchableOpacity onPress={() => addListItem(setter)} style={styles.addItemBtn}>
+          <Ionicons name="add-circle-outline" size={16} color="#052443" />
+          <Text style={styles.addItemText}>{addLabel}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 
   return (
     <Modal visible={open} animationType="slide" transparent>
@@ -252,14 +345,16 @@ export default function MedicalReportModal({
               editable={!isEdit}
             />
 
+            {/* Allergies — dynamic list, each entry individually resolved. */}
             <Text style={styles.label}>{t("medicalReportModal.allergies")}</Text>
-            <TextInput
-              style={[styles.input, isEdit && styles.inputDisabled]}
-              placeholder={t("medicalReportModal.allergiesPlaceholder")}
-              value={fields.allergies}
-              onChangeText={(t2) => setFields({ ...fields, allergies: t2 })}
-              editable={!isEdit}
-            />
+            {renderDrugList(
+              allergies,
+              setAllergies,
+              "allergies",
+              t("medicalReportModal.addAllergy"),
+              t("medicalReportModal.allergiesPlaceholder"),
+              isEdit
+            )}
 
             {(gender === "female" || gender === "أنثى") && (
               <>
@@ -278,13 +373,16 @@ export default function MedicalReportModal({
               </>
             )}
 
+            {/* Current medications — same pattern. */}
             <Text style={styles.label}>{t("medicalReportModal.currentMedications")}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={t("medicalReportModal.currentMedicationsPlaceholder")}
-              value={fields.current_medications}
-              onChangeText={(t2) => setFields({ ...fields, current_medications: t2 })}
-            />
+            {renderDrugList(
+              medications,
+              setMedications,
+              "medications",
+              t("medicalReportModal.addMedication"),
+              t("medicalReportModal.currentMedicationsPlaceholder"),
+              false
+            )}
 
             {children}
           </ScrollView>
@@ -428,6 +526,54 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     flexShrink: 1,
+  },
+
+  listRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  removeBtn: {
+    padding: 2,
+  },
+  addItemBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-start",
+    marginTop: 2,
+  },
+  addItemText: {
+    fontSize: 13,
+    color: "#052443",
+    fontWeight: "600",
+  },
+  suggestionBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#fffbeb",
+    borderWidth: 1,
+    borderColor: "#fde68a",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    marginTop: 4,
+  },
+  suggestionText: {
+    fontSize: 12,
+    color: "#92400e",
+    flex: 1,
+  },
+  suggestionValue: {
+    fontWeight: "700",
+  },
+  suggestionUseBtn: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#92400e",
+    textDecorationLine: "underline",
+    marginLeft: 8,
   },
 
   /* ---- Conditions dropdown ---- */
