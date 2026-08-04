@@ -71,12 +71,15 @@
     "diagnosis": "التشخيص",
     "chronicDiseases": "الأمراض المزمنة",
     "previousSurgeries": "العمليات الجراحية السابقة",
-    "allergies": "الحساسيات",
+    "allergies": "الحساسية الدوائية",
     "currentMedications": "الأدوية الحالية",
     "treatmentPlan": "الخطة العلاجية",
-
+    "otherConditions": "حالات أخرى",
     "noReport": "لا يوجد تقرير طبي متاح",
-
+    "addAllergy": "إضافة حساسية أخرى",
+    "addMedication": "إضافة دواء آخر",
+    "allergiesPlaceholder": "مثال: بنسلين",
+    "currentMedicationsPlaceholder": "مثال: ميتفورمين",
     "updateSuccess": "تم تحديث التقرير الطبي بنجاح"
   },
   "deliveryHome": {
@@ -468,7 +471,9 @@
   "done": "تم",
   "otherConditions": "حالات أخرى",
   "otherConditionsPlaceholder": "أي حالة غير مذكورة أعلاه",
-  "otherConditionsNote": "تُعرض للطبيب للمراجعة، ولا تدخل في الفحص الآلي للتعارضات"
+  "otherConditionsNote": "تُعرض للطبيب للمراجعة، ولا تدخل في الفحص الآلي للتعارضات",
+  "addAllergy": "إضافة حساسية أخرى",
+  "addMedication": "إضافة دواء آخر"
 },
 "mapPicker": {
   "title": "اختر موقعك",
