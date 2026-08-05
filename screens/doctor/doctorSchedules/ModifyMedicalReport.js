@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import MedicalReportModal from "../../registers/patient/MedicalReportModal";
+import { apiFetch } from "../../../utils/apiClient";
 export default function ModifyMedicalReport({
   isOpen,
   onClose,
