@@ -78,8 +78,8 @@
     "noReport": "لا يوجد تقرير طبي متاح",
     "addAllergy": "إضافة حساسية أخرى",
     "addMedication": "إضافة دواء آخر",
-    "allergiesPlaceholder": "مثال: بنسلين",
-    "currentMedicationsPlaceholder": "مثال: ميتفورمين",
+    "allergiesPlaceholder": "مثال: panadol",
+    "medicationsPlaceholder": "مثال: Metformin",
     "updateSuccess": "تم تحديث التقرير الطبي بنجاح"
   },
   "deliveryHome": {
@@ -453,13 +453,13 @@
   "previousSurgeries": "العمليات الجراحية السابقة",
   "previousSurgeriesPlaceholder": "العمليات الجراحية السابقة...",
   "allergies": "الحساسية الدوائية",
-  "allergiesPlaceholder": "الحساسية الدوائية المعروفة  ...",
+  "allergiesPlaceholder": " مثال : Panadol...",
   "pregnancyStatus": "حالة الحمل",
   "select": "اختر",
   "pregnant": "حامل",
   "notPregnant": "غير حامل",
   "currentMedications": "الأدوية الحالية",
-  "currentMedicationsPlaceholder": "اذكر الأدوية الحالية...",
+  "currentMedicationsPlaceholder":"مثال: Metformin...",
   "saveReport": "حفظ التقرير",
   "imageUploadFailed": "فشل رفع الصورة",
   "fileUploadFailed": "فشل رفع الملف",
@@ -647,7 +647,9 @@
   "noFiles": "لا توجد ملفات",
   "linkUnavailable": "الرابط غير متوفر!",
   "file": "ملف",
-  "close": "إغلاق"
+  "close": "إغلاق",
+  "otherConditions": "حالات أخرى",
+  "currentMedications": "الأدوية الحالية"
 } , 
 
 "createPrescription": {

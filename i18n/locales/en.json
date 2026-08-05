@@ -78,8 +78,8 @@
     "treatmentPlan":"Treatment Plan",
     "addAllergy": "Add another allergy",
     "addMedication": "Add another medication",
-    "allergiesPlaceholder": "e.g. Penicillin",
-    "currentMedicationsPlaceholder": "e.g. Metformin",
+    "allergiesPlaceholder": "e.g. Panadol",
+    "medicationsPlaceholder": "e.g. Metformin",
     "noReport":"No medical report available",
     "updateSuccess":"Medical report updated successfully"
   },
@@ -426,13 +426,13 @@
   "previousSurgeries": "Previous Surgeries",
   "previousSurgeriesPlaceholder": "Previous surgeries...",
   "allergies": "Drug Allergies",
-  "allergiesPlaceholder": "Known Drug Allergies...",
+  "allergiesPlaceholder":"e.g. Panadol",
   "pregnancyStatus": "Pregnancy Status",
   "select": "Select",
   "pregnant": "Pregnant",
   "notPregnant": "Not Pregnant",
   "currentMedications": "Current Medications",
-  "currentMedicationsPlaceholder": "List current medications...",
+  "currentMedicationsPlaceholder": "e.g. Metformin...",
   "saveReport": "Save Report",
   "imageUploadFailed": "Image upload failed",
   "fileUploadFailed": "File upload failed",
@@ -646,7 +646,9 @@
   "noFiles": "No files",
   "linkUnavailable": "link is not available!",
   "file": "File",
-  "close": "Close"
+  "close": "Close",
+  "otherConditions": "Other Conditions",
+  "currentMedications": "Current Medications"
 },
 
 "createPrescription": {

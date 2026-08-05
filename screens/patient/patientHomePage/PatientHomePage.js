@@ -12,7 +12,7 @@ import FAID from "./FAID/FAID";
 import AI_Medical_Assistant from "../AIMedicalAssistant/AI_Medical_Assistant";
 import PatientMedicalReport from "../../Components/PatientMedicalReport/PatientMedicalReport";
 import { LinearGradient } from "expo-linear-gradient";
-import {BASE_URL,NGROK_HEADERS} from "../../../constants/api"
+import { apiFetch } from "../../../utils/apiClient";
 
 export default function PatientHomePage() {
   const { t } = useTranslation();
@@ -41,17 +41,7 @@ export default function PatientHomePage() {
 
     try {
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `${BASE_URL}/patient/profile`,
-        {
-          method: "GET",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-        }
-      );
+      const response = await apiFetch(`/api/patient/profile`);
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
@@ -106,15 +96,10 @@ export default function PatientHomePage() {
         updateData.password = patientData.password;
       }
 
-      const response = await fetch(
-        `${BASE_URL}/patient/profile`,
+      const response = await apiFetch(
+        `/api/patient/profile`,
         {
           method: "PUT",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
           body: JSON.stringify(updateData),
         }
       );

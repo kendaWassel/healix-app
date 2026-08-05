@@ -11,14 +11,17 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
 
 export default function PatientDetailsModal({ details, onClose }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   if (!details) return null;
 
   const chronicDiseases = details.medical_record?.chronic_diseases;
+  const otherConditions = details.medical_record?.other_conditions;
   const previousSurgeries = details.medical_record?.previous_surgeries;
   const allergies = details.medical_record?.allergies;
+  const currentMedications = details.medical_record?.current_medications;
   const images = details.medical_record?.images || [];
   const files = details.medical_record?.files || [];
   const isPregnant = details.medical_record?.is_pregnant;
@@ -39,6 +42,26 @@ export default function PatientDetailsModal({ details, onClose }) {
     }
 
     return <Text style={styles.listItem}>• {value}</Text>;
+  };
+
+  // Chronic conditions are stored as DrugCentral-standard English values
+  // ("Diabetes mellitus"), so translate each one back to a readable label
+  // instead of showing the raw lookup key.
+  const renderChronicConditions = (value) => {
+    if (!Array.isArray(value) || value.length === 0) {
+      return <Text style={styles.listItem}>• {t("patientDetailsModal.none")}</Text>;
+    }
+    return value.map((v, index) => {
+      const cond = CHRONIC_CONDITIONS.find((c) => c.value === v);
+      const label = cond
+        ? (i18n.language?.startsWith("ar") ? cond.ar : cond.en)
+        : v;
+      return (
+        <Text key={index} style={styles.listItem}>
+          • {label}
+        </Text>
+      );
+    });
   };
 
   return (
@@ -87,8 +110,15 @@ export default function PatientDetailsModal({ details, onClose }) {
 
             <View style={styles.group}>
               <Text style={styles.label}>{t("patientDetailsModal.chronicDiseases")}</Text>
-              {renderList(chronicDiseases)}
+              {renderChronicConditions(chronicDiseases)}
             </View>
+
+            {otherConditions ? (
+              <View style={styles.group}>
+                <Text style={styles.label}>{t("patientDetailsModal.otherConditions")}</Text>
+                {renderList(otherConditions)}
+              </View>
+            ) : null}
 
             <View style={styles.group}>
               <Text style={styles.label}>{t("patientDetailsModal.previousSurgeries")}</Text>
@@ -98,6 +128,11 @@ export default function PatientDetailsModal({ details, onClose }) {
             <View style={styles.group}>
               <Text style={styles.label}>{t("patientDetailsModal.allergies")}</Text>
               {renderList(allergies)}
+            </View>
+
+            <View style={styles.group}>
+              <Text style={styles.label}>{t("patientDetailsModal.currentMedications")}</Text>
+              {renderList(currentMedications)}
             </View>
 
             <View style={styles.group}>
