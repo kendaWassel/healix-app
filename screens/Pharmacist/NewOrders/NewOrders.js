@@ -26,19 +26,15 @@ export default function NewOrders() {
   const [loading, setLoading] = useState(false);
   const [rejectLoading, setRejectLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const [selectedImage, setSelectedImage] = useState(null);
   const [showAcceptPopup, setShowAcceptPopup] = useState(false);
   const [showRejectPopup, setShowRejectPopup] = useState(false);
-
   const [RejectReason, setRejectReason] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
   const [prices, setPrices] = useState({});
   const [dosages, setDosages] = useState([]);
-
   const [manualDrugNames, setManualDrugNames] = useState([""]);
   const [manualSafetyChecked, setManualSafetyChecked] = useState(false);
-
   const [safetyWarnings, setSafetyWarnings] = useState(null);
   const [showSafetyPopup, setShowSafetyPopup] = useState(false);
   const [safetyChecking, setSafetyChecking] = useState(false);
@@ -46,18 +42,13 @@ export default function NewOrders() {
   const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
   const [conditionWarnings, setConditionWarnings] = useState([]);
   const [conditionCheckAvailable, setConditionCheckAvailable] = useState(true);
-  
 
   const fetchPrescriptions = async (pageNumber = 1) => {
     setLoading(true);
     setError(null);
-
     try {
-
       const response = await apiFetch(`/api/pharmacist/prescriptions?page=${pageNumber}&per_page=3`);
-
       if (!response.ok) throw new Error(t("newOrdersScreen.requestFailed"));
-
       const data = await response.json();
       console.log("prescriptions: ", data);
       setPrescriptions(data.data);
@@ -74,70 +65,71 @@ export default function NewOrders() {
     fetchPrescriptions(page);
   }, [page]);
 
+
   const runSafetyCheck = async (prescriptionId, drugNames) => {
-  const result = {
-     interactions: [], 
-     pregnancy: [],
-      allergies: [], 
+    const result = {
+      interactions: [],
+      pregnancy: [],
+      allergyDirect: [],
+      allergyCross: [],
       hasWarning: false,
-      conditions: [],               
+      conditions: [],
       conditionAvailable: true,
-    
     };
 
-  try {
-    const token = await AsyncStorage.getItem("token");
+    try {
+      const uniqueDrugNames = [...new Set(drugNames.map((d) => d.toLowerCase()))]
+        .map((lower) => drugNames.find((d) => d.toLowerCase() === lower));
 
-    const uniqueDrugNames = [...new Set(drugNames.map((d) => d.toLowerCase()))]
-      .map((lower) => drugNames.find((d) => d.toLowerCase() === lower));
-
-    const res = await apiFetch(`/api/pharmacist/prescriptions/${prescriptionId}/verify`,
-      {
-        method: "POST",
-        body: JSON.stringify({ medications: uniqueDrugNames }),
-      }
-    );
-
-    if (res.ok) {
-      const result_json = await res.json();
-      console.log("Verify result:", result_json);
-      const data = result_json.data || result_json;
-
-      result.interactions = (data.drug_interactions || []).filter(
-        (f) =>
-          f.severity === "Major" ||
-          f.severity === "Moderate" ||
-          f.severity_confidence === "UNCERTAIN"
+      const res = await apiFetch(`/api/pharmacist/prescriptions/${prescriptionId}/verify`,
+        {
+          method: "POST",
+          body: JSON.stringify({ medications: uniqueDrugNames }),
+        }
       );
-      result.pregnancy = data.pregnancy_warnings || [];
-      result.allergies = data.allergy_warnings || [];
-      result.hasWarning = data.safe === false;
-      result.conditions = data.condition_warnings || [];                 
-      result.conditionAvailable = data.condition_check_available !== false; 
-    } else {
-      const errData = await res.json().catch(() => ({}));
-      console.log("Verify failed:", res.status, errData);
-    }
 
-    return result;
-  } catch (err) {
-    console.error("Safety check failed:", err);
-    return result;
-  }
-};
+      if (res.ok) {
+        const result_json = await res.json();
+        console.log("Verify result:", result_json);
+        const data = result_json.data || result_json;
+
+        result.interactions = (data.drug_interactions || []).filter(
+          (f) =>
+            f.severity === "Major" ||
+            f.severity === "Moderate" ||
+            f.severity_confidence === "UNCERTAIN"
+        );
+        result.pregnancy = data.pregnancy_warnings || [];
+        result.allergyDirect = data.allergy_direct_matches || [];
+        result.allergyCross = data.allergy_cross_matches || [];
+        result.conditions = data.condition_warnings || [];
+        result.conditionAvailable = data.condition_check_available !== false;
+        result.hasWarning =
+          data.safe === false ||
+          result.allergyDirect.length > 0 ||
+          result.allergyCross.length > 0;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        console.log("Verify failed:", res.status, errData);
+      }
+
+      return result;
+    } catch (err) {
+      console.error("Safety check failed:", err);
+      return result;
+    }
+  };
 
   const handleCheckManualDrugs = async () => {
     const validNames = manualDrugNames.filter((n) => n.trim() !== "");
     if (validNames.length === 0) return;
-
     setSafetyChecking(true);
     const safety = await runSafetyCheck(selectedItem.prescription_id, validNames);
     setSafetyChecking(false);
-
     if (safety.hasWarning) {
       setSafetyWarnings(safety);
       setSafetyCheckStage("manualBeforePricing");
-      setConditionWarnings(safety.conditions || []);                  
+      setConditionWarnings(safety.conditions || []);
       setConditionCheckAvailable(safety.conditionAvailable !== false);
       setShowAcceptPopup(false);
       setShowSafetyPopup(true);
@@ -160,8 +152,6 @@ export default function NewOrders() {
 
   const handleAccept = async (prescription_id) => {
     try {
-      const token = await AsyncStorage.getItem("token");
-
       const response = await apiFetch(`/api/pharmacist/prescriptions/${prescription_id}/accept`,
         {
           method: "POST",
@@ -169,7 +159,6 @@ export default function NewOrders() {
       );
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
-
       if (result.data?.status === "accepted") {
         await sendPrice(prescription_id);
       }
@@ -188,13 +177,11 @@ export default function NewOrders() {
   };
 
   const sendPrice = async (order_id) => {
-    const token = await AsyncStorage.getItem("token");
     const items = dosages.map((d) => ({
       medicine_name: d.dosageName,
       dosage: d.dosage,
       price: Number(d.price),
     }));
-
     const response = await apiFetch(`/api/pharmacist/prescriptions/${order_id}/add-price`,
       {
         method: "POST",
@@ -215,7 +202,6 @@ export default function NewOrders() {
     }
     setRejectLoading(true);
     try {
-
       const response = await apiFetch(`/api/pharmacist/prescriptions/${prescription_id}/reject`,
         {
           method: "POST",
@@ -256,7 +242,6 @@ export default function NewOrders() {
   const handleNext = () => {
     if (page < totalPages) setPage(page + 1);
   };
-
   const handlePrevious = () => {
     if (page > 1) setPage(page - 1);
   };
@@ -264,11 +249,9 @@ export default function NewOrders() {
   return (
     <View style={{ flex: 1 }}>
       <PharmacistHeader />
-
       <ScrollView style={{ backgroundColor: "#f9fafb" }} contentContainerStyle={{ paddingBottom: 30 }}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t("newOrdersScreen.title")}</Text>
-
           {loading ? (
             <ActivityIndicator size="large" color="#39CCCC" style={{ marginVertical: 20 }} />
           ) : prescriptions.length > 0 ? (
@@ -293,43 +276,37 @@ export default function NewOrders() {
                       />
                     </TouchableOpacity>
                   )}
-
                   <View style={styles.actionsRow}>
                     <TouchableOpacity
-                    onPress={async () => {
-  setSelectedItem(item);
-  setPrices({});
-  setDosages([]);
-  setManualDrugNames([""]);
-  setManualSafetyChecked(false);
-
-  if (!item.medicines || item.medicines.length === 0) {
-    setShowAcceptPopup(true);
-    return;
-  }
-
-  const drugNames = item.medicines
-    .map((m) => m.name)
-    .filter((n) => n && n.trim() !== "");
-
-  setSafetyChecking(true);
-  const safety = await runSafetyCheck(item.prescription_id, drugNames);
-  setSafetyChecking(false);
-
-  if (safety.hasWarning) {
-    setSafetyWarnings(safety);
-    setConditionWarnings(safety.conditions || []);             
-    setConditionCheckAvailable(safety.conditionAvailable !== false); 
-    setSafetyCheckStage("initial");
-    setShowSafetyPopup(true);
-  } else {
-    setShowAcceptPopup(true);
-  }
-}}
+                      onPress={async () => {
+                        setSelectedItem(item);
+                        setPrices({});
+                        setDosages([]);
+                        setManualDrugNames([""]);
+                        setManualSafetyChecked(false);
+                        if (!item.medicines || item.medicines.length === 0) {
+                          setShowAcceptPopup(true);
+                          return;
+                        }
+                        const drugNames = item.medicines
+                          .map((m) => m.name)
+                          .filter((n) => n && n.trim() !== "");
+                        setSafetyChecking(true);
+                        const safety = await runSafetyCheck(item.prescription_id, drugNames);
+                        setSafetyChecking(false);
+                        if (safety.hasWarning) {
+                          setSafetyWarnings(safety);
+                          setConditionWarnings(safety.conditions || []);
+                          setConditionCheckAvailable(safety.conditionAvailable !== false);
+                          setSafetyCheckStage("initial");
+                          setShowSafetyPopup(true);
+                        } else {
+                          setShowAcceptPopup(true);
+                        }
+                      }}
                     >
                       <Text style={styles.acceptText}>{t("newOrdersScreen.accept")}</Text>
                     </TouchableOpacity>
-
                     <TouchableOpacity
                       onPress={() => {
                         setSelectedItem(item);
@@ -340,7 +317,6 @@ export default function NewOrders() {
                       <Text style={styles.rejectText}>{t("newOrdersScreen.reject")}</Text>
                     </TouchableOpacity>
                   </View>
-
                   <View style={styles.timeRow}>
                     <Ionicons name="time-outline" size={16} color="#6b7280" />
                     <Text style={styles.timeText}>
@@ -370,11 +346,9 @@ export default function NewOrders() {
                 {t("newOrdersScreen.previous")}
               </Text>
             </TouchableOpacity>
-
             <Text style={styles.pageInfo}>
               {page} / {totalPages}
             </Text>
-
             <TouchableOpacity
               onPress={handleNext}
               disabled={page === totalPages || loading || !!error}
@@ -392,10 +366,9 @@ export default function NewOrders() {
             </TouchableOpacity>
           </View>
         </View>
-
-      
       </ScrollView>
-  <Footer />
+      <Footer />
+
       {/* Image Preview */}
       <Modal
         visible={!!selectedImage}
@@ -456,7 +429,6 @@ export default function NewOrders() {
                     >
                       <Text style={styles.saveBtnText}>{t("newOrdersScreen.save")}</Text>
                     </TouchableOpacity>
-
                     <TouchableOpacity
                       onPress={() => {
                         setShowAcceptPopup(false);
@@ -471,7 +443,6 @@ export default function NewOrders() {
               ) : !manualSafetyChecked ? (
                 <>
                   <Text style={styles.popupTitle}>{t("newOrdersScreen.enterMedicineNames")}</Text>
-
                   {manualDrugNames.map((name, index) => (
                     <View key={index} style={{ marginBottom: 12 }}>
                       <TextInput
@@ -511,7 +482,6 @@ export default function NewOrders() {
                       {t("newOrdersScreen.addAnotherMedicine")}
                     </Text>
                   </TouchableOpacity>
-
                   <View style={styles.popupBtnRow}>
                     <TouchableOpacity
                       onPress={handleCheckManualDrugs}
@@ -529,7 +499,6 @@ export default function NewOrders() {
                         {safetyChecking ? t("newOrdersScreen.checkingSafety") : t("newOrdersScreen.checkSafetyContinue")}
                       </Text>
                     </TouchableOpacity>
-
                     <TouchableOpacity
                       onPress={() => {
                         setShowAcceptPopup(false);
@@ -545,7 +514,6 @@ export default function NewOrders() {
               ) : (
                 <>
                   <Text style={styles.popupTitle}>{t("newOrdersScreen.enterPrice")}</Text>
-
                   {dosages.map((item, index) => (
                     <View key={index} style={styles.dosageBox}>
                       <Text style={styles.fieldLabel}>{item.dosageName}</Text>
@@ -583,7 +551,6 @@ export default function NewOrders() {
                     >
                       <Text style={styles.saveBtnText}>{t("newOrdersScreen.save")}</Text>
                     </TouchableOpacity>
-
                     <TouchableOpacity
                       onPress={() => {
                         setShowAcceptPopup(false);
@@ -642,6 +609,7 @@ export default function NewOrders() {
           </View>
         </View>
       </Modal>
+
       {/* Safety Warnings Popup */}
       <Modal
         visible={showSafetyPopup && !!safetyWarnings}
@@ -697,31 +665,50 @@ export default function NewOrders() {
                   ))}
                 </View>
               )}
-              {safetyWarnings?.allergies && safetyWarnings.allergies.length > 0 && (
+
+              {/* Direct allergy matches — same active ingredient as a
+                  recorded allergy under a different name. Highest severity:
+                  confirmed hazard, not a probability. */}
+              {safetyWarnings?.allergyDirect && safetyWarnings.allergyDirect.length > 0 && (
                 <View style={{ marginBottom: 16 }}>
                   <Text style={styles.safetySectionTitle}>{t("newOrdersScreen.allergyWarnings")}</Text>
-                  {safetyWarnings.allergies.map((a, i) => (
-                    <View key={i} style={styles.allergyCard}>
-                      <Text style={styles.allergyText}>
-                        {a.medication || a.allergen}
+                  {safetyWarnings.allergyDirect.map((a, i) => (
+                    <View key={`direct-${i}`} style={styles.allergyDirectCard}>
+                      <Text style={styles.allergyDirectText}>
+                        🚫 {t("newOrdersScreen.sameIngredientAsAllergy")}
                       </Text>
-                      <Text style={styles.allergyNote}>{a.note}</Text>
+                      <Text style={styles.allergyDirectDetail}>
+                        <Text style={{ fontWeight: "700" }}>{a.medication}</Text>
+                        {" = "}
+                        <Text style={{ fontWeight: "700" }}>{a.allergen}</Text>
+                        {a.matched_ingredient ? ` (${a.matched_ingredient})` : ""}
+                      </Text>
+                      {a.note && (
+                        <Text style={styles.allergyDirectNote}>{a.note}</Text>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Cross-reactive matches — structurally/pharmacologically
+                  related to an allergen, not the same substance. Lower
+                  certainty than a direct match. */}
+              {safetyWarnings?.allergyCross && safetyWarnings.allergyCross.length > 0 && (
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={styles.safetySectionTitle}>{t("newOrdersScreen.crossReactiveWarnings")}</Text>
+                  {safetyWarnings.allergyCross.map((a, i) => (
+                    <View key={`cross-${i}`} style={styles.allergyCard}>
+                      <Text style={styles.allergyText}>
+                        🤧 {t("newOrdersScreen.mayCrossReactWith")}{" "}
+                        <Text style={{ fontWeight: "700" }}>{a.allergen}</Text>
+                      </Text>
+                      <Text style={styles.allergyNote}>
+                        <Text style={{ fontWeight: "700" }}>{a.medication}</Text>
+                        {a.detected_by ? ` — ${a.detected_by}` : ""}
+                      </Text>
                       {a.risk && (
                         <Text style={styles.allergyRisk}>{t("newOrdersScreen.risk")} {a.risk}</Text>
-                      )}
-                      {a.cross_reactive_drugs && a.cross_reactive_drugs.length > 0 && (
-                        <View style={styles.crossReactiveSection}>
-                          <Text style={styles.crossReactiveLabel}>
-                            {t("newOrdersScreen.similarReactionDrugs")}
-                          </Text>
-                          <View style={styles.crossReactiveChips}>
-                            {a.cross_reactive_drugs.slice(0, 5).map((drug, j) => (
-                              <View key={j} style={styles.crossReactiveChip}>
-                                <Text style={styles.crossReactiveChipText}>{drug}</Text>
-                              </View>
-                            ))}
-                          </View>
-                        </View>
                       )}
                     </View>
                   ))}
@@ -741,7 +728,8 @@ export default function NewOrders() {
                   ))}
                 </View>
               )}
-                {conditionWarnings.length > 0 && (
+
+              {conditionWarnings.length > 0 && (
                 <View style={{ marginBottom: 16 }}>
                   <Text style={styles.safetySectionTitle}>
                     {t("newOrdersScreen.conditionWarnings")}
@@ -757,7 +745,7 @@ export default function NewOrders() {
                       </Text>
                       <Text style={styles.conditionSubText}>
                         {t("newOrdersScreen.conflictsWith")}{" "}
-                        <Text style={{ fontWeight: "700" }}>{c.condition}</Text>
+                           <Text style={{ fontWeight: "700" }}>{c.condition_label || c.condition}</Text>
                       </Text>
                       {c.source && (
                         <Text style={styles.conditionSource}>
@@ -777,11 +765,9 @@ export default function NewOrders() {
                 </View>
               )}
 
-
               <Text style={styles.reviewNote}>
                 {t("newOrdersScreen.reviewNote")}
               </Text>
-
               {safetyCheckStage === "manualBeforePricing" ? (
                 <TouchableOpacity
                   onPress={() => {
@@ -1110,6 +1096,32 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     marginTop: 4,
   },
+  // Direct allergy match — the highest-severity card style, distinct from
+  // the softer orange of cross-reactivity, since this is a confirmed
+  // same-substance hazard rather than a probabilistic risk.
+  allergyDirectCard: {
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#dc2626",
+    backgroundColor: "#fef2f2",
+    padding: 12,
+    marginBottom: 8,
+  },
+  allergyDirectText: {
+    fontWeight: "700",
+    color: "#991b1b",
+    fontSize: 14,
+  },
+  allergyDirectDetail: {
+    fontSize: 13,
+    color: "#111827",
+    marginTop: 4,
+  },
+  allergyDirectNote: {
+    fontSize: 11,
+    color: "#7f1d1d",
+    marginTop: 4,
+  },
   allergyCard: {
     borderRadius: 10,
     borderWidth: 2,
@@ -1133,32 +1145,6 @@ const styles = StyleSheet.create({
     color: "#dc2626",
     fontWeight: "700",
     marginTop: 4,
-  },
-  crossReactiveSection: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#fed7aa",
-  },
-  crossReactiveLabel: {
-    fontSize: 11,
-    color: "#6b7280",
-    marginBottom: 6,
-  },
-  crossReactiveChips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  crossReactiveChip: {
-    backgroundColor: "#fed7aa",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  crossReactiveChipText: {
-    fontSize: 11,
-    color: "#9a3412",
   },
   pregnancyCard: {
     borderRadius: 10,
