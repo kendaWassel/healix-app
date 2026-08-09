@@ -690,7 +690,9 @@
   "conflictsWith": "Contraindicated with:",
   "source": "Source:",
   "conditionCheckUnavailable": "Condition check unavailable — chronic condition conflicts were not verified.",
-  "otherConditionsNote": "Shown to your doctor for review — not included in automatic contraindication checks"
+  "otherConditionsNote": "Shown to your doctor for review — not included in automatic contraindication checks",
+  "sameIngredientAsAllergy": "Same active ingredient as a recorded allergy",
+  "mayCrossReactWith": "May cross-react with"
 },
 
 "userLogin": {
@@ -852,7 +854,10 @@
   "rejectFailed": "Reject failed",
   "conditionWarnings": "Chronic Condition Conflicts",
   "conflictsWith": "Contraindicated with:",
-  "conditionCheckUnavailable": "Condition check unavailable — chronic condition conflicts were not verified."
+  "conditionCheckUnavailable": "Condition check unavailable — chronic condition conflicts were not verified.",
+  "sameIngredientAsAllergy": "Same active ingredient as a recorded allergy",
+  "crossReactiveWarnings": "Possible Cross-Reactivity",
+  "mayCrossReactWith": "May cross-react with"
 },
 
 

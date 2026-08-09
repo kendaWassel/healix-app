@@ -690,7 +690,9 @@
   "saveFailedRetry": "فشل حفظ الوصفة. حاول مرة أخرى.",
   "conflictsWith": "يتعارض مع:",
   "source": "المصدر:",
-  "conditionCheckUnavailable": "فحص الأمراض المزمنة غير متاح — لم يتم التحقق من التعارضات."
+  "conditionCheckUnavailable": "فحص الأمراض المزمنة غير متاح — لم يتم التحقق من التعارضات.",
+  "sameIngredientAsAllergy": "نفس المادة الفعالة لحساسية مسجّلة",
+  "mayCrossReactWith": "قد يتفاعل تحسسياً مع"
 },
 
 "userLogin": {
@@ -852,7 +854,10 @@
   "rejectFailed": "فشل الرفض",
   "conditionWarnings": "تعارضات مع الأمراض المزمنة",
   "conflictsWith": "يتعارض مع:",
-  "conditionCheckUnavailable": "فحص الأمراض المزمنة غير متاح — لم يتم التحقق من التعارضات."
+  "conditionCheckUnavailable": "فحص الأمراض المزمنة غير متاح — لم يتم التحقق من التعارضات.",
+  "sameIngredientAsAllergy": "نفس المادة الفعالة لحساسية مسجّلة",
+  "crossReactiveWarnings": "احتمال تفاعل تحسسي متقاطع",
+  "mayCrossReactWith": "قد يتفاعل تحسسياً مع"
 },
 
 

@@ -25,7 +25,13 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
   ]);
 
   const [interactionWarnings, setInteractionWarnings] = useState([]);
-  const [allergyWarnings, setAllergyWarnings] = useState([]);
+  // Allergy matches split into two tiers: direct (same active ingredient
+  // under a different brand name — e.g. Paracetamol vs a recorded Panadol
+  // allergy) and cross-reactive (structurally/pharmacologically related but
+  // not the same substance). Kept separate because a direct match is a
+  // confirmed hazard, while cross-reactivity is a probabilistic risk.
+  const [allergyDirectMatches, setAllergyDirectMatches] = useState([]);
+  const [allergyCrossMatches, setAllergyCrossMatches] = useState([]);
   const [pregnancyWarnings, setPregnancyWarnings] = useState([]);
   const [showInteractionPopup, setShowInteractionPopup] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -79,15 +85,13 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
 
     if (uniqueDrugNames.length < 2) return { hasWarning: false };
 
+    try {
+      const response = await apiFetch(`/api/doctor/prescriptions/verify`, {
+        method: "POST",
+        body: JSON.stringify({ medications: uniqueDrugNames, patient_id: patientId }),
+      });
 
-
-   try {
-  const response = await apiFetch(`/api/doctor/prescriptions/verify`, {
-    method: "POST",
-    body: JSON.stringify({ medications: uniqueDrugNames, patient_id: patientId }),
-  });
-
-      if (!response.ok) return { hasWarning: false , conditionAvailable: true };
+      if (!response.ok) return { hasWarning: false, conditionAvailable: true };
       const result_json = await response.json();
       console.log("verify result", result_json);
 
@@ -106,17 +110,24 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
         alt_for: f.drug_b,
       }));
 
+      const allergyDirect = data.allergy_direct_matches || [];
+      const allergyCross = data.allergy_cross_matches || [];
+
       return {
         interactions: withAlternatives,
-        allergies: data.allergy_warnings || [],
+        allergyDirect,
+        allergyCross,
         pregnancy: data.pregnancy_warnings || [],
-        conditions: data.condition_warnings || [],          
+        conditions: data.condition_warnings || [],
         conditionAvailable: data.condition_check_available !== false,
-        hasWarning: data.safe === false,
+        hasWarning:
+          data.safe === false ||
+          allergyDirect.length > 0 ||
+          allergyCross.length > 0,
       };
     } catch (err) {
       console.error("DDI check failed:", err);
-      return { hasWarning: false , conditionAvailable: true };
+      return { hasWarning: false, conditionAvailable: true };
     }
   };
 
@@ -127,10 +138,11 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
 
     if (result.hasWarning) {
       setInteractionWarnings(result.interactions || []);
-      setAllergyWarnings(result.allergies || []);
+      setAllergyDirectMatches(result.allergyDirect || []);
+      setAllergyCrossMatches(result.allergyCross || []);
       setPregnancyWarnings(result.pregnancy || []);
-      setConditionWarnings(result.conditions || []);                
-      setConditionCheckAvailable(result.conditionAvailable !== false); 
+      setConditionWarnings(result.conditions || []);
+      setConditionCheckAvailable(result.conditionAvailable !== false);
       setShowInteractionPopup(true);
       return;
     }
@@ -139,17 +151,16 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
   };
 
   const saveToServer = async () => {
-
-try {
-  const response = await apiFetch(`/api/doctor/prescriptions`, {
-    method: "POST",
-    body: JSON.stringify({
-      consultation_id: consultationId,
-      diagnosis,
-      notes,
-      medicines,
-    }),
-  });
+    try {
+      const response = await apiFetch(`/api/doctor/prescriptions`, {
+        method: "POST",
+        body: JSON.stringify({
+          consultation_id: consultationId,
+          diagnosis,
+          notes,
+          medicines,
+        }),
+      });
       if (response.ok) {
         const data = await response.json();
         console.log("Prescription saved:", data);
@@ -400,31 +411,41 @@ try {
                   </View>
                 ))}
 
-                {allergyWarnings.map((a, i) => (
-                  <View key={`alg-${i}`} style={styles.allergyCard}>
-                    <Text style={styles.allergyText}>
-                      🤧 {t("createPrescription.patientAllergicTo")}{" "}
-                      <Text style={{ fontWeight: "700" }}>
-                        {a.medication || a.allergen}
-                      </Text>
+                {/* Direct allergy matches — same active ingredient as a
+                    recorded allergy, under a different name. Highest
+                    severity: this is a confirmed hazard, not a probability. */}
+                {allergyDirectMatches.map((a, i) => (
+                  <View key={`direct-${i}`} style={styles.allergyDirectCard}>
+                    <Text style={styles.allergyDirectText}>
+                      🚫 {t("createPrescription.sameIngredientAsAllergy")}
                     </Text>
-                    <Text style={styles.allergyNote}>{a.note}</Text>
+                    <Text style={styles.allergyDirectDetail}>
+                      <Text style={{ fontWeight: "700" }}>{a.medication}</Text>
+                      {" = "}
+                      <Text style={{ fontWeight: "700" }}>{a.allergen}</Text>
+                      {a.matched_ingredient ? ` (${a.matched_ingredient})` : ""}
+                    </Text>
+                    {a.note && (
+                      <Text style={styles.allergyDirectNote}>{a.note}</Text>
+                    )}
+                  </View>
+                ))}
+
+                {/* Cross-reactive allergy matches — structurally/pharmacologically
+                    related to an allergen, but not the same substance. Lower
+                    certainty than a direct match. */}
+                {allergyCrossMatches.map((a, i) => (
+                  <View key={`cross-${i}`} style={styles.allergyCard}>
+                    <Text style={styles.allergyText}>
+                      🤧 {t("createPrescription.mayCrossReactWith")}{" "}
+                      <Text style={{ fontWeight: "700" }}>{a.allergen}</Text>
+                    </Text>
+                    <Text style={styles.allergyNote}>
+                      <Text style={{ fontWeight: "700" }}>{a.medication}</Text>
+                      {a.detected_by ? ` — ${a.detected_by}` : ""}
+                    </Text>
                     {a.risk && (
                       <Text style={styles.allergyRisk}>{t("createPrescription.risk")} {a.risk}</Text>
-                    )}
-                    {a.cross_reactive_drugs && a.cross_reactive_drugs.length > 0 && (
-                      <View style={styles.altSection}>
-                        <Text style={styles.altLabel}>
-                          {t("createPrescription.similarReactionDrugs")}
-                        </Text>
-                        <View style={styles.altChips}>
-                          {a.cross_reactive_drugs.slice(0, 5).map((drug, j) => (
-                            <View key={j} style={styles.allergyChip}>
-                              <Text style={styles.allergyChipText}>{drug}</Text>
-                            </View>
-                          ))}
-                        </View>
-                      </View>
                     )}
                   </View>
                 ))}
@@ -437,6 +458,7 @@ try {
                     <Text style={styles.pregnancySubText}>{p.warning}</Text>
                   </View>
                 ))}
+
                 {conditionWarnings.map((c, i) => (
                   <View key={`cond-${i}`} style={styles.conditionCard}>
                     <Text style={styles.conditionText}>
@@ -447,7 +469,7 @@ try {
                     </Text>
                     <Text style={styles.conditionSubText}>
                       {t("createPrescription.conflictsWith")}{" "}
-                      <Text style={{ fontWeight: "700" }}>{c.condition}</Text>
+                        <Text style={{ fontWeight: "700" }}>{c.condition_label || c.condition}</Text>
                     </Text>
                     {c.source && (
                       <Text style={styles.conditionSource}>
@@ -692,6 +714,31 @@ const styles = StyleSheet.create({
   altNote: {
     fontSize: 10,
     color: "#9ca3af",
+    marginTop: 4,
+  },
+  // Direct allergy match — the highest-severity card style, distinct from
+  // the softer orange of cross-reactivity, since this is a confirmed
+  // same-substance hazard rather than a probabilistic risk.
+  allergyDirectCard: {
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#dc2626",
+    backgroundColor: "#fef2f2",
+    padding: 12,
+  },
+  allergyDirectText: {
+    fontWeight: "700",
+    color: "#991b1b",
+    fontSize: 14,
+  },
+  allergyDirectDetail: {
+    fontSize: 13,
+    color: "#111827",
+    marginTop: 4,
+  },
+  allergyDirectNote: {
+    fontSize: 11,
+    color: "#7f1d1d",
     marginTop: 4,
   },
   allergyCard: {

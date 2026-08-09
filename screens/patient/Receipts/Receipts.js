@@ -26,8 +26,9 @@ import RatingModal from "../DoctorConsultation/booking/RatingModal";
 import DoneModal from "../DoctorConsultation/booking/DoneModal";
 import * as ImageManipulator from "expo-image-manipulator";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
+import { apiFetch } from "../../../utils/apiClient";
 
-const DDI_URL = "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/ddi";
+
 
 export default function Receipts() {
   const navigation = useNavigation();
@@ -85,17 +86,8 @@ export default function Receipts() {
     const token = await AsyncStorage.getItem("token");
 
     try {
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/prescriptions?page=${pagination.currentPage}&per_page=${pagination.itemsPerPage}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiFetch(
+        `/api/patient/prescriptions?page=${pagination.currentPage}&per_page=${pagination.itemsPerPage}`);
 
       const data = await response.json();
       console.log("my receipts: ", data);
@@ -133,20 +125,12 @@ export default function Receipts() {
     if (!phLoadBtn) return;
     setIsLoadingPharmacist(true);
     setErrorPharmacist(null);
-    const token = await AsyncStorage.getItem("token");
+
 
     try {
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/view-prescriptions-with-pricing?page=${pharmacistPagination.currentPage}&per_page=${pharmacistPagination.itemsPerPage}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiFetch(
+        `/api/patient/view-prescriptions-with-pricing?page=${pharmacistPagination.currentPage}&per_page=${pharmacistPagination.itemsPerPage}`);
+
       const data = await response.json();
       console.log("pharmacist receipts: ", data);
 
@@ -199,19 +183,11 @@ export default function Receipts() {
     setDeliveryData(null);
     setDeliveryMessage("");
 
-    const token = await AsyncStorage.getItem("token");
+
 
     try {
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/orders/${order_id}/delivery-info`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiFetch(
+        `/api/patient/orders/${order_id}/delivery-info`);
 
       const data = await response.json();
       console.log("delivery info:", data);
@@ -319,14 +295,10 @@ export default function Receipts() {
 
       setIsLoading(true);
 
-      const response = await fetch(
-        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/prescriptions/upload",
+      const response = await apiFetch(
+        "/api/patient/prescriptions/upload",
         {
           method: "POST",
-          headers: {
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
           body: formData,
         }
       );
@@ -382,14 +354,9 @@ export default function Receipts() {
     setCheckResult(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-      const res = await fetch(`${DDI_URL}/interaction`, {
+
+      const res = await apiFetch(`/api/patient/prescriptions/verify`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({ drug_a: drugA, drug_b: drugB }),
       });
       const result = await res.json();
