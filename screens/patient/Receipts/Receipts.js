@@ -68,6 +68,7 @@ export default function Receipts() {
   const [deliveryLoading, setDeliveryLoading] = useState(false);
   const [deliveryData, setDeliveryData] = useState(null);
   const [deliveryMessage, setDeliveryMessage] = useState("");
+const [taskId,setTaskId]=useState(null);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -194,6 +195,7 @@ export default function Receipts() {
 
       if (data.status === "success") {
         setDeliveryData(data.data);
+        console.log("delivery data: ",data.data);
         if (!data.data?.delivery) {
           setDeliveryMessage(
             data.data?.message || t("receipts.noDeliveryAgent")
@@ -566,6 +568,7 @@ export default function Receipts() {
                       onPress={() => {
                         setShowDeliveryModal(true);
                         fetchDeliveryInfo(item.id);
+                        setTaskId(item.task_id);
                       }}
                       style={styles.deliveryInfoBtn}
                     >
@@ -573,17 +576,6 @@ export default function Receipts() {
                         {t("receipts.deliveryInfo")}
                       </Text>
                     </TouchableOpacity>
-                    {item.task_id &&
-  (item.order_status === "picking_up_the_order" ||
-    item.order_status === "on_the_way") && (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("TrackDelivery", { taskId: item.task_id })}
-      style={styles.trackDeliveryBtn}
-    >
-      <Ionicons name="navigate" size={16} color="#fff" />
-      <Text style={styles.trackDeliveryBtnText}>{t("receipts.trackDelivery")}</Text>
-    </TouchableOpacity>
-  )}
 
                     <Text style={styles.totalWithFee}>
                       {t("receipts.totalWithFee", { amount: item.total_amount.toFixed(2) })}
@@ -635,7 +627,12 @@ export default function Receipts() {
       </ScrollView>
 
       {/* Delivery Info Modal */}
-      <Modal open={showDeliveryModal} onClose={() => setShowDeliveryModal(false)}>
+      <Modal open={showDeliveryModal} 
+        onClose={() => {
+    setShowDeliveryModal(false);
+    setTaskId(null);
+  }}
+      >
         <Text style={styles.modalTitle}>{t("receipts.deliveryInformation")}</Text>
 
         {deliveryLoading ? (
@@ -663,10 +660,21 @@ export default function Receipts() {
                 <Text style={styles.deliveryLabel}>{t("receipts.plateNumber")} </Text>
                 {deliveryData.delivery?.plate_number}
               </Text>
-              <Text style={styles.deliveryDetail}>
-                <Text style={styles.deliveryLabel}>{t("receipts.status")} </Text>
-                {deliveryData.order_status}
-              </Text>
+<Text style={styles.deliveryDetail}>
+  <Text style={styles.deliveryLabel}>{t("receipts.status")} </Text>
+  {deliveryData.delivery.status}
+</Text>
+
+{(deliveryData.delivery.status === "picking_up_the_order" ||
+  deliveryData.delivery.status === "on_the_way") && (
+  <TouchableOpacity
+    onPress={() => navigation.navigate("TrackDelivery", { taskId })}
+    style={styles.trackDeliveryBtn}
+  >
+    <Ionicons name="navigate" size={16} color="#fff" />
+    <Text style={styles.trackDeliveryBtnText}>{t("receipts.trackDelivery")}</Text>
+  </TouchableOpacity>
+)}
             </View>
           </View>
         ) : (

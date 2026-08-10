@@ -1,17 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
 
-const UPDATE_INTERVAL_MS = 10000; // send location every 10s
+const ACTIVE_INTERVAL_MS = 10000;      // 10s while on an active task
+const IDLE_INTERVAL_MS = 5 * 60 * 1000; // 5 min while idle
 
 export default function useLiveLocationTracking(activeTaskIds = []) {
-  // stable string key so the effect only restarts when the actual set of ids changes
   const taskIdsKey = activeTaskIds.slice().sort().join(",");
+  const hasActiveTask = activeTaskIds.length > 0;
 
   useEffect(() => {
-    if (activeTaskIds.length === 0) return;
-
     let intervalId = null;
     let cancelled = false;
 
@@ -23,7 +22,28 @@ export default function useLiveLocationTracking(activeTaskIds = []) {
         const { latitude, longitude } = position.coords;
         const token = await AsyncStorage.getItem("token");
 
-        for (const taskId of activeTaskIds) {
+        if (hasActiveTask) {
+          // One update per active task, each tagged with its task_id
+          for (const taskId of activeTaskIds) {
+            fetch(`${BASE_URL}/delivery/location/update`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...NGROK_HEADERS,
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ task_id: taskId, latitude, longitude }),
+            })
+              .then((res) => res.json())
+              .then((data) =>
+                console.log(`Location updated for task ${taskId}:`, data)
+              )
+              .catch((err) =>
+                console.error(`Location update failed for task ${taskId}:`, err)
+              );
+          }
+        } else {
+          // No active task — send without task_id, just to stay "online"
           fetch(`${BASE_URL}/delivery/location/update`, {
             method: "POST",
             headers: {
@@ -31,15 +51,11 @@ export default function useLiveLocationTracking(activeTaskIds = []) {
               ...NGROK_HEADERS,
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ task_id: taskId, latitude, longitude }),
+            body: JSON.stringify({ latitude, longitude }),
           })
             .then((res) => res.json())
-            .then((data) =>
-              console.log(`Location updated for task ${taskId}:`, data)
-            )
-            .catch((err) =>
-              console.error(`Location update failed for task ${taskId}:`, err)
-            );
+            .then((data) => console.log("Idle location updated:", data))
+            .catch((err) => console.error("Idle location update failed:", err));
         }
       } catch (err) {
         console.error("Error getting current location:", err);
@@ -54,8 +70,9 @@ export default function useLiveLocationTracking(activeTaskIds = []) {
       }
       if (cancelled) return;
 
-      sendLocation(); // fire immediately, then repeat
-      intervalId = setInterval(sendLocation, UPDATE_INTERVAL_MS);
+      sendLocation(); // fire immediately
+      const interval = hasActiveTask ? ACTIVE_INTERVAL_MS : IDLE_INTERVAL_MS;
+      intervalId = setInterval(sendLocation, interval);
     };
 
     start();
@@ -64,5 +81,5 @@ export default function useLiveLocationTracking(activeTaskIds = []) {
       cancelled = true;
       if (intervalId) clearInterval(intervalId);
     };
-  }, [taskIdsKey]);
+  }, [taskIdsKey, hasActiveTask]);
 }
