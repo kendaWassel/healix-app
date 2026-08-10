@@ -573,6 +573,17 @@ export default function Receipts() {
                         {t("receipts.deliveryInfo")}
                       </Text>
                     </TouchableOpacity>
+                    {item.task_id &&
+  (item.order_status === "picking_up_the_order" ||
+    item.order_status === "on_the_way") && (
+    <TouchableOpacity
+      onPress={() => navigation.navigate("TrackDelivery", { taskId: item.task_id })}
+      style={styles.trackDeliveryBtn}
+    >
+      <Ionicons name="navigate" size={16} color="#fff" />
+      <Text style={styles.trackDeliveryBtnText}>{t("receipts.trackDelivery")}</Text>
+    </TouchableOpacity>
+  )}
 
                     <Text style={styles.totalWithFee}>
                       {t("receipts.totalWithFee", { amount: item.total_amount.toFixed(2) })}
@@ -1078,6 +1089,21 @@ const styles = StyleSheet.create({
     color: "#052443",
     fontWeight: "600",
   },
+  trackDeliveryBtn: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  backgroundColor: "#052443",
+  borderRadius: 8,
+  paddingVertical: 10,
+  marginTop: 10,
+},
+trackDeliveryBtnText: {
+  color: "#fff",
+  fontWeight: "600",
+  fontSize: 13,
+},
   totalWithFee: {
     fontSize: 14,
     color: "#4b5563",

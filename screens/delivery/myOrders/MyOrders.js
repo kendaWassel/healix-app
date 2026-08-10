@@ -15,6 +15,8 @@ import DeliveryHeader from "../../Components/header/DeliveryHeader";
 import Footer from "../../Components/footer/Footer";
 import { colors } from "../../../constants/colors";
 import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+import useLiveLocationTracking from '../../Components/common/useLiveLocationTracking';
+import LastLocationMapModal from "./LastLocationMapModal";
 import i18n from "../../../i18n/i18n";
 
 export default function MyOrders() {
@@ -27,6 +29,52 @@ export default function MyOrders() {
   const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState("all");
   const [orderId, setOrderId] = useState(null);
+const [showLocationModal, setShowLocationModal] = useState(false);
+const [locationLoading, setLocationLoading] = useState(false);
+const [locationError, setLocationError] = useState(null);
+const [lastLocation, setLastLocation] = useState(null);
+
+// for live location 
+  const activeTaskIds = tasks
+    .filter(
+      (task) =>
+        task.status === "picking_up_the_order" || task.status === "on_the_way"
+    )
+    .map((task) => task.task_id);
+
+  useLiveLocationTracking(activeTaskIds);
+  
+const viewLastLocation = async (taskId) => {
+  setShowLocationModal(true);
+  setLocationLoading(true);
+  setLocationError(null);
+  setLastLocation(null);
+
+  try {
+    const token = await AsyncStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/delivery/location/${taskId}`, {
+      headers: {
+        Accept: "application/json",
+        ...NGROK_HEADERS,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    console.log("Last recorded location:", data);
+
+    if (data.status === "success" && data.data) {
+      setLastLocation(data.data);
+    } else {
+      setLocationError(t("myOrders.noLocationYet"));
+    }
+  } catch (err) {
+    console.error("Error fetching last location:", err);
+    setLocationError(t("myOrders.locationFetchFail"));
+  } finally {
+    setLocationLoading(false);
+  }
+};
+
 
   const fetchMyTasks = async (pageNumber = 1) => {
     setIsLoading(true);
@@ -208,6 +256,16 @@ export default function MyOrders() {
       </Text>
 
       {renderActionButton(task)}
+
+          {(task.status === "picking_up_the_order" || task.status === "on_the_way") && (
+      <TouchableOpacity
+        style={styles.checkLocationBtn}
+        onPress={() => viewLastLocation(task.task_id)}
+      >
+        <FontAwesome5 name="map-marker-alt" size={14} color={colors.darkBlue} />
+        <Text style={styles.checkLocationText}>{t("myOrders.checkLocation")}</Text>
+      </TouchableOpacity>
+    )}
     </View>
   );
 
@@ -306,11 +364,36 @@ export default function MyOrders() {
         </View>
       </View>
       <Footer />
+      <LastLocationMapModal
+  visible={showLocationModal}
+  onClose={() => setShowLocationModal(false)}
+  loading={locationLoading}
+  error={locationError}
+  location={lastLocation}
+/>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+
+checkLocationBtn: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 6,
+  marginTop: 10,
+  alignSelf: "flex-start",
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: colors.darkBlue,
+},
+checkLocationText: {
+  color: colors.darkBlue,
+  fontWeight: "600",
+  fontSize: 13,
+},
   container: { flex: 1, padding: 20 },
   title: {
     fontSize: 28,

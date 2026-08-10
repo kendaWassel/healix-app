@@ -28,6 +28,15 @@
     "pharmacist": "Pharmacist",
     "physio": "Physiotherapist"
   },
+  "trackDelivery": {
+  "title": "Track Delivery",
+  "loading": "Loading driver location...",
+  "driverMarkerTitle": "Delivery Driver",
+  "driverOnline": "Driver is online",
+  "driverOffline": "Driver is offline",
+  "lastUpdated": "Last updated:",
+  "noLocationYet": "No location available yet."
+},
   "labAnalysis": {
     "title": "AI Lab Analysis",
     "subtitle": "Upload your laboratory report and get an AI-powered analysis of your results.",
@@ -131,6 +140,16 @@
     "settingDelivered": "Setting as Delivered...",
     "updateFail": "failed to Update status",
     "updateSuccess": "Status Updated Successfully",
+      "checkLocation": "Check Location",
+  "lastLocationTitle": "Last Recorded Location",
+  "lat": "Latitude",
+  "lng": "Longitude",
+  "updatedAt": "Updated at",
+  "noLocationYet": "No location recorded yet for this task.",
+  "locationFetchFail": "Failed to fetch location.",
+    "yourLastLocation": "Your last location",
+  "youAreOnline": "You are online",
+  "youAreOffline": "You are offline",
     "prev": "Prev",
     "next": "Next",
     "pageOf": "{{page}} of {{total}}"
@@ -312,6 +331,7 @@
 },
 
 "receipts": {
+  
   "myReceipts": "My Receipts",
   "uploadReceipt": "Upload Receipt",
   "checkInteraction": "Check Interaction",
@@ -357,7 +377,8 @@
   "noDeliveryAgent": "No delivery agent assigned yet",
   "enterBothDrugs": "Please enter both drug names",
   "drugNotFound": "Drug not found",
-  "connectionFailed": "Connection failed. Try again."
+  "connectionFailed": "Connection failed. Try again.",
+   "trackDelivery": "Track Delivery"
 },
 "receiptDetails": {
   "title": "Prescription Details",
