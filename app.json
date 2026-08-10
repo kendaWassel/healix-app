@@ -55,6 +55,12 @@
           }
         }
       ],
+            [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location so we can share it with the patient during delivery."
+        }
+      ],
       "./withDisableForceDark.js"
      
     ],

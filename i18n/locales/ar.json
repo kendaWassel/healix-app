@@ -28,6 +28,15 @@
   "pharmacist": "صيدلي",
   "physio": "أخصائي علاج طبيعي"
 },
+"trackDelivery": {
+  "title": "تتبع التوصيل",
+  "loading": "جاري تحميل موقع السائق...",
+  "driverMarkerTitle": "سائق التوصيل",
+  "driverOnline": "السائق متصل",
+  "driverOffline": "السائق غير متصل",
+  "lastUpdated": "آخر تحديث:",
+  "noLocationYet": "لا يوجد موقع متاح بعد."
+},
  "labAnalysis": {
     "title": "تحليل الفحوصات المخبرية بالذكاء الاصطناعي",
     "subtitle": "قم برفع تقريرك المخبري واحصل على تحليل مدعوم بالذكاء الاصطناعي لنتائجك.",
@@ -162,6 +171,16 @@
     "settingDelivered": "جارٍ التعيين ك 'تم التوصيل'...",
     "updateFail": "فشل تحديث الحالة",
     "updateSuccess": "تم تحديث الحالة بنجاح",
+      "checkLocation": "تحقق من الموقع",
+  "lastLocationTitle": "آخر موقع مسجل",
+  "lat": "خط العرض",
+  "lng": "خط الطول",
+  "updatedAt": "آخر تحديث",
+  "noLocationYet": "لا يوجد موقع مسجل بعد لهذه المهمة.",
+  "locationFetchFail": "فشل في جلب الموقع.",
+    "yourLastLocation": "موقعك الأخير",
+  "youAreOnline": "أنت متصل",
+  "youAreOffline": "أنت غير متصل",
     "prev": "السابق",
     "next": "التالي",
     "pageOf": "{{page}} من {{total}}"
@@ -383,7 +402,8 @@
   "noDeliveryAgent": "لم يتم تعيين مندوب توصيل بعد",
   "enterBothDrugs": "الرجاء إدخال اسمي الدواءين",
   "drugNotFound": "الدواء غير موجود",
-  "connectionFailed": "فشل الاتصال. حاول مرة أخرى."
+  "connectionFailed": "فشل الاتصال. حاول مرة أخرى.",
+  "trackDelivery": "تتبع التوصيل"
 },
 
 "receiptDetails": {
