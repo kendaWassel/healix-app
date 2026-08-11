@@ -7,13 +7,15 @@ import {
   Modal,
   StyleSheet,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import NurseHeader from "../../Components/header/NurseHeader";
 import Footer from "../../Components/footer/Footer";
 import { colors } from "../../../constants/colors";
+import { getCurrentCoords } from "../../../utils/getCurrentCoords";
+import { apiFetch } from "../../../utils/apiClient";
 import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
 import i18n from "../../../i18n/i18n";
 
@@ -23,68 +25,86 @@ const NurseNewOrders = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [acceptingOrderId, setAcceptingOrderId] = useState(null);
   const [error, setError] = useState(null);
-  const [current_page, setPage] = useState(0);
-  const [total, setTotal] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState(
     t("nurse.nurseNewOrders.orderAccepted"),
   );
 
-  const fetchOrders = async (pageNumber = 1) => {
-    setIsLoading(true);
-    setError(null);
-    try {
+    const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    perPage: 10,
+    total: 0,
+  });
+const fetchOrders = async (pageNumber = 1) => {
+  setIsLoading(true);
+  setError(null);
+
+  try {
+    const { latitude, longitude } = await getCurrentCoords();
+
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(
-        `${BASE_URL}/provider/nurse/orders?page=${pageNumber}&per_page=6`,
+        `${BASE_URL}/provider/nurse/nearby-requests?latitude=${latitude}&longitude=${longitude}&page=${pageNumber}&per_page=${pagination.perPage}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             ...NGROK_HEADERS,
-            "accept-language":i18n.language,
             Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
+
           },
         },
       );
 
-      if (!response.ok) {
-        const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Request failed");
+    const data = await response.json();
+
+    console.log("Nearby requests fetched:", data);
+
+    setOrders(Array.isArray(data.data) ? data.data : []);
+      if (data.meta) {
+        setPagination((prev) => ({
+          ...prev,
+          currentPage: data.meta.current_page,
+          lastPage: data.meta.last_page,
+          total: data.meta.total,
+        }));
       }
 
-      const data = await response.json();
-      console.log("Orders Fetched:", data);
-      setPage(data.meta.current_page);
-      setTotal(data.meta.last_page);
-      if (data.status === "success" && Array.isArray(data.data)) {
-        setOrders(data.data);
-      } else {
-        throw new Error("Invalid response format");
-      }
-    } catch (err) {
-      console.error("Failed fetching orders:", err);
-      setError(err.message || "Failed to load orders.");
-    } finally {
-      setIsLoading(false);
+  } catch (err) {
+    console.error("Failed fetching orders:", err);
+
+    if (err.message === "LOCATION_PERMISSION_DENIED") {
+      setError(t("nurse.nurseNewOrders.locationPermissionDenied"));
+    } else {
+      setError(err.message || t("nurse.nurseNewOrders.loadFailed"));
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  useEffect(() => {
+    fetchOrders(1);
+  }, []);
+
+    const handleNextPage = () => {
+    if (pagination.currentPage < pagination.lastPage) {
+      fetchOrders(pagination.currentPage + 1);
     }
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const handleNext = () => {
-    if (current_page < total) fetchOrders(current_page + 1);
+  const handlePrevPage = () => {
+    if (pagination.currentPage > 1) {
+      fetchOrders(pagination.currentPage - 1);
+    }
   };
 
-  const handlePrevious = () => {
-    if (current_page > 1) fetchOrders(current_page - 1);
-  };
+const handleAccept = async (id) => {
+  setAcceptingOrderId(id);
 
-  const handleAccept = async (id) => {
-    setAcceptingOrderId(id);
-    try {
+  try {
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(
         `${BASE_URL}/provider/nurse/orders/${id}/accept`,
@@ -94,29 +114,37 @@ const NurseNewOrders = () => {
             "Content-Type": "application/json",
             ...NGROK_HEADERS,
             Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
+
           },
         },
       );
 
-      const data = await response.json();
-      if (data.status === "success") {
-        setModalMessage(data.message);
-        setIsModalOpen(true);
-        fetchOrders();
-      } else {
-        console.error(" Failed to accept order", data.message);
-        setModalMessage(data.message || "Failed to accept order");
-        setIsModalOpen(true);
-      }
-    } catch (err) {
-      console.error(" Error accepting order:", err);
-      setModalMessage("Error accepting order. Please try again.");
+    const data = await response.json();
+
+    if (data.status === "success") {
+      setModalMessage(
+        data.message || t("nurse.nurseNewOrders.orderAccepted")
+      );
       setIsModalOpen(true);
-    } finally {
-      setAcceptingOrderId(null);
-      fetchOrders();
+    } else {
+      console.error("Failed to accept order:", data.message);
+
+      setModalMessage(
+        data.message || t("nurse.nurseNewOrders.acceptFailed")
+      );
+      setIsModalOpen(true);
     }
-  };
+  } catch (err) {
+    console.error("Error accepting order:", err);
+
+    setModalMessage(t("nurse.nurseNewOrders.acceptError"));
+    setIsModalOpen(true);
+  } finally {
+    setAcceptingOrderId(null);
+    fetchOrders();
+  }
+};
 
   const renderCard = ({ item }) => (
     <View style={styles.card}>
@@ -158,12 +186,11 @@ const NurseNewOrders = () => {
 
       <View style={styles.cardBottomRow}>
         <View style={styles.timeRow}>
-          <FontAwesome5 name="clock" size={16} color={colors.cyan} />
+          <FontAwesome5 name="walking" size={16} color={colors.cyan} />
           <Text style={styles.timeText}>
-            {new Date(item.scheduled_at).toLocaleString()}
+            {t("nurse.nurseNewOrders.distanceKm", { distance: item.distance_km })}
           </Text>
         </View>
-        <Text style={styles.statusText}>{item.status}</Text>
       </View>
     </View>
   );
@@ -182,7 +209,7 @@ const NurseNewOrders = () => {
         ) : orders.length > 0 ? (
           <FlatList
             data={orders}
-            keyExtractor={(item) => String(item.id)}
+            keyExtractor={(item) => String(item.session_id)}
             renderItem={renderCard}
             contentContainerStyle={{ gap: 16, marginBottom: 20 }}
           />
@@ -193,31 +220,53 @@ const NurseNewOrders = () => {
         ) : (
           <Text style={styles.centerText}>{t("nurse.nurseNewOrders.noOrders")}</Text>
         )}
-
         <View style={styles.pagination}>
           <TouchableOpacity
-            style={styles.pageBtn}
-            onPress={handlePrevious}
-            disabled={current_page === 1 || isLoading || !!error}
+            style={[
+              styles.pageBtn,
+              pagination.currentPage === 1 && styles.pageBtnDisabled,
+            ]}
+            onPress={handlePrevPage}
+            disabled={pagination.currentPage === 1 || isLoading}
           >
-            <Text style={styles.pageBtnText}>
+            <Text
+              style={[
+                styles.pageBtnText,
+                pagination.currentPage === 1 && styles.pageBtnTextDisabled,
+              ]}
+            >
               {t("nurse.nurseNewOrders.previous")}
             </Text>
           </TouchableOpacity>
 
           <Text style={styles.pageOfText}>
-            {t("nurse.nurseNewOrders.pageOf", { page: current_page, total })}
+            {t("nurse.nurseNewOrders.pageOf", {
+              page: pagination.currentPage,
+              total: pagination.lastPage,
+            })}
           </Text>
 
           <TouchableOpacity
-            style={styles.pageBtn}
-            onPress={handleNext}
-            disabled={current_page === total || isLoading || !!error}
+            style={[
+              styles.pageBtn,
+              pagination.currentPage === pagination.lastPage && styles.pageBtnDisabled,
+            ]}
+            onPress={handleNextPage}
+            disabled={pagination.currentPage === pagination.lastPage || isLoading}
           >
-            <Text style={styles.pageBtnText}>{t("nurse.nurseNewOrders.next")}</Text>
+            <Text
+              style={[
+                styles.pageBtnText,
+                pagination.currentPage === pagination.lastPage &&
+                  styles.pageBtnTextDisabled,
+              ]}
+            >
+              {t("nurse.nurseNewOrders.next")}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
+      
       <Footer />
 
       <Modal
@@ -234,7 +283,7 @@ const NurseNewOrders = () => {
               onPress={() => setIsModalOpen(false)}
             >
               <Text style={styles.modalCancelText}>
-                {t("nurseNewOrders.cancel")}
+                {t("nurse.nurseNewOrders.cancel")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -295,8 +344,7 @@ const styles = StyleSheet.create({
   },
   timeRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   timeText: { fontSize: 13, color: colors.gray700 },
-  statusText: { color: colors.gray700, fontSize: 13 },
-  pagination: {
+   pagination: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
@@ -310,7 +358,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.cyan,
   },
+  pageBtnDisabled: { borderColor: colors.gray300 },
   pageBtnText: { color: colors.cyan, fontWeight: "500" },
+  pageBtnTextDisabled: { color: colors.gray500 },
   pageOfText: { fontWeight: "600", color: colors.gray700 },
   modalOverlay: {
     flex: 1,

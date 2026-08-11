@@ -501,7 +501,9 @@
     "updateSuccess": "Profile updated successfully!",
     "updateFail": "Failed to update profile. Please try again.",
     "loadFail": "Failed to load profile information.",
-    "uploadFail": "File upload failed"
+    "uploadFail": "File upload failed",
+        "save": "Save",
+    "cancel": "Cancel"
   },
   "nurseNewOrders": {
     "title": "New Orders",
@@ -515,7 +517,13 @@
     "next": "Next",
     "pageOf": "{{page}} of {{total}}",
     "orderAccepted": "Order Accepted Successfully",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "distanceKm": "{{distance}} km away",
+    "locationPermissionDenied": "Location permission is required to find nearby requests",
+    "requestFailed": "Request failed.",
+    "loadFailed": "Failed to load orders.",
+    "acceptFailed": "Failed to accept order.",
+    "acceptError": "Error accepting order. Please try again."
   },
   "nurseAppointments": {
     "title": "My Schedules",
@@ -1004,7 +1012,9 @@
   "updateSuccess": "Profile updated successfully!",
   "updateFail": "Failed to update profile. Please try again.",
   "fetchFail": "Failed to load profile information.",
-  "uploadFail": "File upload failed"
+  "uploadFail": "File upload failed",
+    "save": "Save",
+  "cancel": "Cancel"
 },
 "physioNewOrders": {
   "title": "New Orders",
@@ -1020,7 +1030,9 @@
   "cancel": "Cancel",
   "loadFail": "Failed to load orders.",
   "acceptFail": "Failed to accept order",
-  "acceptError": "Error accepting order. Please try again."
+  "acceptError": "Error accepting order. Please try again.",
+  "distanceKm": "{{distance}} km away",
+  "locationPermissionDenied": "Location permission is required to find nearby requests"
 },
 "physioSchedules": {
   "title": "My Schedules",
@@ -1043,7 +1055,10 @@
   "pageOf": "{{page}} of {{lastPage}}",
   "loadFail": "Failed to load schedules.",
   "startFail": "Failed to start session",
-  "detailsFail": "Failed to load Details"
+  "detailsFail": "Failed to load Details",
+    "all": "All",
+    "accepted": "Accepted",
+    "completed": "Completed"
 },
 "careProviderEndSession": {
   "title": "End Session",

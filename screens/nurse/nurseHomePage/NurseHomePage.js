@@ -13,18 +13,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-
 import NurseHeader from "../../Components/header/NurseHeader";
 import Footer from "../../Components/footer/Footer";
 import { colors } from "../../../constants/colors";
 import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+import useProviderLocationTracking from '../../Components/common/useProviderLocationTracking'
 import i18n from "../../../i18n/i18n";
 
 const NurseHomePage = () => {
+  useProviderLocationTracking(true);
   const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const [nurseData, setNurseData] = useState({
@@ -41,6 +43,7 @@ const NurseHomePage = () => {
   const [licenseFile, setLicenseFile] = useState(null);
   const [licenseFileName, setLicenseFileName] = useState("");
   const [licenseFilePreview, setLicenseFilePreview] = useState(null);
+  const [dataBeforeEdit, setDataBeforeEdit] = useState(null);
 
 
   const fetchNurseProfile = async () => {
@@ -53,8 +56,8 @@ const NurseHomePage = () => {
         headers: {
           "Content-Type": "application/json",
           ...NGROK_HEADERS,
-          "accept-language":i18n.language,
           Authorization: `Bearer ${token}`,
+          "Accept-Language": i18n.language,
         },
       });
 
@@ -84,7 +87,7 @@ const NurseHomePage = () => {
       }
     } catch (err) {
       console.error("Failed to fetch profile:", err);
-      setError(err.message || t("nurseHome.loadFail"));
+      setError(err.message || t("nurse.nurseHome.loadFail"));
     } finally {
       setIsLoading(false);
     }
@@ -107,16 +110,33 @@ const NurseHomePage = () => {
       headers: {
         ...NGROK_HEADERS,
         Authorization: `Bearer ${token}`,
+        "Accept-Language": i18n.language,
       },
       body: formData,
     });
 
     if (!response.ok) {
       const errData = await response.json();
-      throw new Error(errData.message || t("nurseHome.uploadFail"));
+      throw new Error(errData.message || t("nurse.nurseHome.uploadFail"));
     }
     const data = await response.json();
     return data.file_id;
+  };
+
+  const handleStartEdit = () => {
+    setDataBeforeEdit(nurseData);
+    setIsEditing(true);
+    setError(null);
+    setSuccessMsg(null);
+  };
+
+  const handleCancelEdit = () => {
+    if (dataBeforeEdit) {
+      setNurseData(dataBeforeEdit);
+    }
+    setLicenseFile(null);
+    setIsEditing(false);
+    setError(null);
   };
 
   const handleSubmit = async () => {
@@ -153,6 +173,7 @@ const NurseHomePage = () => {
           "Content-Type": "application/json",
           ...NGROK_HEADERS,
           Authorization: `Bearer ${token}`,
+          "Accept-Language": i18n.language,
         },
         body: JSON.stringify(updateData),
       });
@@ -164,9 +185,11 @@ const NurseHomePage = () => {
 
       const data = await response.json();
       if (data.status === "success") {
-        setSuccessMsg(t("nurseHome.updateSuccess"));
+        setSuccessMsg(t("nurse.nurseHome.updateSuccess"));
         setNurseData({ ...nurseData, password: "" });
         if (licenseFile) setLicenseFile(null);
+        setIsEditing(false);
+        setDataBeforeEdit(null);
         setTimeout(() => {
           setSuccessMsg(null);
           fetchNurseProfile();
@@ -174,7 +197,7 @@ const NurseHomePage = () => {
       }
     } catch (err) {
       console.error("Update error:", err);
-      setError(err.message || t("nurseHome.updateFail"));
+      setError(err.message || t("nurse.nurseHome.updateFail"));
     } finally {
       setIsUpdating(false);
     }
@@ -199,18 +222,36 @@ const NurseHomePage = () => {
     <View style={{ flex: 1 }}>
       <NurseHeader />
       <ScrollView contentContainerStyle={styles.container}>
-          <TouchableOpacity
-            style={[
-              styles.updateBtn,
-              (isUpdating || isLoading) && styles.disabledBtn,
-            ]}
-            onPress={handleSubmit}
-            disabled={isUpdating || isLoading}
-          >
-            <Text style={styles.updateBtnText}>
-              {isUpdating ? t("nurse.nurseHome.updating") : t("nurse.nurseHome.update")}
-            </Text>
-          </TouchableOpacity>
+        <View style={styles.actionsRow}>
+          {!isEditing ? (
+            <TouchableOpacity
+              style={[styles.updateBtn, isLoading && styles.disabledBtn]}
+              onPress={handleStartEdit}
+              disabled={isLoading}
+            >
+              <Text style={styles.updateBtnText}>{t("nurse.nurseHome.update")}</Text>
+            </TouchableOpacity>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={[styles.saveBtn, isUpdating && styles.disabledBtn]}
+                onPress={handleSubmit}
+                disabled={isUpdating}
+              >
+                <Text style={styles.updateBtnText}>
+                  {isUpdating ? t("nurse.nurseHome.updating") : t("nurse.nurseHome.save")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.cancelBtn, isUpdating && styles.disabledBtn]}
+                onPress={handleCancelEdit}
+                disabled={isUpdating}
+              >
+                <Text style={styles.cancelBtnText}>{t("nurse.nurseHome.cancel")}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.title}>{t("nurse.nurseHome.title")}</Text>
@@ -247,20 +288,16 @@ const NurseHomePage = () => {
 
             {/* Full Name */}
             <View>
-              <Text style={styles.label}>{t("nurseHome.fullName")}</Text>
+              <Text style={styles.label}>{t("nurse.nurseHome.fullName")}</Text>
               <View style={styles.inputGroup}>
-                <FontAwesome5
-                  name="user-circle"
-                  size={20}
-                  color={colors.cyan}
-                />
+                <FontAwesome5 name="user-circle" size={20} color={colors.cyan} />
                 <TextInput
                   style={styles.input}
                   value={nurseData.full_name}
                   onChangeText={(val) =>
                     setNurseData({ ...nurseData, full_name: val })
                   }
-                  editable={false}
+                  editable={isEditing}
                 />
               </View>
             </View>
@@ -276,7 +313,7 @@ const NurseHomePage = () => {
                   onChangeText={(val) =>
                     setNurseData({ ...nurseData, email: val })
                   }
-                  editable={false}
+                  editable={isEditing}
                   keyboardType="email-address"
                 />
               </View>
@@ -293,7 +330,7 @@ const NurseHomePage = () => {
                   onChangeText={(val) =>
                     setNurseData({ ...nurseData, phone: val })
                   }
-                  editable={false}
+                  editable={isEditing}
                   keyboardType="phone-pad"
                 />
               </View>
@@ -310,13 +347,11 @@ const NurseHomePage = () => {
                   onChangeText={(val) =>
                     setNurseData({ ...nurseData, password: val })
                   }
-                  placeholder={t("nurseHome.passwordPlaceholder")}
+                  placeholder={t("nurse.nurseHome.passwordPlaceholder")}
                   secureTextEntry={!passwordShown}
-                  editable={false}
+                  editable={isEditing}
                 />
-                <TouchableOpacity
-                  onPress={() => setPasswordShown(!passwordShown)}
-                >
+                <TouchableOpacity onPress={() => setPasswordShown(!passwordShown)}>
                   <FontAwesome5
                     name={passwordShown ? "eye-slash" : "eye"}
                     size={18}
@@ -331,9 +366,8 @@ const NurseHomePage = () => {
               <Text style={styles.label}>{t("nurse.nurseHome.gender")}</Text>
               <View style={styles.inputGroup}>
                 <FontAwesome5 name="venus-mars" size={18} color={colors.cyan} />
-                {/* was: a native <select> — RN uses @react-native-picker/picker */}
                 <Picker
-                  enabled={false}
+                  enabled={isEditing}
                   selectedValue={nurseData.gender}
                   onValueChange={(val) =>
                     setNurseData({ ...nurseData, gender: val })
@@ -357,18 +391,14 @@ const NurseHomePage = () => {
             <View>
               <Text style={styles.label}>{t("nurse.nurseHome.sessionFee")}</Text>
               <View style={styles.inputGroup}>
-                <FontAwesome5
-                  name="hand-holding-usd"
-                  size={18}
-                  color={colors.cyan}
-                />
+                <FontAwesome5 name="hand-holding-usd" size={18} color={colors.cyan} />
                 <TextInput
                   style={styles.input}
                   value={String(nurseData.session_fee)}
                   onChangeText={(val) =>
                     setNurseData({ ...nurseData, session_fee: val })
                   }
-                  editable={false}
+                  editable={isEditing}
                   keyboardType="numeric"
                 />
                 <Text style={{ color: colors.textColor }}>$</Text>
@@ -378,19 +408,13 @@ const NurseHomePage = () => {
             {/* License File */}
             <View>
               <Text style={styles.label}>{t("nurse.nurseHome.licenseFile")}</Text>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
-              >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                 <TouchableOpacity
                   style={styles.fileBtn}
                   onPress={pickLicenseFile}
-                  disabled
+                  disabled={!isEditing}
                 >
-                  <FontAwesome5
-                    name="file-upload"
-                    size={20}
-                    color={colors.cyan}
-                  />
+                  <FontAwesome5 name="file-upload" size={20} color={colors.cyan} />
                   <Text style={styles.fileBtnText}>
                     {licenseFileName || t("nurse.nurseHome.viewFile")}
                   </Text>
@@ -406,7 +430,7 @@ const NurseHomePage = () => {
             </View>
           </View>
         )}
-      <Footer />
+        <Footer />
       </ScrollView>
     </View>
   );
@@ -429,14 +453,33 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 15,
   },
+  actionsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 20,
+    alignSelf: "flex-start",
+  },
   updateBtn: {
-    alignSelf:"flex-start",
-    marginBottom:20,
     backgroundColor: "#0a3460",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
   },
+  saveBtn: {
+    backgroundColor: "#0a3460",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  cancelBtn: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.gray300,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  cancelBtnText: { color: colors.gray700, fontWeight: "600" },
   disabledBtn: { opacity: 0.5 },
   updateBtnText: { color: colors.white, fontWeight: "600" },
   errorBox: {
@@ -467,12 +510,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   photoImage: { width: "100%", height: "100%" },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.gray700,
-    marginBottom: 8,
-  },
+  label: { fontSize: 14, fontWeight: "600", color: colors.gray700, marginBottom: 8 },
   inputGroup: {
     flexDirection: "row",
     alignItems: "center",
@@ -497,9 +535,5 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   fileBtnText: { fontSize: 14, color: colors.gray700 },
-  viewCurrentLink: {
-    color: colors.cyan,
-    fontSize: 14,
-    textDecorationLine: "underline",
-  },
+  viewCurrentLink: { color: colors.cyan, fontSize: 14, textDecorationLine: "underline" },
 });

@@ -16,6 +16,7 @@ import PatientDetailsModal from "../../doctor/doctorSchedules/PatientDetailsModa
 import CareProviderEndSession from "../../Components/careProviderModals/CareProviderEndSession";
 import { colors } from "../../../constants/colors";
 import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+import i18n from "../../../i18n/i18n";
 
 const NurseAppointments = () => {
   const { t } = useTranslation();
@@ -57,8 +58,10 @@ const NurseAppointments = () => {
           "Content-Type": "application/json",
           ...NGROK_HEADERS,
           Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
         },
       });
+      
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
@@ -93,6 +96,8 @@ const NurseAppointments = () => {
             "Content-Type": "application/json",
             ...NGROK_HEADERS,
             Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
+            
           },
         },
       );
@@ -124,6 +129,8 @@ const NurseAppointments = () => {
             "Content-Type": "application/json",
             ...NGROK_HEADERS,
             Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
+            
           },
         },
       );
@@ -172,6 +179,8 @@ const NurseAppointments = () => {
             "Content-Type": "application/json",
             ...NGROK_HEADERS,
             Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
+
           },
         },
       );
@@ -199,14 +208,16 @@ const NurseAppointments = () => {
     fetchSchedules(pagination.currentPage, pagination.itemsPerPage);
   }, [pagination.currentPage, showSessionModal, selectedFilter]);
 
-  const filterLabel =
-    selectedFilter === "All"
-      ? t("nurseAppointments.all")
-      : selectedFilter.charAt(0).toUpperCase() + selectedFilter.slice(1);
+const filterLabel = (filter) => {
+  if (filter === "All") return t("nurse.nurseAppointments.all");
+  if (filter === "accepted") return t("nurse.nurseAppointments.accepted");
+  if (filter === "completed") return t("nurse.nurseAppointments.completed");
+  return filter;
+};
 
   const statusColor = (status) => {
-    if (status === "accepted") return colors.success;
-    if (status === "completed") return colors.textColor;
+    if (status === "accepted" || status === "مقبولة") return colors.success;
+    if (status === "completed" || status === "مكتملة") return colors.textColor;
     return colors.cyan;
   };
 
@@ -301,7 +312,7 @@ const NurseAppointments = () => {
                 onPress={handleFilterClick}
               >
                 <Text style={styles.filterBtnText}>
-                  {t("nurse.nurseAppointments.filter")} {filterLabel}
+                  {t("nurse.nurseAppointments.filter")} {filterLabel(selectedFilter)}
                 </Text>
                 <FontAwesome5
                   name="chevron-down"
@@ -313,28 +324,22 @@ const NurseAppointments = () => {
                 />
               </TouchableOpacity>
 
-              {filterOpen && (
-                <View style={styles.filterDropdown}>
-                  {["All", "accepted", "completed"].map((filter) => (
-                    <TouchableOpacity
-                      key={filter}
-                      style={[
-                        styles.filterOption,
-                        selectedFilter === filter && styles.filterOptionActive,
-                      ]}
-                      onPress={() => handleSelectFilter(filter)}
-                    >
-                      <Text style={styles.filterOptionText}>
-                        {filter === "All"
-                          ? t("nurseAppointments.all")
-                          : filter === "accepted"
-                            ? t("nurse.nurseAppointments.accepted")
-                            : t("nurse.nurseAppointments.completed")}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
+{filterOpen && (
+  <View style={styles.filterDropdown}>
+    {["All", "accepted", "completed"].map((filter) => (
+      <TouchableOpacity
+        key={filter}
+        style={[
+          styles.filterOption,
+          selectedFilter === filter && styles.filterOptionActive,
+        ]}
+        onPress={() => handleSelectFilter(filter)}
+      >
+        <Text style={styles.filterOptionText}>{filterLabel(filter)}</Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+)}
             </View>
           </View>
           <Text style={styles.subtitle}>{t("nurse.nurseAppointments.subtitle")}</Text>
@@ -347,7 +352,7 @@ const NurseAppointments = () => {
         ) : schedules.length > 0 ? (
           <FlatList
             data={schedules}
-            keyExtractor={(item) => String(item.patient_id)}
+            keyExtractor={(item) => String(item.session_id)}
             renderItem={renderCard}
             contentContainerStyle={{ gap: 16, marginBottom: 20 }}
           />
@@ -381,7 +386,7 @@ const NurseAppointments = () => {
           </TouchableOpacity>
 
           <Text style={styles.pageOfText}>
-            {t("nurseAppointments.pageOf", {
+            {t("nurse.nurseAppointments.pageOf", {
               page: pagination.currentPage,
               total: pagination.totalPages,
             })}
@@ -403,7 +408,7 @@ const NurseAppointments = () => {
                   styles.pageBtnTextDisabled,
               ]}
             >
-              {t("nurseAppointments.next")}
+              {t("nurse.nurseAppointments.next")}
             </Text>
           </TouchableOpacity>
         </View>
