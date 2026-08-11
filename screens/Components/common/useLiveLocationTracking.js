@@ -23,7 +23,6 @@ export default function useLiveLocationTracking(activeTaskIds = []) {
         const token = await AsyncStorage.getItem("token");
 
         if (hasActiveTask) {
-          // One update per active task, each tagged with its task_id
           for (const taskId of activeTaskIds) {
             fetch(`${BASE_URL}/delivery/location/update`, {
               method: "POST",
@@ -43,7 +42,6 @@ export default function useLiveLocationTracking(activeTaskIds = []) {
               );
           }
         } else {
-          // No active task — send without task_id, just to stay "online"
           fetch(`${BASE_URL}/delivery/location/update`, {
             method: "POST",
             headers: {
@@ -70,7 +68,7 @@ export default function useLiveLocationTracking(activeTaskIds = []) {
       }
       if (cancelled) return;
 
-      sendLocation(); // fire immediately
+      sendLocation();
       const interval = hasActiveTask ? ACTIVE_INTERVAL_MS : IDLE_INTERVAL_MS;
       intervalId = setInterval(sendLocation, interval);
     };

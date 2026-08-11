@@ -10,11 +10,12 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-
 import PhysioHeader from "../../Components/header/PhysioHeader";
 import Footer from "../../Components/footer/Footer";
 import { colors } from "../../../constants/colors";
 import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+import { getCurrentCoords } from "../../../utils/getCurrentCoords";
+import i18n from "../../../i18n/i18n";
 
 const PhysioNewOrders = () => {
   const { t } = useTranslation();
@@ -22,50 +23,49 @@ const PhysioNewOrders = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [acceptingOrderId, setAcceptingOrderId] = useState(null);
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(1);
-  const [lastPage, setLastPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
-  const fetchOrders = async (pageNumber = 1) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `${BASE_URL}/provider/physiotherapist/orders?page=${pageNumber}&per_page=6`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            ...NGROK_HEADERS,
-            Authorization: `Bearer ${token}`,
-          },
+const fetchOrders = async () => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    const { latitude, longitude } = await getCurrentCoords();
+    const token = await AsyncStorage.getItem("token");
+    const response = await fetch(
+      `${BASE_URL}/provider/physiotherapist/nearby-requests?latitude=${latitude}&longitude=${longitude}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          ...NGROK_HEADERS,
+          Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
+
         },
-      );
+      },
+    );
 
-      if (!response.ok) {
-        const serverError = await response.json().catch(() => ({}));
-        throw new Error(serverError.message || "Request failed");
-      }
-
-      const result = await response.json();
-      console.log("Orders Fetched:", result);
-
-      if (result.status === "success" && Array.isArray(result.data)) {
-        setOrders(result.data);
-        setPage(result.meta.current_page);
-        setLastPage(result.meta.last_page);
-      } else {
-        throw new Error("Invalid response format");
-      }
-    } catch (err) {
-      console.error("Failed fetching orders:", err);
-      setError(err.message || t("physioNewOrders.loadFail"));
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      const serverError = await response.json().catch(() => ({}));
+      throw new Error(serverError.message || "Request failed");
     }
-  };
+
+    const result = await response.json();
+    console.log("Nearby requests fetched:", result);
+
+    setOrders(Array.isArray(result.data) ? result.data : []);
+  } catch (err) {
+    console.error("Failed fetching orders:", err);
+    if (err.message === "LOCATION_PERMISSION_DENIED") {
+      setError(t("physioNewOrders.locationPermissionDenied"));
+    } else {
+      setError(err.message || t("physioNewOrders.loadFail"));
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleAccept = async (sessionId) => {
     setAcceptingOrderId(sessionId);
@@ -80,6 +80,8 @@ const PhysioNewOrders = () => {
             "Content-Type": "application/json",
             ...NGROK_HEADERS,
             Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
+
           },
         },
       );
@@ -100,26 +102,19 @@ const PhysioNewOrders = () => {
       setIsModalOpen(true);
     } finally {
       setAcceptingOrderId(null);
-      fetchOrders(page);
+      fetchOrders();
     }
   };
 
   useEffect(() => {
-    fetchOrders(page);
-  }, [page]);
+    fetchOrders();
+  }, []);
 
   const renderCard = ({ item }) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={{ flex: 1 }}>
           <Text style={styles.cardTitle}>{item.patient_name}</Text>
-
-          <View style={styles.serviceRow}>
-            <Text style={styles.serviceLabel}>
-              {t("physioNewOrders.service")}
-            </Text>
-            <Text style={styles.serviceValue}>{item.service}</Text>
-          </View>
 
           <View style={styles.addressRow}>
             <FontAwesome5
@@ -153,12 +148,11 @@ const PhysioNewOrders = () => {
 
       <View style={styles.footerRow}>
         <View style={styles.timeRow}>
-          <FontAwesome5 name="clock" size={16} color={colors.cyan} />
+          <FontAwesome5 name="walking" size={16} color={colors.cyan} />
           <Text style={styles.timeText}>
-            {new Date(item.scheduled_at).toLocaleString()}
+            {t("physioNewOrders.distanceKm", { distance: item.distance_km })}
           </Text>
         </View>
-        <Text style={styles.statusText}>{item.status}</Text>
       </View>
     </View>
   );
@@ -189,30 +183,6 @@ const PhysioNewOrders = () => {
           renderItem={renderCard}
           contentContainerStyle={{ gap: 16 }}
         />
-
-        <View style={styles.pagination}>
-          <TouchableOpacity
-            style={styles.pageBtn}
-            disabled={page === 1 || isLoading}
-            onPress={() => setPage(page - 1)}
-          >
-            <Text style={styles.pageBtnText}>
-              {t("physioNewOrders.previous")}
-            </Text>
-          </TouchableOpacity>
-
-          <Text style={styles.pageOfText}>
-            {t("physioNewOrders.pageOf", { page, lastPage })}
-          </Text>
-
-          <TouchableOpacity
-            style={styles.pageBtn}
-            disabled={page === lastPage || isLoading}
-            onPress={() => setPage(page + 1)}
-          >
-            <Text style={styles.pageBtnText}>{t("physioNewOrders.next")}</Text>
-          </TouchableOpacity>
-        </View>
       </View>
 
       {/* was: a fixed inset-0 overlay <div> — RN Modal is the native way
@@ -273,9 +243,6 @@ const styles = StyleSheet.create({
     color: colors.darkBlue,
     marginBottom: 8,
   },
-  serviceRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 },
-  serviceLabel: { fontSize: 13, color: colors.cyan, fontWeight: "500" },
-  serviceValue: { fontSize: 13, color: colors.gray800, fontWeight: "700" },
   addressRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   addressText: { fontSize: 13, color: colors.darkBlue, fontWeight: "500" },
   acceptTextBtn: { paddingLeft: 8 },
@@ -289,23 +256,6 @@ const styles = StyleSheet.create({
   },
   timeRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   timeText: { fontSize: 13, color: colors.gray700 },
-  statusText: { fontSize: 13, color: colors.gray700, fontWeight: "500" },
-  pagination: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 16,
-    marginTop: 20,
-  },
-  pageBtn: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.cyan,
-  },
-  pageBtnText: { color: colors.cyan, fontWeight: "500" },
-  pageOfText: { fontWeight: "500", color: colors.gray700 },
   modalOverlay: {
     flex: 1,
     backgroundColor: colors.black40,

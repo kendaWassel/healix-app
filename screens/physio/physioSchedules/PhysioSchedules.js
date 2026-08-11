@@ -16,6 +16,7 @@ import PatientDetailsModal from "../../doctor/doctorSchedules/PatientDetailsModa
 import CareProviderEndSession from "../../Components/careProviderModals/CareProviderEndSession";
 import { colors } from "../../../constants/colors";
 import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+import i18n from "../../../i18n/i18n";
 
 const FILTERS = ["All", "accepted", "completed"];
 
@@ -59,6 +60,8 @@ const PhysioSchedules = () => {
           Accept: "application/json",
           ...NGROK_HEADERS,
           Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
+
         },
       });
 
@@ -99,6 +102,8 @@ const PhysioSchedules = () => {
             "Content-Type": "application/json",
             ...NGROK_HEADERS,
             Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
+
           },
         },
       );
@@ -132,6 +137,8 @@ const PhysioSchedules = () => {
             "Content-Type": "application/json",
             ...NGROK_HEADERS,
             Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
+
           },
         },
       );
@@ -181,6 +188,8 @@ const PhysioSchedules = () => {
             Accept: "application/json",
             ...NGROK_HEADERS,
             Authorization: `Bearer ${token}`,
+    "Accept-Language": i18n.language,
+
           },
         },
       );
@@ -208,14 +217,16 @@ const PhysioSchedules = () => {
     fetchSchedules(pagination.currentPage, pagination.itemsPerPage);
   }, [pagination.currentPage, showSessionModal, selectedFilter]);
 
-  const filterLabel = (filter) =>
-    filter === "All"
-      ? t("physioSchedules.filterAll")
-      : filter.charAt(0).toUpperCase() + filter.slice(1);
+const filterLabel = (filter) => {
+  if (filter === "All") return t("physioSchedules.all");
+  if (filter === "accepted") return t("physioSchedules.accepted");
+  if (filter === "completed") return t("physioSchedules.completed");
+  return filter;
+};
 
   const statusColor = (status) => {
-    if (status === "accepted") return "#16a34a";
-    if (status === "completed") return colors.gray700;
+    if (status === "accepted" || status === "مقبولة") return colors.success;
+    if (status === "completed" || status === "مكتملة") return colors.textColor;
     return colors.cyan;
   };
 

@@ -533,7 +533,9 @@
     "updateSuccess": "تم تحديث الملف الشخصي بنجاح!",
     "updateFail": "فشل تحديث الملف الشخصي. حاول مرة أخرى.",
     "loadFail": "فشل تحميل معلومات الملف الشخصي.",
-    "uploadFail": "فشل رفع الملف"
+    "uploadFail": "فشل رفع الملف",
+        "save": "حفظ",
+    "cancel": "إلغاء"
   },
   "nurseNewOrders": {
     "title": "الطلبات الجديدة",
@@ -547,7 +549,9 @@
     "next": "التالي",
     "pageOf": "{{page}} من {{total}}",
     "orderAccepted": "تم قبول الطلب بنجاح",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "distanceKm": "على بعد {{distance}} كم",
+    "locationPermissionDenied": "يلزم إذن الموقع للعثور على الطلبات القريبة"
   },
   "nurseAppointments": {
     "title": "مواعيدي",
@@ -1001,7 +1005,9 @@
   "updateSuccess": "تم تحديث الملف الشخصي بنجاح!",
   "updateFail": "فشل تحديث الملف الشخصي. حاول مرة أخرى.",
   "fetchFail": "فشل تحميل معلومات الملف الشخصي.",
-  "uploadFail": "فشل رفع الملف"
+  "uploadFail": "فشل رفع الملف",
+  "save": "حفظ",
+  "cancel": "إلغاء"
 },
 "physioNewOrders": {
   "title": "الطلبات الجديدة",
@@ -1017,7 +1023,13 @@
   "cancel": "إلغاء",
   "loadFail": "فشل تحميل الطلبات.",
   "acceptFail": "فشل قبول الطلب",
-  "acceptError": "خطأ أثناء قبول الطلب. حاول مرة أخرى."
+  "acceptError": "خطأ أثناء قبول الطلب. حاول مرة أخرى.",
+  "distanceKm": "على بعد {{distance}} كم",
+  "locationPermissionDenied": "يلزم إذن الموقع للعثور على الطلبات القريبة",
+      "requestFailed": "فشل الطلب.",
+    "loadFailed": "فشل تحميل الطلبات.",
+    "orderAccepted": "تم قبول الطلب بنجاح.",
+    "acceptFailed": "فشل قبول الطلب."
 },
 "physioSchedules": {
   "title": "مواعيدي",
@@ -1040,7 +1052,10 @@
   "pageOf": "{{page}} من {{lastPage}}",
   "loadFail": "فشل تحميل المواعيد.",
   "startFail": "فشل بدء الجلسة",
-  "detailsFail": "فشل تحميل التفاصيل"
+  "detailsFail": "فشل تحميل التفاصيل",
+      "all": "الكل",
+    "accepted": "مقبول",
+    "completed": "مكتمل"
 },
 "careProviderEndSession": {
   "title": "إنهاء الجلسة",

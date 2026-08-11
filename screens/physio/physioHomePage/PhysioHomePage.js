@@ -18,12 +18,17 @@ import Footer from "../../Components/footer/Footer";
 import PhysioHeader from "../../Components/header/PhysioHeader";
 import { colors } from "../../../constants/colors";
 import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+import useProviderLocationTracking from '../../Components/common/useProviderLocationTracking'
+import i18n from "../../../i18n/i18n";
+
 
 const PhysioHomePage = () => {
+  useProviderLocationTracking(true);
   const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const [physioData, setPhysioData] = useState({
@@ -40,6 +45,7 @@ const PhysioHomePage = () => {
   const [licenseFile, setLicenseFile] = useState(null);
   const [licenseFileName, setLicenseFileName] = useState("");
   const [licenseFilePreview, setLicenseFilePreview] = useState(null);
+  const [dataBeforeEdit, setDataBeforeEdit] = useState(null);
 
 
   const fetchPhysioProfile = async () => {
@@ -47,12 +53,13 @@ const PhysioHomePage = () => {
     setError(null);
     try {
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch(`${BASE_URL}/provider/nurse/profile`, {
+      const response = await fetch(`${BASE_URL}/provider/physiotherapist/profile`, {
         method: "GET",
         headers: {
           Accept: "application/json",
           ...NGROK_HEADERS,
           Authorization: `Bearer ${token}`,
+          "Accept-Language": i18n.language,
         },
       });
 
@@ -105,6 +112,7 @@ const PhysioHomePage = () => {
       headers: {
         ...NGROK_HEADERS,
         Authorization: `Bearer ${token}`,
+        "Accept-Language": i18n.language,
       },
       body: formData,
     });
@@ -115,6 +123,22 @@ const PhysioHomePage = () => {
     }
     const data = await response.json();
     return data.file_id;
+  };
+
+  const handleStartEdit = () => {
+    setDataBeforeEdit(physioData);
+    setIsEditing(true);
+    setError(null);
+    setSuccessMsg(null);
+  };
+
+  const handleCancelEdit = () => {
+    if (dataBeforeEdit) {
+      setPhysioData(dataBeforeEdit);
+    }
+    setLicenseFile(null);
+    setIsEditing(false);
+    setError(null);
   };
 
   const handleSubmit = async () => {
@@ -146,13 +170,14 @@ const PhysioHomePage = () => {
       }
 
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch(`${BASE_URL}/provider/nurse/profile`, {
+      const response = await fetch(`${BASE_URL}/provider/physiotherapist/profile`, {
         method: "PUT",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
           ...NGROK_HEADERS,
           Authorization: `Bearer ${token}`,
+          "Accept-Language": i18n.language,
         },
         body: JSON.stringify(updateData),
       });
@@ -169,6 +194,8 @@ const PhysioHomePage = () => {
         if (licenseFile) {
           setLicenseFile(null);
         }
+        setIsEditing(false);
+        setDataBeforeEdit(null);
         setTimeout(() => {
           setSuccessMsg(null);
           fetchPhysioProfile();
@@ -205,24 +232,42 @@ const PhysioHomePage = () => {
     <View style={{ flex: 1 }}>
       <PhysioHeader />
       <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.actionsRow}>
+            {!isEditing ? (
+              <TouchableOpacity
+                style={[styles.updateBtn, isLoading && styles.updateBtnDisabled]}
+                onPress={handleStartEdit}
+                disabled={isLoading}
+              >
+                <Text style={styles.updateBtnText}>{t("physioHome.update")}</Text>
+              </TouchableOpacity>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={[styles.saveBtn, isUpdating && styles.updateBtnDisabled]}
+                  onPress={handleSubmit}
+                  disabled={isUpdating}
+                >
+                  <Text style={styles.updateBtnText}>
+                    {isUpdating ? t("physioHome.updating") : t("physioHome.save")}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.cancelBtn, isUpdating && styles.updateBtnDisabled]}
+                  onPress={handleCancelEdit}
+                  disabled={isUpdating}
+                >
+                  <Text style={styles.cancelBtnText}>{t("physioHome.cancel")}</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.title}>{t("physioHome.title")}</Text>
             <Text style={styles.subtitle}>{t("physioHome.subtitle")}</Text>
           </View>
 
-          <TouchableOpacity
-            style={[
-              styles.updateBtn,
-              (isUpdating || isLoading) && styles.updateBtnDisabled,
-            ]}
-            onPress={handleSubmit}
-            disabled={isUpdating || isLoading}
-          >
-            <Text style={styles.updateBtnText}>
-              {isUpdating ? t("physioHome.updating") : t("physioHome.update")}
-            </Text>
-          </TouchableOpacity>
         </View>
 
         {error && (
@@ -257,7 +302,7 @@ const PhysioHomePage = () => {
                   onChangeText={(val) =>
                     setPhysioData({ ...physioData, full_name: val })
                   }
-                  editable={false}
+                  editable={isEditing}
                 />
               </View>
             </View>
@@ -273,7 +318,7 @@ const PhysioHomePage = () => {
                   onChangeText={(val) =>
                     setPhysioData({ ...physioData, email: val })
                   }
-                  editable={false}
+                  editable={isEditing}
                 />
               </View>
             </View>
@@ -289,7 +334,7 @@ const PhysioHomePage = () => {
                   onChangeText={(val) =>
                     setPhysioData({ ...physioData, phone: val })
                   }
-                  editable={false}
+                  editable={isEditing}
                 />
               </View>
             </View>
@@ -306,7 +351,7 @@ const PhysioHomePage = () => {
                     setPhysioData({ ...physioData, password: val })
                   }
                   placeholder={t("physioHome.passwordPlaceholder")}
-                  editable={false}
+                  editable={isEditing}
                 />
                 <TouchableOpacity onPress={() => setPasswordShown(!passwordShown)}>
                   <FontAwesome5
@@ -342,7 +387,7 @@ const PhysioHomePage = () => {
                   onChangeText={(val) =>
                     setPhysioData({ ...physioData, session_fee: val })
                   }
-                  editable={false}
+                  editable={isEditing}
                 />
                 <Text style={styles.readonlyValue}>$</Text>
               </View>
@@ -354,7 +399,7 @@ const PhysioHomePage = () => {
                 <TouchableOpacity
                   style={styles.licensePicker}
                   onPress={handlePickLicenseFile}
-                  disabled
+                  disabled={!isEditing}
                 >
                   <FontAwesome5 name="file-upload" size={16} color={colors.cyan} />
                   <Text style={styles.licenseFileName}>
@@ -393,12 +438,28 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 24, fontWeight: "bold", color: "#0a3460" },
   subtitle: { color: colors.gray700, fontWeight: "500", marginTop: 8, fontSize: 15 },
+  actionsRow: { flexDirection: "row", gap: 12 },
   updateBtn: {
     backgroundColor: colors.darkBlue,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
   },
+  saveBtn: {
+    backgroundColor: colors.darkBlue,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  cancelBtn: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.gray300,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  cancelBtnText: { color: colors.gray700, fontWeight: "600" },
   updateBtnDisabled: { opacity: 0.5 },
   updateBtnText: { color: colors.white, fontWeight: "600" },
   errorBox: {
