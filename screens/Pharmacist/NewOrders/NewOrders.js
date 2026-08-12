@@ -715,20 +715,28 @@ export default function NewOrders() {
                 </View>
               )}
 
-              {safetyWarnings?.pregnancy.length > 0 && (
-                <View style={{ marginBottom: 16 }}>
-                  <Text style={styles.safetySectionTitle}>{t("newOrdersScreen.pregnancyRisk")}</Text>
-                  {safetyWarnings.pregnancy.map((p, i) => (
-                    <View key={i} style={styles.pregnancyCard}>
-                      <Text style={styles.pregnancyText}>
-                        {p.medication} {t("newOrdersScreen.category")} {p.category}
-                      </Text>
-                      <Text style={styles.pregnancySubText}>{p.warning}</Text>
-                    </View>
-                  ))}
+                     {safetyWarnings?.pregnancy.length > 0 && (
+            <View style={{ marginBottom: 16 }}>
+              <Text style={styles.safetySectionTitle}>{t("newOrdersScreen.pregnancyRisk")}</Text>
+              {safetyWarnings.pregnancy.map((p, i) => (
+                <View key={i} style={styles.pregnancyCard}>
+                  <Text style={styles.pregnancyText}>
+                    {p.medication}
+                    {p.ingredient && p.ingredient !== p.medication.toLowerCase()
+                      ? ` (${p.ingredient})`
+                      : ""}
+                  </Text>
+                  <Text style={styles.pregnancySubText}>
+                    {p.category_label || `${t("newOrdersScreen.category")} ${p.category}`}
+                  </Text>
+                  <Text style={styles.pregnancySubText}>
+                    {p.warning_label || p.warning}
+                  </Text>
                 </View>
-              )}
-
+              ))}
+            </View>
+              )} 
+                       
               {conditionWarnings.length > 0 && (
                 <View style={{ marginBottom: 16 }}>
                   <Text style={styles.safetySectionTitle}>

@@ -356,22 +356,50 @@ export default function MedicalReportModal({
               isEdit
             )}
 
-            {(gender === "female" || gender === "أنثى") && (
-              <>
-                <Text style={styles.label}>{t("medicalReportModal.pregnancyStatus")}</Text>
-                <View style={styles.pickerWrapper}>
-                  <Picker
-                    selectedValue={fields.is_pregnant}
-                    onValueChange={(v) => setFields({ ...fields, is_pregnant: v })}
-                    style={styles.picker}
-                  >
-                    <Picker.Item label={t("medicalReportModal.select")} value="" />
-                    <Picker.Item label={t("medicalReportModal.pregnant")} value="yes" />
-                    <Picker.Item label={t("medicalReportModal.notPregnant")} value="no" />
-                  </Picker>
-                </View>
-              </>
-            )}
+          {(gender === "female" || gender === "أنثى") && (
+  <>
+    <Text style={styles.label}>{t("medicalReportModal.pregnancyStatus")}</Text>
+    <View style={styles.pregnancyOptionsRow}>
+      <TouchableOpacity
+        onPress={() => !isEdit && setFields({ ...fields, is_pregnant: "yes" })}
+        disabled={isEdit}
+        style={[
+          styles.pregnancyOption,
+          fields.is_pregnant === "yes" && styles.pregnancyOptionSelected,
+          isEdit && styles.inputDisabled,
+        ]}
+      >
+        <Text
+          style={[
+            styles.pregnancyOptionText,
+            fields.is_pregnant === "yes" && styles.pregnancyOptionTextSelected,
+          ]}
+        >
+          {t("medicalReportModal.pregnant")}
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => !isEdit && setFields({ ...fields, is_pregnant: "no" })}
+        disabled={isEdit}
+        style={[
+          styles.pregnancyOption,
+          fields.is_pregnant === "no" && styles.pregnancyOptionSelected,
+          isEdit && styles.inputDisabled,
+        ]}
+      >
+        <Text
+          style={[
+            styles.pregnancyOptionText,
+            fields.is_pregnant === "no" && styles.pregnancyOptionTextSelected,
+          ]}
+        >
+          {t("medicalReportModal.notPregnant")}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </>
+)}
 
             {/* Current medications — same pattern. */}
             <Text style={styles.label}>{t("medicalReportModal.currentMedications")}</Text>
@@ -710,4 +738,31 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 15,
   },
+  pregnancyOptionsRow: {
+  flexDirection: "row",
+  gap: 10,
+  marginBottom: 10,
+},
+pregnancyOption: {
+  flex: 1,
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 8,
+  paddingVertical: 12,
+  alignItems: "center",
+  backgroundColor: "#fff",
+},
+pregnancyOptionSelected: {
+  backgroundColor: "#ecfeff",
+  borderColor: "#39CCCC",
+},
+pregnancyOptionText: {
+  fontSize: 14,
+  color: "#374151",
+  fontWeight: "500",
+},
+pregnancyOptionTextSelected: {
+  color: "#0e7490",
+  fontWeight: "700",
+},
 });

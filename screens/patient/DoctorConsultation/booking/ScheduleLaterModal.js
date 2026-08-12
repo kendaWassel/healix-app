@@ -158,16 +158,26 @@ export default function ScheduleLaterModal({
                     minimumDate={minDate}
                     display="spinner"
                     themeVariant="light"
-                    onChange={(event, date) => {
+                   onChange={(event, date) => {
+                    if (Platform.OS === "android") {
+                      setShowDatePicker(false);  
+                      if (event.type === "set" && date) {
+                        setSelectedDate(formatDate(date));
+                      }
+                    } else {
+                    
                       if (date) setSelectedDate(formatDate(date));
-                    }}
+                    }
+                  }}
                   />
+                  {Platform.OS === "ios" && (
                   <TouchableOpacity
                     onPress={() => setShowDatePicker(false)}
                     style={styles.confirmDateBtn}
                   >
                     <Text style={styles.confirmDateBtnText}>{t("scheduleLater.confirmDate")}</Text>
                   </TouchableOpacity>
+                  )}
                 </View>
               )}
             </View>

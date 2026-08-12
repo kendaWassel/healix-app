@@ -196,15 +196,52 @@ export default function PatientRegister() {
         </View>
 
         {/* الجنس */}
-        <View style={styles.inputGroup}>
-          <Ionicons name="male-female" size={20} color="#39CCCC" />
-          <Picker style={styles.picker} selectedValue={gender} onValueChange={setGender}>
-            <Picker.Item label={t("patientRegister.genderPlaceholder")} value="" />
-            <Picker.Item label={t("patientRegister.male")} value="male" />
-            <Picker.Item label={t("patientRegister.female")} value="female" />
-          </Picker>
-        </View>
+     <Text style={styles.genderLabel}>{t("patientRegister.genderPlaceholder")}</Text>
+<View style={styles.genderOptionsRow}>
+  <TouchableOpacity
+    onPress={() => setGender("male")}
+    style={[
+      styles.genderOption,
+      gender === "male" && styles.genderOptionSelected,
+    ]}
+  >
+    <Ionicons
+      name="male"
+      size={18}
+      color={gender === "male" ? "#0e7490" : "#767676"}
+    />
+    <Text
+      style={[
+        styles.genderOptionText,
+        gender === "male" && styles.genderOptionTextSelected,
+      ]}
+    >
+      {t("patientRegister.male")}
+    </Text>
+  </TouchableOpacity>
 
+  <TouchableOpacity
+    onPress={() => setGender("female")}
+    style={[
+      styles.genderOption,
+      gender === "female" && styles.genderOptionSelected,
+    ]}
+  >
+    <Ionicons
+      name="female"
+      size={18}
+      color={gender === "female" ? "#0e7490" : "#767676"}
+    />
+    <Text
+      style={[
+        styles.genderOptionText,
+        gender === "female" && styles.genderOptionTextSelected,
+      ]}
+    >
+      {t("patientRegister.female")}
+    </Text>
+  </TouchableOpacity>
+</View>
         {/* العنوان */}
         <View style={styles.inputGroup}>
           <Ionicons name="location" size={20} color="#39CCCC" />
@@ -308,4 +345,41 @@ const styles = StyleSheet.create({
   },
   registerBtnDisabled: { backgroundColor: "#9ca3af" },
   registerBtnText: { color: "#fff", fontWeight: "700", fontSize: 16 },
+  genderLabel: {
+  fontSize: 13,
+  fontWeight: "600",
+  color: "#374151",
+  marginTop: 12,
+  marginBottom: 6,
+},
+genderOptionsRow: {
+  flexDirection: "row",
+  gap: 10,
+  marginBottom: 8,
+},
+genderOption: {
+  flex: 1,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  borderWidth: 1,
+  borderColor: "#e0e0e0",
+  borderRadius: 10,
+  paddingVertical: 12,
+  backgroundColor: "#fff",
+},
+genderOptionSelected: {
+  backgroundColor: "#ecfeff",
+  borderColor: "#39CCCC",
+},
+genderOptionText: {
+  fontSize: 14,
+  color: "#767676",
+  fontWeight: "500",
+},
+genderOptionTextSelected: {
+  color: "#0e7490",
+  fontWeight: "700",
+},
 });
