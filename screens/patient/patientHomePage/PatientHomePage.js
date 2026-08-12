@@ -40,7 +40,7 @@ export default function PatientHomePage() {
     setError(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
+    
       const response = await apiFetch(`/api/patient/profile`);
 
       if (!response.ok) {
@@ -81,14 +81,13 @@ export default function PatientHomePage() {
     setSuccessMsg(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
+   
 
       const updateData = {
         full_name: patientData.full_name,
         email: patientData.email,
         phone: patientData.phone,
         birth_date: patientData.birth_date,
-        gender: patientData.gender,
         address: patientData.address,
       };
 

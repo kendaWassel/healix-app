@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { useTranslation } from "react-i18next";
 import PatientHeader from "../../Components/header/PatientHeader";
@@ -28,19 +27,15 @@ import * as ImageManipulator from "expo-image-manipulator";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
 import { apiFetch } from "../../../utils/apiClient";
 
-
-
 export default function Receipts() {
   const navigation = useNavigation();
   const { t } = useTranslation();
-
   const [receipts, setReceipts] = useState([]);
   const [pharmacistReceipts, setPharmacistReceipts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingPharmacist, setIsLoadingPharmacist] = useState(false);
   const [error, setError] = useState(null);
   const [errorPharmacist, setErrorPharmacist] = useState(null);
-
   const [sendPharmacy, setSendPharmacy] = useState(false);
   const [done, setDone] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -51,7 +46,6 @@ export default function Receipts() {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState(null);
   const [selectedPharmacistId, setSelectedPharmacistId] = useState(null);
-
   const [showDrugChecker, setShowDrugChecker] = useState(false);
   const [drugA, setDrugA] = useState("");
   const [drugB, setDrugB] = useState("");
@@ -59,7 +53,6 @@ export default function Receipts() {
   const [checkLoading, setCheckLoading] = useState(false);
   const [checkError, setCheckError] = useState("");
   const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
-
   const [uploadDisabled, setUploadDisabled] = useState(false);
   const [selectedReceiptId, setSelectedReceiptId] = useState(null);
   const [sendPharmacyReceiptId, setSendPharmacyReceiptId] = useState(null);
@@ -68,7 +61,7 @@ export default function Receipts() {
   const [deliveryLoading, setDeliveryLoading] = useState(false);
   const [deliveryData, setDeliveryData] = useState(null);
   const [deliveryMessage, setDeliveryMessage] = useState("");
-const [taskId,setTaskId]=useState(null);
+  const [taskId, setTaskId] = useState(null);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -84,12 +77,10 @@ const [taskId,setTaskId]=useState(null);
   const fetchMyReceipts = async () => {
     setIsLoading(true);
     setError(null);
-    const token = await AsyncStorage.getItem("token");
-
     try {
       const response = await apiFetch(
-        `/api/patient/prescriptions?page=${pagination.currentPage}&per_page=${pagination.itemsPerPage}`);
-
+        `/api/patient/prescriptions?page=${pagination.currentPage}&per_page=${pagination.itemsPerPage}`
+      );
       const data = await response.json();
       console.log("my receipts: ", data);
       if (data?.status === "success" && Array.isArray(data?.data?.items)) {
@@ -101,9 +92,7 @@ const [taskId,setTaskId]=useState(null);
           diagnosis: p.diagnosis || "N/A",
           prescription_image_url: p.prescription_image_url || null,
         }));
-
         setReceipts(formatted);
-
         setPagination((prev) => ({
           ...prev,
           totalPages: Math.ceil(
@@ -126,21 +115,19 @@ const [taskId,setTaskId]=useState(null);
     if (!phLoadBtn) return;
     setIsLoadingPharmacist(true);
     setErrorPharmacist(null);
-
-
     try {
       const response = await apiFetch(
-        `/api/patient/view-prescriptions-with-pricing?page=${pharmacistPagination.currentPage}&per_page=${pharmacistPagination.itemsPerPage}`);
-
+        `/api/patient/view-prescriptions-with-pricing?page=${pharmacistPagination.currentPage}&per_page=${pharmacistPagination.itemsPerPage}`
+      );
       const data = await response.json();
       console.log("pharmacist receipts: ", data);
-
       const receiptData = Array.isArray(data?.data)
         ? data.data
         : Array.isArray(data)
         ? data
         : [];
-      const meta = data?.meta || data.meta;
+
+      const meta = data?.meta;
       if (Array.isArray(receiptData)) {
         const formatted = receiptData.map((p) => ({
           id: p.order_id,
@@ -154,13 +141,14 @@ const [taskId,setTaskId]=useState(null);
           source: p.source || "Unknown",
           order_status: p.order_status || "Unknown",
           prescription_status: p.prescription_status || "Unknown",
-          total_amount: p.total_amount || 0,
-          total_price: p.total_price || 0,
-          total_quantity: p.total_quantity || 0,
+          // Coerced to Number: the backend has been observed to return these
+          // as strings in some responses, and .toFixed() below would throw
+          // on a string.
+          total_amount: Number(p.total_amount) || 0,
+          total_price: Number(p.total_price) || 0,
+          total_quantity: Number(p.total_quantity) || 0,
         }));
-
         setPharmacistReceipts(formatted);
-
         setPharmacistPagination((prev) => ({
           ...prev,
           totalPages: Math.ceil(
@@ -183,23 +171,15 @@ const [taskId,setTaskId]=useState(null);
     setDeliveryLoading(true);
     setDeliveryData(null);
     setDeliveryMessage("");
-
-
-
     try {
-      const response = await apiFetch(
-        `/api/patient/orders/${order_id}/delivery-info`);
-
+      const response = await apiFetch(`/api/patient/orders/${order_id}/delivery-info`);
       const data = await response.json();
       console.log("delivery info:", data);
-
       if (data.status === "success") {
         setDeliveryData(data.data);
-        console.log("delivery data: ",data.data);
+        console.log("delivery data: ", data.data);
         if (!data.data?.delivery) {
-          setDeliveryMessage(
-            data.data?.message || t("receipts.noDeliveryAgent")
-          );
+          setDeliveryMessage(data.data?.message || t("receipts.noDeliveryAgent"));
         }
       } else {
         setDeliveryMessage(data.message || t("receipts.noDeliveryAgent"));
@@ -265,28 +245,23 @@ const [taskId,setTaskId]=useState(null);
       setError(t("receipts.permissionRequired"));
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.Images,
+
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
-
     if (result.canceled || !result.assets?.length) return;
-
     await uploadReceiptImage(result.assets[0]);
   };
 
   const uploadReceiptImage = async (asset) => {
     setUploadDisabled(true);
-    const token = await AsyncStorage.getItem("token");
-
     try {
       const manipulated = await ImageManipulator.manipulateAsync(
         asset.uri,
         [],
         { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
       );
-
       const formData = new FormData();
       formData.append("image", {
         uri: manipulated.uri,
@@ -294,16 +269,11 @@ const [taskId,setTaskId]=useState(null);
         type: "image/jpeg",
       });
       formData.append("category", "prescription");
-
       setIsLoading(true);
-
-      const response = await apiFetch(
-        "/api/patient/prescriptions/upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await apiFetch("/api/patient/prescriptions/upload", {
+        method: "POST",
+        body: formData,
+      });
       const data = await response.json();
       console.log("receipt details: ", data);
       console.log("image url specifically:", data.data?.prescription_image_url);
@@ -324,11 +294,13 @@ const [taskId,setTaskId]=useState(null);
       setPagination((prev) => ({ ...prev, currentPage: prev.currentPage + 1 }));
     }
   };
+
   const handlePrevPage = () => {
     if (pagination.currentPage > 1) {
       setPagination((prev) => ({ ...prev, currentPage: prev.currentPage - 1 }));
     }
   };
+
   const handlePharmacistNextPage = () => {
     if (pharmacistPagination.currentPage < pharmacistPagination.totalPages) {
       setPharmacistPagination((prev) => ({
@@ -337,6 +309,7 @@ const [taskId,setTaskId]=useState(null);
       }));
     }
   };
+
   const handlePharmacistPrevPage = () => {
     if (pharmacistPagination.currentPage > 1) {
       setPharmacistPagination((prev) => ({
@@ -347,33 +320,35 @@ const [taskId,setTaskId]=useState(null);
   };
 
   const handleCheckInteraction = async () => {
-    if (!drugA.trim() || !drugB.trim()) {
-      setCheckError(t("receipts.enterBothDrugs"));
+  if (!drugA.trim() || !drugB.trim()) {
+    setCheckError(t("receipts.enterBothDrugs"));
+    return;
+  }
+  setCheckLoading(true);
+  setCheckError("");
+  setCheckResult(null);
+  try {
+    const res = await apiFetch(`/api/patient/prescriptions/verify`, {
+      method: "POST",
+      body: JSON.stringify({ medications: [drugA.trim(), drugB.trim()] }),
+    });
+    const result = await res.json();
+    if (!res.ok) {
+      setCheckError(result.message || result.detail || t("receipts.drugNotFound"));
       return;
     }
-    setCheckLoading(true);
-    setCheckError("");
-    setCheckResult(null);
-
-    try {
-
-      const res = await apiFetch(`/api/patient/prescriptions/verify`, {
-        method: "POST",
-        body: JSON.stringify({ drug_a: drugA, drug_b: drugB }),
-      });
-      const result = await res.json();
-
-      if (!res.ok) {
-        setCheckError(result.message || result.detail || t("receipts.drugNotFound"));
-        return;
-      }
-      setCheckResult(result.data || result);
-    } catch (err) {
-      setCheckError(t("receipts.connectionFailed"));
-    } finally {
-      setCheckLoading(false);
-    }
-  };
+    const interaction = result.data?.drug_interactions?.[0] || null;
+    setCheckResult({
+      hasInteraction: !!interaction,
+      interaction,
+      medicationsChecked: result.data?.medications_checked || [drugA, drugB],
+    });
+  } catch (err) {
+    setCheckError(t("receipts.connectionFailed"));
+  } finally {
+    setCheckLoading(false);
+  }
+};
 
   return (
     <View style={{ flex: 1 }}>
@@ -406,9 +381,8 @@ const [taskId,setTaskId]=useState(null);
               </TouchableOpacity>
             </View>
           </View>
-          <Text style={styles.sectionSubtitle}>
-            {t("receipts.checkSubtitle")}
-          </Text>
+          <Text style={styles.sectionSubtitle}>{t("receipts.checkSubtitle")}</Text>
+
           {isLoading ? (
             <ActivityIndicator size="large" color="#39CCCC" style={{ marginVertical: 20 }} />
           ) : error ? (
@@ -427,9 +401,7 @@ const [taskId,setTaskId]=useState(null);
                       <Text style={styles.receiptDate}>{item.Date}</Text>
                       {item.status === "rejected" && (
                         <View style={styles.rejectedBadge}>
-                          <Text style={styles.rejectedBadgeText}>
-                            {item.status}
-                          </Text>
+                          <Text style={styles.rejectedBadgeText}>{item.status}</Text>
                         </View>
                       )}
                     </View>
@@ -486,7 +458,6 @@ const [taskId,setTaskId]=useState(null);
               setDone(true);
             }}
           />
-
           <YouAreDone
             isOpen={done}
             onHome={() => {
@@ -494,7 +465,6 @@ const [taskId,setTaskId]=useState(null);
               navigation.navigate("PatientHome");
             }}
           />
-
           {selectedReceiptId && (
             <ReceiptDetails
               open
@@ -507,14 +477,10 @@ const [taskId,setTaskId]=useState(null);
         {/* Pharmacist Receipts */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t("receipts.receiptsFromPharmacist")}</Text>
-          <Text style={styles.sectionSubtitle}>
-            {t("receipts.checkAccepted")}
-          </Text>
+          <Text style={styles.sectionSubtitle}>{t("receipts.checkAccepted")}</Text>
+
           {!phLoadBtn ? (
-            <TouchableOpacity
-              onPress={() => setPhLoadBtn(true)}
-              style={styles.loadBtn}
-            >
+            <TouchableOpacity onPress={() => setPhLoadBtn(true)} style={styles.loadBtn}>
               <Text style={styles.loadBtnText}>{t("receipts.loadOrders")}</Text>
             </TouchableOpacity>
           ) : isLoadingPharmacist ? (
@@ -535,7 +501,6 @@ const [taskId,setTaskId]=useState(null);
                       <Text style={styles.detailLabel}>{t("receipts.status")} </Text>
                       {item.order_status}
                     </Text>
-
                     {item.items && item.items.length > 0 && (
                       <View style={styles.medicinesBox}>
                         <Text style={styles.medicinesTitle}>{t("receipts.medicines")}</Text>
@@ -550,20 +515,18 @@ const [taskId,setTaskId]=useState(null);
                               </Text>
                             </View>
                             <Text style={styles.medicinePrice}>
-                              ${medicine.price?.toFixed(2) || "0.00"}
+                              ${Number(medicine.price || 0).toFixed(2)}
                             </Text>
                           </View>
                         ))}
                       </View>
                     )}
-
                     <View style={styles.totalRow}>
                       <Text style={styles.totalText}>
                         {t("receipts.total", { amount: item.total_price.toFixed(2) })}
                       </Text>
                       <Text style={styles.totalText}>{item.date}</Text>
                     </View>
-
                     <TouchableOpacity
                       onPress={() => {
                         setShowDeliveryModal(true);
@@ -576,11 +539,9 @@ const [taskId,setTaskId]=useState(null);
                         {t("receipts.deliveryInfo")}
                       </Text>
                     </TouchableOpacity>
-
                     <Text style={styles.totalWithFee}>
                       {t("receipts.totalWithFee", { amount: item.total_amount.toFixed(2) })}
                     </Text>
-
                     {item.order_status === "delivered" && (
                       <TouchableOpacity
                         onPress={() => handlePayAndRate(item)}
@@ -603,14 +564,12 @@ const [taskId,setTaskId]=useState(null);
                   <Text style={styles.pageBtnText}>{t("common.prev")}</Text>
                 </TouchableOpacity>
                 <Text style={styles.pageInfo}>
-                  {pharmacistPagination.currentPage} of{" "}
-                  {pharmacistPagination.totalPages}
+                  {pharmacistPagination.currentPage} of {pharmacistPagination.totalPages}
                 </Text>
                 <TouchableOpacity
                   onPress={handlePharmacistNextPage}
                   disabled={
-                    pharmacistPagination.currentPage ===
-                    pharmacistPagination.totalPages
+                    pharmacistPagination.currentPage === pharmacistPagination.totalPages
                   }
                   style={styles.pageBtn}
                 >
@@ -627,14 +586,14 @@ const [taskId,setTaskId]=useState(null);
       </ScrollView>
 
       {/* Delivery Info Modal */}
-      <Modal open={showDeliveryModal} 
+      <Modal
+        open={showDeliveryModal}
         onClose={() => {
-    setShowDeliveryModal(false);
-    setTaskId(null);
-  }}
+          setShowDeliveryModal(false);
+          setTaskId(null);
+        }}
       >
         <Text style={styles.modalTitle}>{t("receipts.deliveryInformation")}</Text>
-
         {deliveryLoading ? (
           <ActivityIndicator size="large" color="#39CCCC" />
         ) : deliveryData?.delivery ? (
@@ -645,9 +604,7 @@ const [taskId,setTaskId]=useState(null);
               style={styles.deliveryAvatar}
             />
             <View style={{ gap: 4 }}>
-              <Text style={styles.deliveryName}>
-                {deliveryData.delivery?.name}
-              </Text>
+              <Text style={styles.deliveryName}>{deliveryData.delivery?.name}</Text>
               <Text style={styles.deliveryDetail}>
                 <Text style={styles.deliveryLabel}>{t("receipts.phone")} </Text>
                 {deliveryData.delivery?.phone}
@@ -660,21 +617,22 @@ const [taskId,setTaskId]=useState(null);
                 <Text style={styles.deliveryLabel}>{t("receipts.plateNumber")} </Text>
                 {deliveryData.delivery?.plate_number}
               </Text>
-<Text style={styles.deliveryDetail}>
-  <Text style={styles.deliveryLabel}>{t("receipts.status")} </Text>
-  {deliveryData.delivery.status}
-</Text>
-
-{(deliveryData.delivery.status === "picking_up_the_order" ||
-  deliveryData.delivery.status === "on_the_way") && (
-  <TouchableOpacity
-    onPress={() => navigation.navigate("TrackDelivery", { taskId })}
-    style={styles.trackDeliveryBtn}
-  >
-    <Ionicons name="navigate" size={16} color="#fff" />
-    <Text style={styles.trackDeliveryBtnText}>{t("receipts.trackDelivery")}</Text>
-  </TouchableOpacity>
-)}
+              <Text style={styles.deliveryDetail}>
+                <Text style={styles.deliveryLabel}>{t("receipts.status")} </Text>
+                {deliveryData.delivery.status}
+              </Text>
+              {(deliveryData.delivery.status === "picking_up_the_order" ||
+                deliveryData.delivery.status === "on_the_way") && (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("TrackDelivery", { taskId })}
+                  style={styles.trackDeliveryBtn}
+                >
+                  <Ionicons name="navigate" size={16} color="#fff" />
+                  <Text style={styles.trackDeliveryBtnText}>
+                    {t("receipts.trackDelivery")}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         ) : (
@@ -709,7 +667,6 @@ const [taskId,setTaskId]=useState(null);
             : ""
         }
       />
-
 
       {showPaymentModal && (
         <RNModal
@@ -772,10 +729,7 @@ const [taskId,setTaskId]=useState(null);
                   <View style={styles.suggestionBox}>
                     <Text style={styles.suggestionText}>
                       {t("drugSuggestion.didYouMean")}{" "}
-                      <Text style={styles.suggestionValue}>
-                        {suggestion.value}
-                      </Text>
-                      ?
+                      <Text style={styles.suggestionValue}>{suggestion.value}</Text>?
                     </Text>
                     <TouchableOpacity
                       onPress={() => {
@@ -788,6 +742,7 @@ const [taskId,setTaskId]=useState(null);
                   </View>
                 )}
               </View>
+
               <View style={styles.fieldWrapper}>
                 <Text style={styles.label}>{t("receipts.secondDrug")}</Text>
                 <TextInput
@@ -803,10 +758,7 @@ const [taskId,setTaskId]=useState(null);
                   <View style={styles.suggestionBox}>
                     <Text style={styles.suggestionText}>
                       {t("drugSuggestion.didYouMean")}{" "}
-                      <Text style={styles.suggestionValue}>
-                        {suggestion.value}
-                      </Text>
-                      ?
+                      <Text style={styles.suggestionValue}>{suggestion.value}</Text>?
                     </Text>
                     <TouchableOpacity
                       onPress={() => {
@@ -830,57 +782,46 @@ const [taskId,setTaskId]=useState(null);
                 </Text>
               </TouchableOpacity>
 
-              {checkError ? (
-                <Text style={styles.checkErrorText}>{checkError}</Text>
-              ) : null}
+              {checkError ? <Text style={styles.checkErrorText}>{checkError}</Text> : null}
 
-              {checkResult && (
-                <View style={{ marginBottom: 12 }}>
-                  {checkResult.prediction === "Interaction likely" ? (
-                    <View
-                      style={[
-                        styles.resultBox,
-                        checkResult.severity === "Major"
-                          ? styles.resultMajor
-                          : checkResult.severity === "Moderate"
-                          ? styles.resultModerate
-                          : styles.resultMinor,
-                      ]}
-                    >
-                      <Text style={styles.resultTitle}>
-                        {t("receipts.interactionDetected")}
-                      </Text>
-                      <Text style={styles.resultSeverity}>
-                        {checkResult.severity === "Major"
-                          ? "🔴 Major"
-                          : checkResult.severity === "Moderate"
-                          ? "🟠 Moderate"
-                          : "🟡 Minor"}
-                      </Text>
-                      {checkResult.severity_confidence === "UNCERTAIN" && (
-                        <Text style={styles.uncertainText}>
-                          {t("receipts.uncertainNote")}
-                        </Text>
-                      )}
-                      <Text style={styles.resultDrugs}>
-                        {checkResult.drug_a} + {checkResult.drug_b}
-                      </Text>
-                    </View>
-                  ) : (
-                    <View style={[styles.resultBox, styles.resultSafe]}>
-                      <Text style={styles.resultSafeTitle}>
-                        {t("receipts.noInteractionExpected")}
-                      </Text>
-                      <Text style={styles.resultDrugs}>
-                        {checkResult.drug_a} + {checkResult.drug_b}
-                      </Text>
-                    </View>
-                  )}
-                  <Text style={styles.disclaimerText}>
-                    {t("receipts.disclaimer")}
-                  </Text>
-                </View>
-              )}
+            {checkResult && (
+  <View style={{ marginBottom: 12 }}>
+    {checkResult.hasInteraction ? (
+      <View
+        style={[
+          styles.resultBox,
+          checkResult.interaction.severity === "Major"
+            ? styles.resultMajor
+            : checkResult.interaction.severity === "Minor"
+            ? styles.resultMinor
+            : styles.resultModerate,
+        ]}
+      >
+        <Text style={styles.resultTitle}>{t("receipts.interactionDetected")}</Text>
+        <Text style={styles.resultSeverity}>
+          {checkResult.interaction.severity === "Major"
+            ? "🔴 "
+            : checkResult.interaction.severity === "Minor"
+            ? "🟡 "
+            : "🟠 "}
+          {checkResult.interaction.severity_label || checkResult.interaction.severity}
+        </Text>
+        <Text style={styles.resultDrugs}>
+          {checkResult.interaction.drug_a} + {checkResult.interaction.drug_b}
+        </Text>
+      </View>
+    ) : (
+      <View style={[styles.resultBox, styles.resultSafe]}>
+        <Text style={styles.resultSafeTitle}>{t("receipts.noInteractionExpected")}</Text>
+        <Text style={styles.resultDrugs}>
+          {checkResult.medicationsChecked.join(" + ")}
+        </Text>
+      </View>
+    )}
+    <Text style={styles.disclaimerText}>{t("receipts.disclaimer")}</Text>
+  </View>
+)}
+
               <TouchableOpacity
                 onPress={() => setShowDrugChecker(false)}
                 style={styles.closeCheckerBtn}
@@ -1098,20 +1039,20 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   trackDeliveryBtn: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 6,
-  backgroundColor: "#052443",
-  borderRadius: 8,
-  paddingVertical: 10,
-  marginTop: 10,
-},
-trackDeliveryBtnText: {
-  color: "#fff",
-  fontWeight: "600",
-  fontSize: 13,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: "#052443",
+    borderRadius: 8,
+    paddingVertical: 10,
+    marginTop: 10,
+  },
+  trackDeliveryBtnText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 13,
+  },
   totalWithFee: {
     fontSize: 14,
     color: "#4b5563",

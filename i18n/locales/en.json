@@ -1072,6 +1072,11 @@
   "saving": "Saving...",
   "cancel": "Cancel",
   "saveFail": "Failed to save session notes"
+},
+"notifications": {
+  "title": "Notifications",
+  "empty": "No notifications yet",
+  "markAllRead": "Mark all as read"
 }
 
 }

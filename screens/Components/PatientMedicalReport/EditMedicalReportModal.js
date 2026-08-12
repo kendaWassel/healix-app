@@ -7,12 +7,14 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
+  Platform
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../../../utils/apiClient";
 import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion"
+import { Picker } from "@react-native-picker/picker";
 
 const toCamelCase = (str) =>
   str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
@@ -22,6 +24,7 @@ export default function EditMedicalReportModal({
   onClose,
   report,
   onSaved,
+  gender,
 }) {
   const { t, i18n } = useTranslation();
   const [conditionSearch, setConditionSearch] = useState("");
@@ -29,11 +32,10 @@ export default function EditMedicalReportModal({
   const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
 
   const [fields, setFields] = useState({
-    diagnosis: "",
     chronic_diseases: [],
     other_conditions: "",
     previous_surgeries: "",
-    treatment_plan: "",
+    is_pregnant: "",
   });
 
   // Allergies and current medications are lists of individual drug names —
@@ -45,15 +47,16 @@ export default function EditMedicalReportModal({
   useEffect(() => {
     if (report) {
       setFields({
-        diagnosis: report.diagnosis || "",
         chronic_diseases: Array.isArray(report.chronic_diseases)
           ? report.chronic_diseases
           : [],
         other_conditions: report.other_conditions || "",
         previous_surgeries: report.previous_surgeries || "",
-        treatment_plan: report.treatment_plan || "",
+        is_pregnant:
+          report.is_pregnant === true ? "yes"
+          : report.is_pregnant === false ? "no"
+          : report.is_pregnant || "",
       });
-
       // Existing records store these as comma-separated text — split once on
       // load so old data still populates the list UI correctly.
       const parseList = (value) => {
@@ -117,18 +120,18 @@ export default function EditMedicalReportModal({
     try {
       const payload = {
         ...fields,
+        is_pregnant:
+          fields.is_pregnant === "yes" ? true
+          : fields.is_pregnant === "no" ? false
+          : null,
         allergies: allergies.map((a) => a.trim()).filter(Boolean),
         current_medications: medications.map((m) => m.trim()).filter(Boolean),
       };
-
       const response = await apiFetch(`/api/patient/medical-record`, {
         method: "PUT",
         body: JSON.stringify(payload),
       });
-
       const data = await response.json();
-      console.log("Updated report:", data);
-
       if (response.ok) {
         onSaved();
       }
@@ -137,7 +140,7 @@ export default function EditMedicalReportModal({
     }
   };
 
-  const textFieldKeys = ["other_conditions", "previous_surgeries", "treatment_plan"];
+  const textFieldKeys = ["other_conditions", "previous_surgeries"];
 
   const renderDrugList = (list, setter, field, addLabel) => (
     <View style={{ marginBottom: 12 }}>
@@ -191,22 +194,6 @@ export default function EditMedicalReportModal({
             </Text>
 
             <Text style={styles.label}>
-              {t("patientMedicalReport.diagnosis")}
-            </Text>
-            <TextInput
-              style={styles.input}
-              value={fields.diagnosis}
-              placeholder={t("patientMedicalReport.diagnosis")}
-              multiline
-              onChangeText={(text) =>
-                setFields({ ...fields, diagnosis: text })
-              }
-            />
-
-            {/* Chronic conditions — standardised dropdown, matches
-                MedicalReportModal so the picker and stored values stay
-                consistent with the contraindication lookup. */}
-            <Text style={styles.label}>
               {t("patientMedicalReport.chronicDiseases")}
             </Text>
             <TouchableOpacity
@@ -228,7 +215,6 @@ export default function EditMedicalReportModal({
               </Text>
               <Ionicons name="chevron-down" size={18} color="#9ca3af" />
             </TouchableOpacity>
-
             {fields.chronic_diseases.length > 0 && (
               <View style={styles.chipsRow}>
                 {fields.chronic_diseases.map((value) => {
@@ -248,28 +234,49 @@ export default function EditMedicalReportModal({
               </View>
             )}
 
-            {textFieldKeys.map((key) => {
-              const camelKey = toCamelCase(key);
-              return (
-                <View key={key}>
-                  <Text style={styles.label}>
-                    {t(`patientMedicalReport.${camelKey}`)}
-                  </Text>
-                  <TextInput
-                    style={styles.input}
-                    value={fields[key]}
-                    placeholder={t(`patientMedicalReport.${camelKey}`)}
-                    multiline
-                    onChangeText={(text) =>
-                      setFields({ ...fields, [key]: text })
-                    }
-                  />
-                </View>
-              );
-            })}
+    {(gender === "female" || gender === "أنثى") && (
+  <>
+    <Text style={styles.label}>
+      {t("medicalReportModal.pregnancyStatus")}
+    </Text>
+    <View style={styles.pregnancyOptionsRow}>
+      <TouchableOpacity
+        onPress={() => setFields({ ...fields, is_pregnant: "yes" })}
+        style={[
+          styles.pregnancyOption,
+          fields.is_pregnant === "yes" && styles.pregnancyOptionSelected,
+        ]}
+      >
+        <Text
+          style={[
+            styles.pregnancyOptionText,
+            fields.is_pregnant === "yes" && styles.pregnancyOptionTextSelected,
+          ]}
+        >
+          {t("medicalReportModal.pregnant")}
+        </Text>
+      </TouchableOpacity>
 
-            {/* Allergies — dynamic list, each entry individually resolved
-                against the drug database. */}
+      <TouchableOpacity
+        onPress={() => setFields({ ...fields, is_pregnant: "no" })}
+        style={[
+          styles.pregnancyOption,
+          fields.is_pregnant === "no" && styles.pregnancyOptionSelected,
+        ]}
+      >
+        <Text
+          style={[
+            styles.pregnancyOptionText,
+            fields.is_pregnant === "no" && styles.pregnancyOptionTextSelected,
+          ]}
+        >
+          {t("medicalReportModal.notPregnant")}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </>
+)}
+
             <Text style={styles.label}>
               {t("patientMedicalReport.allergies")}
             </Text>
@@ -280,7 +287,6 @@ export default function EditMedicalReportModal({
               t("patientMedicalReport.addAllergy")
             )}
 
-            {/* Current medications — same pattern. */}
             <Text style={styles.label}>
               {t("patientMedicalReport.currentMedications")}
             </Text>
@@ -302,7 +308,6 @@ export default function EditMedicalReportModal({
         </View>
       </View>
 
-      {/* Conditions picker */}
       <Modal
         visible={showConditionsPicker}
         transparent
@@ -501,8 +506,6 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 10,
   },
-
-  /* Picker modal */
   pickerOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -588,4 +591,41 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 15,
   },
+  pickerWrapper: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    overflow: "hidden",
+    
+  },
+  picker: {
+    height: Platform.OS === "ios" ? 150 : 50,
+  },
+  pregnancyOptionsRow: {
+  flexDirection: "row",
+  gap: 10,
+  marginBottom: 10,
+},
+pregnancyOption: {
+  flex: 1,
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 8,
+  paddingVertical: 12,
+  alignItems: "center",
+  backgroundColor: "#fff",
+},
+pregnancyOptionSelected: {
+  backgroundColor: "#ecfeff",
+  borderColor: "#39CCCC",
+},
+pregnancyOptionText: {
+  fontSize: 14,
+  color: "#374151",
+  fontWeight: "500",
+},
+pregnancyOptionTextSelected: {
+  color: "#0e7490",
+  fontWeight: "700",
+},
 });

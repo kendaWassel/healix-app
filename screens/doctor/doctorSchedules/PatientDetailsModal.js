@@ -95,18 +95,18 @@ export default function PatientDetailsModal({ details, onClose }) {
               ("أنثى" بالعربية)، فمقارنته بـ "female" تفشل خارج الإنجليزية.
               الحقل يُملأ للإناث فقط أصلاً، فوجود قيمة له كافٍ.
             */}
-            {isPregnant && (
-              <View style={styles.row}>
-                <Text style={styles.label}>{t("patientDetailsModal.pregnancyStatus")}</Text>
-                <Text style={styles.value}>
-                  {isPregnant === "yes"
-                    ? t("patientDetailsModal.pregnant")
-                    : isPregnant === "no"
-                    ? t("patientDetailsModal.notPregnant")
-                    : t("patientDetailsModal.notSpecified")}
-                </Text>
-              </View>
-            )}
+      {isPregnant !== null && isPregnant !== undefined && isPregnant !== "" && (
+  <View style={styles.row}>
+    <Text style={styles.label}>{t("patientDetailsModal.pregnancyStatus")}</Text>
+    <Text style={styles.value}>
+      {isPregnant === "yes" || isPregnant === true
+        ? t("patientDetailsModal.pregnant")
+        : isPregnant === "no" || isPregnant === false
+        ? t("patientDetailsModal.notPregnant")
+        : t("patientDetailsModal.notSpecified")}
+    </Text>
+  </View>
+)}
 
             <View style={styles.group}>
               <Text style={styles.label}>{t("patientDetailsModal.chronicDiseases")}</Text>

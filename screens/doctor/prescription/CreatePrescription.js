@@ -73,63 +73,60 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
     clearSuggestion();
   };
 
-  const checkInteractions = async () => {
-    const drugNames = medicines
-      .map((m) => m.name.trim())
-      .filter((name) => name !== "");
+ const checkInteractions = async () => {
+  const drugNames = medicines
+    .map((m) => m.name.trim())
+    .filter((name) => name !== "");
 
-    if (drugNames.length < 2) return { hasWarning: false };
 
-    const uniqueDrugNames = [...new Set(drugNames.map((d) => d.toLowerCase()))]
-      .map((lower) => drugNames.find((d) => d.toLowerCase() === lower));
+  if (drugNames.length < 1) return { hasWarning: false };
 
-    if (uniqueDrugNames.length < 2) return { hasWarning: false };
+  const uniqueDrugNames = [...new Set(drugNames.map((d) => d.toLowerCase()))]
+    .map((lower) => drugNames.find((d) => d.toLowerCase() === lower));
 
-    try {
-      const response = await apiFetch(`/api/doctor/prescriptions/verify`, {
-        method: "POST",
-        body: JSON.stringify({ medications: uniqueDrugNames, patient_id: patientId }),
-      });
+  try {
+    const response = await apiFetch(`/api/doctor/prescriptions/verify`, {
+      method: "POST",
+      body: JSON.stringify({ medications: uniqueDrugNames, patient_id: patientId }),
+    });
+    if (!response.ok) return { hasWarning: false, conditionAvailable: true };
+    const result_json = await response.json();
+    console.log("verify result", result_json);
+    const data = result_json.data || result_json;
 
-      if (!response.ok) return { hasWarning: false, conditionAvailable: true };
-      const result_json = await response.json();
-      console.log("verify result", result_json);
+    const dangerous = (data.drug_interactions || []).filter(
+      (f) =>
+        f.severity === "Major" ||
+        f.severity === "Moderate" ||
+        f.severity_confidence === "UNCERTAIN"
+    );
 
-      const data = result_json.data || result_json;
+    const withAlternatives = dangerous.map((f) => ({
+      ...f,
+      alternatives: f.alternatives?.candidates || [],
+      alt_for: f.drug_b,
+    }));
 
-      const dangerous = (data.drug_interactions || []).filter(
-        (f) =>
-          f.severity === "Major" ||
-          f.severity === "Moderate" ||
-          f.severity_confidence === "UNCERTAIN"
-      );
+    const allergyDirect = data.allergy_direct_matches || [];
+    const allergyCross = data.allergy_cross_matches || [];
 
-      const withAlternatives = dangerous.map((f) => ({
-        ...f,
-        alternatives: f.alternatives?.candidates || [],
-        alt_for: f.drug_b,
-      }));
-
-      const allergyDirect = data.allergy_direct_matches || [];
-      const allergyCross = data.allergy_cross_matches || [];
-
-      return {
-        interactions: withAlternatives,
-        allergyDirect,
-        allergyCross,
-        pregnancy: data.pregnancy_warnings || [],
-        conditions: data.condition_warnings || [],
-        conditionAvailable: data.condition_check_available !== false,
-        hasWarning:
-          data.safe === false ||
-          allergyDirect.length > 0 ||
-          allergyCross.length > 0,
-      };
-    } catch (err) {
-      console.error("DDI check failed:", err);
-      return { hasWarning: false, conditionAvailable: true };
-    }
-  };
+    return {
+      interactions: withAlternatives,
+      allergyDirect,
+      allergyCross,
+      pregnancy: data.pregnancy_warnings || [],
+      conditions: data.condition_warnings || [],
+      conditionAvailable: data.condition_check_available !== false,
+      hasWarning:
+        data.safe === false ||
+        allergyDirect.length > 0 ||
+        allergyCross.length > 0,
+    };
+  } catch (err) {
+    console.error("DDI check failed:", err);
+    return { hasWarning: false, conditionAvailable: true };
+  }
+};
 
   const handleSavePrescription = async () => {
     setChecking(true);
@@ -450,14 +447,22 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                   </View>
                 ))}
 
-                {pregnancyWarnings.map((p, i) => (
-                  <View key={`preg-${i}`} style={styles.pregnancyCard}>
-                    <Text style={styles.pregnancyText}>
-                      🤰 {p.medication} — {t("createPrescription.category")} {p.category}
-                    </Text>
-                    <Text style={styles.pregnancySubText}>{p.warning}</Text>
-                  </View>
-                ))}
+                            {pregnancyWarnings.map((p, i) => (
+                <View key={`preg-${i}`} style={styles.pregnancyCard}>
+                  <Text style={styles.pregnancyText}>
+                    🤰 {p.medication}
+                    {p.ingredient && p.ingredient !== p.medication.toLowerCase()
+                      ? ` (${p.ingredient})`
+                      : ""}
+                  </Text>
+                  <Text style={styles.pregnancySubText}>
+                    {p.category_label || `${t("createPrescription.category")} ${p.category}`}
+                  </Text>
+                  <Text style={styles.pregnancySubText}>
+                    {p.warning_label || p.warning}
+                  </Text>
+                </View>
+              ))}
 
                 {conditionWarnings.map((c, i) => (
                   <View key={`cond-${i}`} style={styles.conditionCard}>
