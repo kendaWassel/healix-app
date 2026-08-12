@@ -2,9 +2,6 @@
 // Import these anywhere instead of hardcoding hex values, so the whole
 // app can be re-themed from one place.
 //
-// Usage:
-//   import { colors } from "../../../constants/colors";
-//   <Text style={{ color: colors.cyan }}>Hello</Text>
 
 export const colors = {
   cyan: "#39CCCC",
@@ -13,9 +10,6 @@ export const colors = {
   cardBorder: "#dedede",
   textColor: "#767676",
 
-  // A few extra semantic ones used across the delivery screens
-  // (kept separate so the 5 "brand" colors above stay a 1:1 match
-  // with your CSS file)
   danger: "#dc2626",
   dangerBg: "#fee2e2",
   dangerBorder: "#f87171",

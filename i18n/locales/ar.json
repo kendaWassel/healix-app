@@ -12,7 +12,8 @@
     "no": "لا",
         "edit": "تعديل",
     "save": "حفظ",
-    "none": "لا يوجد"
+    "none": "لا يوجد",
+    "continue": "المتابعة"
   },
   "header": {
   "home": "الرئيسية",
@@ -66,7 +67,11 @@
     "test": "الفحص",
     "value": "القيمة",
     "status": "الحالة",
-    "waitingMessage": "Analyzing your medical tests, please wait..."
+    "waitingMessage": "يتم تحليل ملفك , الرجاء الانتظار...",
+    "downloadPdf":"حمل الملف",
+    "downloadFail":"حدث خطأ اثناء تحميل الملف"
+
+
   },
 
   "labOption": {

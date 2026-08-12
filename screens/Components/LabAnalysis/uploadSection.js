@@ -31,14 +31,20 @@ export default function UploadSection({ file, setFile, onAnalyze, loading }) {
       <Text style={styles.title}>{t("labAnalysis.uploadTitle")}</Text>
 
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.uploadBtn} onPress={triggerFileUpload}>
+        <TouchableOpacity 
+        disabled={loading}
+        style={[
+          styles.uploadBtn,
+          loading && styles.btnDisabled
+        ]} 
+        onPress={triggerFileUpload}>
           <Text style={styles.uploadBtnText}>{t("labAnalysis.uploadFile")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[
             styles.analyzeBtn,
-            (!file || loading) && styles.analyzeBtnDisabled,
+            (!file || loading) && styles.btnDisabled,
           ]}
           onPress={() => onAnalyze()}
           disabled={!file || loading}
@@ -82,7 +88,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
   },
-  analyzeBtnDisabled: { opacity: 0.5 },
+  btnDisabled: { opacity: 0.5 },
   analyzeBtnText: { color: colors.white, fontWeight: "600" },
   selectedFileText: { marginTop: 12, fontSize: 13, color: colors.gray700 },
   selectedFileName: { fontWeight: "600" },
