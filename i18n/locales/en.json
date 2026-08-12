@@ -12,7 +12,9 @@
     "no": "No",
         "edit":"Edit",
     "save":"Save",
-    "none":"None"
+    "none":"None",
+    "continue":"continue"
+
   },
  "header": {
     "home": "Home",
@@ -66,7 +68,9 @@
     "test": "Test",
     "value": "Value",
     "status": "Status",
-    "waitingMessage": "Analyzing your medical tests, please wait..."
+    "waitingMessage": "Analyzing your medical tests, please wait...",
+    "downloadPdf":"download file",
+    "downloadFail":"error downloading"
   },
 
   "labOption": {

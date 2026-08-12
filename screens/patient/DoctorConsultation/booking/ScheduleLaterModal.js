@@ -1,4 +1,3 @@
-// screens/patient/DoctorConsultation/Booking/ScheduleLaterModal.js
 import React, { useEffect, useState } from "react";
 import {
   View,
