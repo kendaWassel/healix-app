@@ -6,6 +6,7 @@ import PickDoctor from "./DoctorConsultation/booking/PickDoctor";
 import MySchedules from "./MySchedules/MySchedules";
 import Receipts from "./Receipts/Receipts";
 import TrackDelivery from "./trackDelivery/TrackDelivery";
+import LabAnalysesHistory from "./LabAnalysesHistory/LabAnalysesHistory";
 const Stack = createNativeStackNavigator();
 
 const Patient = () => {
@@ -20,7 +21,8 @@ const Patient = () => {
       <Stack.Screen name="PickDoctor" component={PickDoctor} /> 
       <Stack.Screen name="MySchedules" component={MySchedules} /> 
       <Stack.Screen name="Receipts" component={Receipts} /> 
-            <Stack.Screen name="TrackDelivery" component={TrackDelivery} />
+      <Stack.Screen name="TrackDelivery" component={TrackDelivery} />
+      <Stack.Screen name="LabAnalysesHistory" component={LabAnalysesHistory} />
     </Stack.Navigator>
   );
 };

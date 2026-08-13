@@ -7,17 +7,19 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import { BASE_URL, NGROK_HEADERS } from "../../../../constants/api";
 import { colors } from "../../../../constants/colors";
-
 import { useLabAnalysis } from "../../../Components/LabAnalysis/useLabAnalysis";
+import { usePdfDownload } from "../../../../utils/usePdfDownload";
 
 export default function LabUploadHandler({ onFinished }) {
   const { file, setFile, report, analyze, loading ,error} = useLabAnalysis();
-
+console.log('report : ',report)
   const [started, setStarted] = useState(false);
     const [downloading, setDownloading] = useState(false);
-  const [downloadError, setDownloadError] = useState(null);
 
   const { t } = useTranslation();
+
+const { downloadPdf, downloadingId, downloadError } = usePdfDownload();
+const isDownloading = downloadingId === report?.id;
 
   const handleAnalyze = async () => {
     setStarted(true);
@@ -25,66 +27,6 @@ export default function LabUploadHandler({ onFinished }) {
     await analyze();
 
   };
-const handleDownload = async () => {
-  if (!report?.patient_pdf_url) {
-    setDownloadError(t("labAnalysis.downloadFail"));
-    return;
-  }
-
-  setDownloading(true);
-  setDownloadError(null);
-
-  try {
-    const token = await AsyncStorage.getItem("token");
-
-    const response = await fetch(report.patient_pdf_url, {
-      method: "GET",
-      headers: {
-        ...NGROK_HEADERS,
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    console.log("PDF download status:", response.status);
-    console.log("PDF download content-type:", response.headers.get("content-type"));
-
-    if (!response.ok) {
-      const errText = await response.text().catch(() => "");
-      console.log("PDF download error body:", errText);
-      throw new Error(`Download failed: ${response.status}`);
-    }
-
-    const blob = await response.blob();
-    console.log("Blob size:", blob.size, "Blob type:", blob.type);
-
-    const fileUri = `${FileSystem.documentDirectory}lab-report-${report.id}.pdf`;
-
-    const reader = new FileReader();
-    const base64Data = await new Promise((resolve, reject) => {
-      reader.onload = () => resolve(reader.result.split(",")[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-
-    await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-
-    const canShare = await Sharing.isAvailableAsync();
-    if (canShare) {
-      await Sharing.shareAsync(fileUri, {
-        mimeType: "application/pdf",
-        UTI: "com.adobe.pdf",
-        dialogTitle: t("labAnalysis.downloadReport"),
-      });
-    }
-  } catch (err) {
-    console.error("Error downloading PDF report:", err);
-    setDownloadError(err.message || t("labAnalysis.downloadFail"));
-  } finally {
-    setDownloading(false);
-  }
-};
 
   return (
     <View>
@@ -100,20 +42,17 @@ const handleDownload = async () => {
           )}
       {started && !loading && report && (
         <View style={styles.resultActions}>
-          <TouchableOpacity
-            style={[styles.downloadBtn, downloading && styles.btnDisabled]}
-            onPress={handleDownload}
-            disabled={downloading}
-          >
-            {downloading ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.downloadBtnText}>
-                {t("labAnalysis.downloadPdf")}
-              </Text>
-            )}
-          </TouchableOpacity>
-
+<TouchableOpacity
+  style={[styles.downloadBtn, isDownloading && styles.btnDisabled]}
+  onPress={() => downloadPdf(report.patient_pdf_url, report.id, t("labAnalysis.downloadPdf"))}
+  disabled={isDownloading}
+>
+  {isDownloading ? (
+    <ActivityIndicator size="small" color={colors.white} />
+  ) : (
+    <Text style={styles.downloadBtnText}>{t("labAnalysis.downloadPdf")}</Text>
+  )}
+</TouchableOpacity>
           {downloadError && (
             <Text style={styles.errorText}>{downloadError}</Text>
           )}

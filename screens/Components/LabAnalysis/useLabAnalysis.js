@@ -41,7 +41,12 @@ export function useLabAnalysis() {
   };
 
   const analyze = async (extraData = {}) => {
-    if (!file) return;
+    console.log('called')
+    if (!file) {
+    console.log('no file')
+      
+      return
+    };
 
     setLoading(true);
     setError(null);
@@ -69,11 +74,30 @@ export function useLabAnalysis() {
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Analysis failed");
+const text = await res.text();
 
-      const data = await res.json();
-      console.log("analyze: ", data);
-      setReport(data.data);
+console.log("STATUS:", res.status);
+console.log("SERVER RESPONSE:", text);
+
+let data;
+
+try {
+  data = JSON.parse(text);
+} catch {
+  throw new Error(text || "Analysis failed");
+}
+
+if (!res.ok) {
+  throw new Error(
+    data?.message ||
+    data?.error ||
+    data?.errors?.file?.[0] ||
+    "Analysis failed"
+  );
+}
+
+console.log("analyze:", data);
+setReport(data?.data);
     } catch (e) {
       setError(e.message);
     } finally {
