@@ -23,6 +23,7 @@ const links = [
   { screen: "DoctorConsultation", label: t("header.consultation"), icon: "medkit-outline" },
   { screen: "MySchedules", label: t("header.schedules"), icon: "calendar-outline" },
   { screen: "Receipts", label: t("header.receipts"), icon: "receipt-outline" },
+  { screen: "LabAnalysesHistory", label: t("header.labAnalyses"), icon: "flask-outline" },
 ];
 
   const go = (screen) => {
