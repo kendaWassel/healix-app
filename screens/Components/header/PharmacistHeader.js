@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { performLogout } from "../../../utils/logOut";  
+import NotificationBell from "../notifications/NotificationBell"; 
 
 const PharmacistHeader = () => {
   const navigation = useNavigation();
@@ -55,7 +56,8 @@ const [loggingOut, setLoggingOut] = useState(false);
         </TouchableOpacity>
 
         <LanguageSwitcher />
-
+         <NotificationBell /> 
+         
         <View style={styles.badge}>
           <Ionicons name="medical" size={22} color="#39CCCC" />
           <Text style={styles.badgeText}>{t("header.pharmacist")}</Text>

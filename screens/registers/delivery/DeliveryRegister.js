@@ -7,8 +7,8 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { useNavigation } from "@react-navigation/native";
+import { apiFetch } from "../../../utils/apiClient";
 
-const API = "https://unjuicy-schizogenous-gibson.ngrok-free.dev";
 
 export default function DeliveryRegister() {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -55,9 +55,8 @@ export default function DeliveryRegister() {
       uri: photoFile.uri, name: "photo.jpg", type: "image/jpeg",
     });
     formData.append("category", "profile");
-    const res = await fetch(`${API}/api/uploads/image`, {
+    const res = await apiFetch(`/api/uploads/image`, {
       method: "POST",
-      headers: { "ngrok-skip-browser-warning": "true" },
       body: formData,
     });
     if (!res.ok) throw new Error("Image upload failed");
@@ -72,9 +71,8 @@ export default function DeliveryRegister() {
       type: licenseFile.mimeType || "application/pdf",
     });
     formData.append("category", "certificate");
-    const res = await fetch(`${API}/api/uploads`, {
+    const res = await apiFetch(`/api/uploads`, {
       method: "POST",
-      headers: { "ngrok-skip-browser-warning": "true" },
       body: formData,
     });
     if (!res.ok) throw new Error("File upload failed");
@@ -102,12 +100,8 @@ export default function DeliveryRegister() {
         driving_license_id: fileId,
       };
 
-      const res = await fetch(`${API}/api/auth/register`, {
+      const res = await apiFetch(`/api/auth/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
         body: JSON.stringify(user),
       });
 

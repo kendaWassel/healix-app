@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { performLogout } from "../../../utils/logOut";   
+import NotificationBell from "../notifications/NotificationBell"; 
 
 const DoctorHeader = () => {
   const navigation = useNavigation();
@@ -53,6 +54,7 @@ const handleLogout = async () => {
         </TouchableOpacity>
 
         <LanguageSwitcher />
+        <NotificationBell /> 
 
         <View style={styles.badge}>
           <Ionicons name="medkit" size={22} color="#39CCCC" />

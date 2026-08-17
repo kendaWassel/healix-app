@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { View, Text,Image, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../common/LanguageSwitcher";
@@ -10,11 +10,14 @@ const LandingHeader = () => {
   return (
     <View style={styles.nav}>
       {/* Logo */}
-      <TouchableOpacity onPress={() => navigation.navigate("Landing")}>
-        <Text style={styles.logo}>
-          Heal<Text style={{ color: "#39CCCC" }}>ix</Text>
-        </Text>
-      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("DoctorHome")}>
+                  <Image
+                    source={require("../../../assets/Logo-dark.png")}
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+     
 
       {/* الأزرار */}
       <View style={styles.buttons}>
@@ -27,12 +30,7 @@ const LandingHeader = () => {
           <Text style={styles.signInText}>{t("landingHeader.signIn")}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.signUpBtn}
-          onPress={() => navigation.navigate("Register")}
-        >
-          <Text style={styles.signUpText}>{t("landingHeader.signUp")}</Text>
-        </TouchableOpacity>
+   
       </View>
     </View>
   );
@@ -52,9 +50,14 @@ const styles = StyleSheet.create({
     borderBottomColor: "#e0e0e0",
     backgroundColor: "#fff",
   },
-  logo: { fontSize: 26, fontWeight: "bold", color: "#052443" },
-  logoImg: { width: 110, height: 36 },
-  buttons: { flexDirection: "row", alignItems: "center", gap: 6 },
+  logo: { width: 90, height: 32 },
+  rightSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+ 
+  buttons: { flexDirection: "row", alignItems: "center", gap: 10 },
   signInBtn: {
     backgroundColor: "#052443",
     borderWidth: 2,
@@ -64,12 +67,5 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
   },
   signInText: { color: "#fff", fontWeight: "600", fontSize: 14 },
-  signUpBtn: {
-    borderWidth: 2,
-    borderColor: "#052443",
-    borderRadius: 25,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-  },
-  signUpText: { color: "#052443", fontWeight: "600", fontSize: 14 },
+
 });

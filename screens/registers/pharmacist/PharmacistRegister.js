@@ -8,8 +8,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import * as DocumentPicker from "expo-document-picker";
 import { useNavigation } from "@react-navigation/native";
 import MapPicker from "../patient/MapPicker";
+import { apiFetch } from "../../../utils/apiClient";
 
-const API = "https://unjuicy-schizogenous-gibson.ngrok-free.dev";
 
 export default function PharmacistRegister() {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -54,9 +54,8 @@ export default function PharmacistRegister() {
       type: certificateFile.mimeType || "application/pdf",
     });
     formData.append("category", "certificate");
-    const res = await fetch(`${API}/api/uploads`, {
+    const res = await apiFetch(`/api/uploads`, {
       method: "POST",
-      headers: { "ngrok-skip-browser-warning": "true" },
       body: formData,
     });
     if (!res.ok) throw new Error("File upload failed");
@@ -94,12 +93,8 @@ export default function PharmacistRegister() {
         longitude,
       };
 
-      const res = await fetch(`${API}/api/auth/register`, {
+      const res = await apiFetch(`/api/auth/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
         body: JSON.stringify(user),
       });
 

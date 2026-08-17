@@ -11,8 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-
-const API_BASE = "https://unjuicy-schizogenous-gibson.ngrok-free.dev";
+import { apiFetch } from "../../utils/apiClient";
 
 export default function ForgotPasswordModal({ isOpen, onClose }) {
   const { t, i18n } = useTranslation();
@@ -39,12 +38,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
     }
   }, [isOpen]);
 
-  const commonHeaders = {
-    "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": "true",
-    "Accept-Language": i18n.language,
-  };
-
 
   const handleSendCode = async () => {
     if (!email.trim()) {
@@ -55,9 +48,8 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+      const response = await apiFetch(`/api/auth/forgot-password`, {
         method: "POST",
-        headers: commonHeaders,
         body: JSON.stringify({ email }),
       });
 
@@ -84,9 +76,8 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/verify-reset-otp`, {
+      const response = await apiFetch(`/api/auth/verify-reset-otp`, {
         method: "POST",
-        headers: commonHeaders,
         body: JSON.stringify({ email, otp }),
       });
 
@@ -117,9 +108,8 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/reset-password`, {
+      const response = await apiFetch(`/api/auth/reset-password`, {
         method: "POST",
-        headers: commonHeaders,
         body: JSON.stringify({
           email,
           reset_token: resetToken,

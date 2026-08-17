@@ -7,34 +7,46 @@ import {
   FlatList,
   ActivityIndicator,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import { apiFetch } from "../../utils/apiClient";
+import { apiFetch } from "../../../utils/apiClient";
 
 export default function NotificationBell() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
   const [unreadCount, setUnreadCount] = useState(0);
   const [showList, setShowList] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Fetch unread notifications count
   const fetchUnreadCount = useCallback(async () => {
     try {
-      const res = await apiFetch("/api/notifications/unread-count");
-      const data = await res.json();
-      if (res.ok) setUnreadCount(data.unread_count || 0);
+      const res = await apiFetch("/api/notifications");
+      const result = await res.json();
+
+      if (res.ok) {
+        setUnreadCount(result.unread_count || 0);
+      }
     } catch (err) {
       console.error("Failed to fetch unread count:", err);
     }
   }, []);
 
+  // Fetch all notifications
   const fetchNotifications = async () => {
     setLoading(true);
+
     try {
       const res = await apiFetch("/api/notifications");
-      const data = await res.json();
-      if (res.ok) setNotifications(data.data?.data || []);
+      const result = await res.json();
+
+      if (res.ok) {
+        setNotifications(result.data || []);
+        setUnreadCount(result.unread_count || 0);
+      }
     } catch (err) {
       console.error("Failed to fetch notifications:", err);
     } finally {
@@ -42,46 +54,114 @@ export default function NotificationBell() {
     }
   };
 
-  // Poll unread count periodically so the badge stays current without
-  // requiring the user to open the list — real-time push is out of scope
-  // for this in-app-only notification center.
+  // Fetch unread count on mount and every 30 seconds
   useEffect(() => {
     fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30000); // كل 30 ثانية
+
+    const interval = setInterval(() => {
+      fetchUnreadCount();
+    }, 30000);
+
     return () => clearInterval(interval);
   }, [fetchUnreadCount]);
 
+  // Open notification list
   const openList = async () => {
     setShowList(true);
     await fetchNotifications();
   };
 
+  // Mark single notification as read
   const markAsRead = async (id) => {
     try {
-      await apiFetch(`/api/notifications/${id}/read`, { method: "POST" });
+      const res = await apiFetch(`/api/notifications/${id}/read`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to mark notification as read");
+      }
+
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
+        prev.map((notification) =>
+          notification.id === id
+            ? {
+                ...notification,
+                read_at: new Date().toISOString(),
+              }
+            : notification
+        )
       );
-      fetchUnreadCount();
+
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
       console.error("Failed to mark as read:", err);
     }
   };
 
+  // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
-      await apiFetch("/api/notifications/read-all", { method: "POST" });
-      setNotifications((prev) => prev.map((n) => ({ ...n, read_at: new Date().toISOString() })));
+      const res = await apiFetch("/api/notifications/read-all", {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to mark all notifications as read");
+      }
+
+      setNotifications((prev) =>
+        prev.map((notification) => ({
+          ...notification,
+          read_at: new Date().toISOString(),
+        }))
+      );
+
       setUnreadCount(0);
     } catch (err) {
       console.error("Failed to mark all as read:", err);
     }
   };
 
+  // Get notification title according to current language
+  const getNotificationTitle = (notification) => {
+    if (i18n.language === "ar") {
+      return (
+        notification.data?.title_ar ??
+        notification.data?.title ??
+        ""
+      );
+    }
+
+    return notification.data?.title ?? "";
+  };
+
+  const getNotificationMessage = (notification) => {
+    if (i18n.language === "ar") {
+      return (
+        notification.data?.message_ar ??
+        notification.data?.message ??
+        ""
+      );
+    }
+
+    return notification.data?.message ?? "";
+  };
+
   return (
     <>
-      <TouchableOpacity onPress={openList} style={styles.bellBtn}>
-        <Ionicons name="notifications-outline" size={24} color="#052443" />
+      {/* Notification Bell */}
+      <TouchableOpacity
+        onPress={openList}
+        style={styles.bellBtn}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="notifications-outline"
+          size={24}
+          color="#052443"
+        />
+
         {unreadCount > 0 && (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>
@@ -91,52 +171,103 @@ export default function NotificationBell() {
         )}
       </TouchableOpacity>
 
+      {/* Notifications Modal */}
       <Modal
         visible={showList}
         transparent
-        animationType="slide"
+        animationType="fade"
         onRequestClose={() => setShowList(false)}
       >
         <View style={styles.overlay}>
           <View style={styles.sheet}>
+            {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.title}>{t("notifications.title")}</Text>
-              <TouchableOpacity onPress={() => setShowList(false)}>
-                <Ionicons name="close" size={24} color="#666" />
+              <Text style={styles.title}>
+                {t("notifications.title")}
+              </Text>
+
+              <TouchableOpacity
+                onPress={() => setShowList(false)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name="close"
+                  size={24}
+                  color="#666"
+                />
               </TouchableOpacity>
             </View>
 
-            {notifications.length > 0 && (
-              <TouchableOpacity onPress={markAllAsRead} style={styles.markAllBtn}>
+            {/* Mark All As Read */}
+            {notifications.length > 0 && unreadCount > 0 && (
+              <TouchableOpacity
+                onPress={markAllAsRead}
+                style={styles.markAllBtn}
+                activeOpacity={0.7}
+              >
                 <Text style={styles.markAllText}>
                   {t("notifications.markAllRead")}
                 </Text>
               </TouchableOpacity>
             )}
 
+            {/* Loading */}
             {loading ? (
-              <ActivityIndicator size="large" color="#39CCCC" style={{ marginTop: 30 }} />
+              <ActivityIndicator
+                size="large"
+                color="#39CCCC"
+                style={styles.loading}
+              />
             ) : notifications.length === 0 ? (
-              <Text style={styles.emptyText}>{t("notifications.empty")}</Text>
+              /* Empty */
+              <Text style={styles.emptyText}>
+                {t("notifications.empty")}
+              </Text>
             ) : (
+              /* Notifications List */
               <FlatList
                 data={notifications}
                 keyExtractor={(item) => String(item.id)}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.listContent}
                 renderItem={({ item }) => (
                   <TouchableOpacity
-                    onPress={() => !item.read_at && markAsRead(item.id)}
+                    onPress={() =>
+                      !item.read_at && markAsRead(item.id)
+                    }
+                    activeOpacity={0.7}
                     style={[
                       styles.notifCard,
-                      !item.read_at && styles.notifCardUnread,
+                      !item.read_at &&
+                        styles.notifCardUnread,
                     ]}
                   >
                     <View style={styles.notifRow}>
-                      {!item.read_at && <View style={styles.dot} />}
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.notifTitle}>{item.title}</Text>
-                        <Text style={styles.notifBody}>{item.body}</Text>
+                      {/* Unread Dot */}
+                      {!item.read_at && (
+                        <View style={styles.dot} />
+                      )}
+
+                      <View style={styles.notifContent}>
+                        {/* Notification Title */}
+                        <Text style={styles.notifTitle}>
+                          {getNotificationTitle(item)}
+                        </Text>
+
+                        {/* Notification Message */}
+                        <Text style={styles.notifBody}>
+                          {getNotificationMessage(item)}
+                        </Text>
+
+                        {/* Notification Time */}
                         <Text style={styles.notifTime}>
-                          {new Date(item.created_at).toLocaleString()}
+                          {new Date(
+                            item.created_at
+                          ).toLocaleString(
+                            i18n.language === "ar"
+                              ? "ar"
+                              : "en"
+                          )}
                         </Text>
                       </View>
                     </View>
@@ -152,10 +283,13 @@ export default function NotificationBell() {
 }
 
 const styles = StyleSheet.create({
+  // Notification bell
   bellBtn: {
     padding: 8,
     position: "relative",
   },
+
+  // Unread badge
   badge: {
     position: "absolute",
     top: 2,
@@ -168,23 +302,32 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 3,
   },
+
   badgeText: {
     color: "#fff",
     fontSize: 10,
     fontWeight: "700",
   },
+
+  // Dark overlay
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.75)",
+    justifyContent: "flex-start",
+    paddingTop: Platform.OS === "ios" ? 100 : 80,
   },
+
+  // Notification window
   sheet: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: "80%",
-    paddingBottom: 20,
+    borderRadius: 16,
+    marginHorizontal: 16,
+    maxHeight: "70%",
+    paddingBottom: 12,
+    overflow: "hidden",
   },
+
+  // Header
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -193,58 +336,97 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
+
   title: {
     fontSize: 18,
     fontWeight: "700",
     color: "#052443",
   },
+
+  // Mark all button
   markAllBtn: {
     alignSelf: "flex-end",
     paddingHorizontal: 18,
     paddingTop: 10,
+    paddingBottom: 6,
   },
+
   markAllText: {
     color: "#39CCCC",
     fontWeight: "600",
     fontSize: 13,
   },
+
+  // Loading
+  loading: {
+    marginTop: 30,
+    marginBottom: 30,
+  },
+
+  // Empty state
   emptyText: {
     textAlign: "center",
     color: "#9ca3af",
     marginTop: 40,
     marginBottom: 40,
+    fontSize: 14,
   },
+
+  // List
+  listContent: {
+    paddingBottom: 8,
+  },
+
+  // Notification card
   notifCard: {
     paddingHorizontal: 18,
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: "#f3f4f6",
   },
+
+  // Unread notification
   notifCardUnread: {
     backgroundColor: "#f0fdff",
   },
+
+  // Notification row
   notifRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 8,
   },
+
+  // Unread dot
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: "#39CCCC",
     marginTop: 6,
+    marginRight: 8,
   },
+
+  // Notification content
+  notifContent: {
+    flex: 1,
+  },
+
+  // Notification title
   notifTitle: {
     fontWeight: "700",
     color: "#111827",
     fontSize: 14,
   },
+
+  // Notification body
   notifBody: {
     color: "#4b5563",
     fontSize: 13,
     marginTop: 2,
+    lineHeight: 19,
   },
+
+  // Notification time
   notifTime: {
     color: "#9ca3af",
     fontSize: 11,
