@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import Modal from "./Modal";
+import { apiFetch } from "../../../utils/apiClient";
 
 const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
   const { t } = useTranslation();
@@ -33,20 +34,12 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
     if (!open) return;
 
     const fetchPharmacies = async (page = 1) => {
-      const token = await AsyncStorage.getItem("token");
+ 
       try {
         setLoading(true);
 
-        const response = await fetch(
-          `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/pharmacies`,
-          {
-            headers: {
-              Accept: "application/json",
-              "ngrok-skip-browser-warning": "true",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await apiFetch(
+          `/api/pharmacist/pharmacies`);
 
         const data = await response.json();
         console.log("pharmacies: ", data);
@@ -87,17 +80,11 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
     setLoadingSend(true);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/prescriptions/${prescription_id}/send`,
+
+      const response = await apiFetch(
+        `/api/patient/prescriptions/${prescription_id}/send`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
           body: JSON.stringify({
             pharmacy_id: selectedPharmacy,
           }),

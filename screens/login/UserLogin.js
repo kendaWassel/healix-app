@@ -1,13 +1,14 @@
 import { useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView,
+  ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import ForgotPasswordModal from "./ForgetPasswordModal";
+import { apiFetch } from "../../utils/apiClient";
 
 export default function UserLogin() {
   const { t } = useTranslation();
@@ -17,8 +18,7 @@ export default function UserLogin() {
   const [successMsg, setSuccessMsg] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showForgotPassword, setShowForgotPassword] = useState(false);  
-
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigation = useNavigation();
 
   const handleSubmit = async () => {
@@ -26,27 +26,35 @@ export default function UserLogin() {
     setSuccessMsg(null);
     setIsLoading(true);
     try {
-      const response = await fetch(
-        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/auth/login",
+      const response = await apiFetch(
+        "/api/auth/login",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-          },
           body: JSON.stringify({ email, password }),
         }
       );
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || t("userLogin.loginFailed"));
 
+   
+      if (data.role === "admin") {
+        setIsLoading(false);
+        Alert.alert(
+          t("userLogin.adminNotSupportedTitle"),
+          t("userLogin.adminNotSupportedMessage")
+        );
+        return;
+      }
+
       setSuccessMsg(t("userLogin.loginSuccess"));
       await AsyncStorage.setItem("token", data.token);
-
       if (data.email_verified) {
         const routes = {
-          patient: "Patient", doctor: "Doctor", pharmacist: "Pharmacist",
-          nurse: "Nurse", physiotherapist: "Physio",
+          patient: "Patient",
+          doctor: "Doctor",
+          pharmacist: "Pharmacist",
+          nurse: "Nurse",
+          physiotherapist: "Physio",
         };
         navigation.navigate(routes[data.role] || "Delivery");
       }
@@ -65,23 +73,19 @@ export default function UserLogin() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView contentContainerStyle={styles.scroll}>
-        {/* الشعار في الأعلى بخلفية زرقاء */}
         <View style={styles.header}>
           <Text style={{ color: "#fff", fontSize: 36, fontWeight: "bold" }}>
             Heal<Text style={{ color: "#39CCCC" }}>ix</Text>
           </Text>
         </View>
-
         <View style={styles.form}>
           <Text style={styles.title}>
             {t("userLogin.title")} <Text style={styles.titleCyan}>{t("userLogin.titleCyan")}</Text>
           </Text>
           <Text style={styles.subtitle}>{t("userLogin.subtitle")}</Text>
-
           {error && <Text style={styles.error}>{error}{t("userLogin.tryAgain")}</Text>}
           {successMsg && <Text style={styles.success}>{successMsg}</Text>}
 
-          {/* الإيميل */}
           <View style={styles.inputGroup}>
             <Ionicons name="mail" size={22} color="#39CCCC" />
             <TextInput
@@ -94,7 +98,7 @@ export default function UserLogin() {
               editable={!isLoading}
             />
           </View>
-          {/* كلمة المرور */}
+
           <View style={styles.inputGroup}>
             <Ionicons name="lock-closed" size={22} color="#39CCCC" />
             <TextInput
@@ -121,7 +125,6 @@ export default function UserLogin() {
             <Text style={styles.forgotPasswordLink}>{t("forgotPassword.linkText")}</Text>
           </TouchableOpacity>
 
-          {/* زر الدخول */}
           <TouchableOpacity
             style={[styles.button, isDisabled && styles.buttonDisabled]}
             onPress={handleSubmit}
@@ -134,7 +137,6 @@ export default function UserLogin() {
             )}
           </TouchableOpacity>
 
-          {/* رابط التسجيل */}
           <View style={styles.registerRow}>
             <Text style={styles.registerText}>{t("userLogin.noAccount")}</Text>
             <TouchableOpacity onPress={() => navigation.navigate("Register")}>
@@ -144,7 +146,6 @@ export default function UserLogin() {
         </View>
       </ScrollView>
 
-   
       <ForgotPasswordModal
         isOpen={showForgotPassword}
         onClose={() => setShowForgotPassword(false)}

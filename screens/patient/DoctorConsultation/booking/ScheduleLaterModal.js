@@ -12,7 +12,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-import {BASE_URL,NGROK_HEADERS} from "../../../../constants/api"
+import { apiFetch } from "../../../../utils/apiClient";
 export default function ScheduleLaterModal({
   isOpen,
   onClose,
@@ -41,22 +41,17 @@ export default function ScheduleLaterModal({
     setError(null);
     setLoading(true);
 
-    const token = await AsyncStorage.getItem("token");
+ 
     const timeParts = time.split(":");
     const timeWithSeconds = timeParts.length === 2 ? `${time}:00` : time;
     const formattedDateTime = `${selectedDate}T${timeWithSeconds}`;
     console.log("date: ", formattedDateTime);
 
     try {
-      const response = await fetch(
-        `${BASE_URL}/patient/consultations/book`,
+      const response = await apiFetch(
+        `/api/patient/consultations/book`,
         {
           method: "POST",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
           body: JSON.stringify({
             doctor_id: doctorId,
             scheduled_at: formattedDateTime,
@@ -97,37 +92,31 @@ export default function ScheduleLaterModal({
       return;
     }
 
-    const fetchSlots = async () => {
-      const token = await AsyncStorage.getItem("token");
-      setLoading(true);
-      setError(null);
-      try {
-        const url = `${BASE_URL}/patient/doctors/${doctorId}/available-slots?date=${selectedDate}`;
-        const res = await fetch(url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) {
-          const e = await res.json().catch(() => ({}));
-          throw new Error(e.message || t("scheduleLater.loadSlotsFailed"));
-        }
-        const data = await res.json();
-        console.log("slots: ", data);
-        const list = data.available_slots;
-        const normalized = Array.isArray(list) ? list : [];
-        setTimes(normalized);
-        setDoctor(data.doctor_id);
-      } catch (e) {
-        setError(e.message || t("scheduleLater.loadSlotsFailed"));
-      } finally {
-        setLoading(false);
-      }
-    };
+const fetchSlots = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const res = await apiFetch(
+      `/api/patient/doctors/${doctorId}/available-slots?date=${selectedDate}`
+    );
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.message || t("scheduleLater.loadSlotsFailed"));
+    }
+    const data = await res.json();
+    console.log("slots: ", data);
+    const list = data.available_slots;
+    const normalized = Array.isArray(list) ? list : [];
+    setTimes(normalized);
+    setDoctor(data.doctor_id);
+  } catch (e) {
+    setError(e.message || t("scheduleLater.loadSlotsFailed"));
+  } finally {
+    setLoading(false);
+  }
+};
 
+fetchSlots();
     fetchSlots();
   }, [isOpen, selectedDate, doctorId]);
 

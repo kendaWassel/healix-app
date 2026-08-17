@@ -11,6 +11,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import Modal from "./Modal";
+import { apiFetch } from "../../../utils/apiClient";
 
 const ReceiptDetails = ({ open, onClose, prescription_id }) => {
   const { t } = useTranslation();
@@ -26,19 +27,10 @@ const ReceiptDetails = ({ open, onClose, prescription_id }) => {
         setLoading(true);
         setError(null);
 
-        const token = await AsyncStorage.getItem("token");
 
-        const response = await fetch(
-          `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/patient/prescriptions/${prescription_id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "ngrok-skip-browser-warning": "true",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+
+        const response = await apiFetch(
+          `/api/patient/prescriptions/${prescription_id}`);
 
         const data = await response.json();
         console.log("receipt details: ", data);

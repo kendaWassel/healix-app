@@ -14,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import PharmacistHeader from "../../Components/header/PharmacistHeader";
 import Footer from "../../Components/footer/Footer";
-
+import { apiFetch } from "../../../utils/apiClient";
 export default function MyOrders() {
   const { t } = useTranslation();
   const [orders, setOrders] = useState([]);
@@ -47,17 +47,9 @@ export default function MyOrders() {
     setError(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/my-orders?page=${pageNumber}&per_page=3`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
+   
+      const response = await apiFetch(
+        `/api/pharmacist/my-orders?page=${pageNumber}&per_page=3`);
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
@@ -83,17 +75,9 @@ export default function MyOrders() {
     setDeliveryError(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/orders/track?page=${deliveryPage}&per_page=3`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
+   
+      const response = await apiFetch(
+        `/api/pharmacist/orders/track?page=${deliveryPage}&per_page=3`);
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
@@ -118,17 +102,9 @@ export default function MyOrders() {
     setPastError(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/orders/history?page=${pastPage}&per_page=3`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
+
+      const response = await apiFetch(
+        `/api/pharmacist/orders/history?page=${pastPage}&per_page=3`);
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
@@ -164,15 +140,10 @@ export default function MyOrders() {
       setLoadingId(order_id);
       const token = await AsyncStorage.getItem("token");
 
-      const response = await fetch(
-        `https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/orders/${order_id}/ready`,
+      const response = await apiFetch(
+        `/api/pharmacist/orders/${order_id}/ready`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-          },
         }
       );
       const result = await response.json();
