@@ -353,41 +353,37 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
 
   const toggleListening = () => (isListening ? stopRecording() : startRecording());
 
-  const playRecording = async (uri) => {
-    try {
-      if (soundRef.current) {
-        await soundRef.current.unloadAsync();
-        soundRef.current = null;
-      }
-      await Audio.setAudioModeAsync({
-  allowsRecordingIOS: false,
-  playsInSilentModeIOS: true,
-  staysActiveInBackground: false,
-  shouldDuckAndroid: false,
-  playThroughEarpieceAndroid: false,
-});
-  const { sound } = await Audio.Sound.createAsync(
-  { uri: dataUri },
-  { shouldPlay: true, volume: 1.0 }
-);
- soundRef.current = sound;
-
-sound.setOnPlaybackStatusUpdate((status) => {
-  if (status.didJustFinish) {
-    sound.unloadAsync();
-    if (soundRef.current === sound) {
+const playRecording = async (uri) => {
+  try {
+    if (soundRef.current) {
+      await soundRef.current.unloadAsync();
       soundRef.current = null;
     }
-    setSpeakingMessageIndex(null);
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: false,
+      shouldDuckAndroid: false,
+      playThroughEarpieceAndroid: false,
+    });
+    const { sound } = await Audio.Sound.createAsync(
+      { uri },  
+      { shouldPlay: true, volume: 1.0 }
+    );
+    soundRef.current = sound;
+    sound.setOnPlaybackStatusUpdate((status) => {
+      if (status.didJustFinish) {
+        sound.unloadAsync();
+        if (soundRef.current === sound) {
+          soundRef.current = null;
+        }
+      }
+    });
+    await sound.playAsync();
+  } catch (err) {
+    console.error("Failed to play recording:", err);
   }
-});
-
-await sound.playAsync();
-    } catch (err) {
-      console.error("Failed to play recording:", err);
-    }
-  };
-
+};
   /* ------------------------------------------------------------------
    * Text
    * ------------------------------------------------------------------ */
@@ -405,7 +401,6 @@ const synthesizeAndPlay = async (text, messageIndex) => {
   if (!text) return;
   setSpeakingMessageIndex(messageIndex);
   try {
-    // Stop any currently playing sound first
     if (soundRef.current) {
       await soundRef.current.unloadAsync();
       soundRef.current = null;
@@ -420,12 +415,10 @@ const synthesizeAndPlay = async (text, messageIndex) => {
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       console.error("Synthesize failed:", data.message);
+      setSpeakingMessageIndex(null);
       return;
     }
 
-    // The backend returns raw audio bytes (audio/mpeg), not JSON, so we
-    // read it as a blob and hand it to expo-av via a data URI — there's no
-    // separate file to download and reference by path like with recordings.
     const blob = await response.blob();
     const reader = new FileReader();
     const dataUri = await new Promise((resolve, reject) => {
@@ -434,7 +427,18 @@ const synthesizeAndPlay = async (text, messageIndex) => {
       reader.readAsDataURL(blob);
     });
 
-    const { sound } = await Audio.Sound.createAsync({ uri: dataUri });
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: false,
+      shouldDuckAndroid: false,
+      playThroughEarpieceAndroid: false,
+    });
+
+    const { sound } = await Audio.Sound.createAsync(
+      { uri: dataUri },
+      { shouldPlay: true, volume: 1.0 }
+    );
     soundRef.current = sound;
     sound.setOnPlaybackStatusUpdate((status) => {
       if (status.didJustFinish) {
