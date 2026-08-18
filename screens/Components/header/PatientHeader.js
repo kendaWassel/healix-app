@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import {
-  View, Text, TouchableOpacity, StyleSheet, Platform, Modal, Pressable,ActivityIndicator
+  View, Text, TouchableOpacity, StyleSheet,Image, Platform, Modal, Pressable,ActivityIndicator
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { performLogout } from "../../../utils/logOut";
+import NotificationBell from "../notifications/NotificationBell"; 
 
 const PatientHeader = () => {
   const navigation = useNavigation();
@@ -39,11 +40,13 @@ const handleLogout = async () => {
 
   return (
     <View style={styles.nav}>
-      <TouchableOpacity onPress={() => navigation.navigate("PatientHome")}>
-        <Text style={styles.logo}>
-          Heal<Text style={{ color: "#39CCCC" }}>ix</Text>
-        </Text>
-      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("DoctorHome")}>
+             <Image
+               source={require("../../../assets/Logo-dark.png")}
+               style={styles.logo}
+               resizeMode="contain"
+             />
+           </TouchableOpacity>
 
       <View style={styles.rightSection}>
         <TouchableOpacity onPress={() => setMenuOpen(true)} style={styles.menuBtn}>
@@ -51,7 +54,8 @@ const handleLogout = async () => {
         </TouchableOpacity>
 
         <LanguageSwitcher />
-
+        <NotificationBell /> 
+        
         <View style={styles.badge}>
           <Ionicons name="person-circle" size={22} color="#39CCCC" />
           <Text style={styles.badgeText}>{t("header.patient")}</Text>
@@ -155,7 +159,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  logo: { fontSize: 22, fontWeight: "bold", color: "#052443" },
+  logo: { width: 90, height: 32 },
+  rightSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
   rightSection: { flexDirection: "row", alignItems: "center", gap: 10 },
   menuBtn: { padding: 4 },
   badge: { flexDirection: "row", alignItems: "center", gap: 4 },

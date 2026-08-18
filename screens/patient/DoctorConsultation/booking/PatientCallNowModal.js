@@ -3,14 +3,20 @@ import {
   View, Text, TouchableOpacity, Modal, Linking, AppState, StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import PatientEndCallModal from "./PatientEndCallModal";
 import RatingModal from "./RatingModal";
 import DoneModal from "./DoneModal";
 import PaymentScreen from "../../../Components/servicesCard/PaymentScreen";
-import {BASE_URL,NGROK_HEADERS} from '../../../../constants/api';
-export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfirm }) {
+import { apiFetch } from "../../../../utils/apiClient";
+
+export default function PatientCallNowModal({
+  isOpen,
+  onClose,
+  doctorId,
+  onConfirm,
+  onChooseAnotherDoctor,
+}) {
   const { t } = useTranslation();
   const [isCreatingConsultation, setIsCreatingConsultation] = useState(false);
   const [error, setError] = useState(null);
@@ -21,7 +27,6 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [showBookingDone, setShowBookingDone] = useState(false);
-
   const callWasOpenedRef = useRef(false);
   const appState = useRef(AppState.currentState);
 
@@ -39,36 +44,25 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
 
   useEffect(() => {
     if (!isOpen || !doctorId) return;
-
     const createConsultation = async () => {
       setIsCreatingConsultation(true);
       setError(null);
-
-      const token = await AsyncStorage.getItem("token");
-
       try {
-        const response = await fetch(
-          `${BASE_URL}/patient/consultations/book`,
+        const response = await apiFetch(
+          `/api/patient/consultations/book`,
           {
             method: "POST",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
             body: JSON.stringify({
               doctor_id: doctorId,
               call_type: "call_now",
             }),
           }
         );
-
         const data = await response.json();
         console.log("consultation data: ", data);
         if (!response.ok || data.status !== "success") {
           throw new Error(data.message || t("patientCallNow.consultationFailed"));
         }
-
         setConsultationId(data.data.consultation_id);
         setDoctorPhone(data.data.doctor_phone);
         setMessage(data.message || t("patientCallNow.callBackendSuccess"));
@@ -78,7 +72,6 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
         setIsCreatingConsultation(false);
       }
     };
-
     createConsultation();
   }, [isOpen, doctorId]);
 
@@ -95,24 +88,16 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
       }
       appState.current = nextState;
     });
-
     return () => subscription.remove();
   }, []);
 
   const triggerCallApi = async () => {
     if (!consultationId) return;
-
-    const token = await AsyncStorage.getItem("token");
     try {
-      await fetch(
-        `${BASE_URL}/consultations/${consultationId}/call`,
+      await apiFetch(
+        `/api/consultations/${consultationId}/call`,
         {
           method: "POST",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
         }
       );
     } catch (err) {
@@ -126,11 +111,8 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
       setError(t("patientCallNow.phoneMissing"));
       return;
     }
-
     triggerCallApi();
-
     const url = `tel:${phone}`;
-
     try {
       callWasOpenedRef.current = true;
       await Linking.openURL(url);
@@ -163,6 +145,15 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
     }, 300);
   };
 
+  // When the doctor is unavailable (or any other booking failure), the
+  // patient shouldn't be stuck staring at an error with no way forward —
+  // this closes the modal and hands control back to the parent screen so
+  // it can route to doctor selection.
+  const handleChooseAnotherDoctor = () => {
+    onClose();
+    if (onChooseAnotherDoctor) onChooseAnotherDoctor();
+  };
+
   return (
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
@@ -171,10 +162,28 @@ export default function PatientCallNowModal({ isOpen, onClose, doctorId, onConfi
 
           {error && (
             <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
+              <View style={styles.errorIconRow}>
+                <View style={styles.errorIconCircle}>
+                  <Ionicons name="alert-circle" size={22} color="#dc2626" />
+                </View>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+          
+              {onChooseAnotherDoctor && (
+                <TouchableOpacity
+                  onPress={handleChooseAnotherDoctor}
+                  style={styles.chooseAnotherBtn}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="people" size={18} color="#fff" />
+                  <Text style={styles.chooseAnotherBtnText}>
+                    {t("patientCallNow.chooseAnotherDoctor")}
+                  </Text>
+                  <Ionicons name="arrow-forward" size={16} color="#fff" />
+                </TouchableOpacity>
+              )}
             </View>
           )}
-
           <View style={styles.phoneBox}>
             <Text style={styles.phoneText}>{doctorPhone}</Text>
           </View>
@@ -283,19 +292,55 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
-  errorBox: {
-    width: "100%",
-    backgroundColor: "#fef2f2",
-    borderWidth: 1,
-    borderColor: "#fecaca",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  errorText: {
-    color: "#991b1b",
-    fontSize: 13,
-  },
+ errorBox: {
+  width: "100%",
+  backgroundColor: "#fef2f2",
+  borderWidth: 1.5,
+  borderColor: "#fecaca",
+  borderRadius: 14,
+  padding: 16,
+  marginBottom: 16,
+},
+errorText: {
+  flex: 1,
+  color: "#991b1b",
+  fontSize: 13,
+  fontWeight: "500",
+  lineHeight: 18,
+},
+chooseAnotherBtn: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 8,
+  backgroundColor: "#052443",
+  paddingVertical: 13,
+  borderRadius: 10,
+  shadowColor: "#052443",
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.25,
+  shadowRadius: 6,
+  elevation: 4,
+},
+chooseAnotherBtnText: {
+  color: "#fff",
+  fontSize: 14,
+  fontWeight: "700",
+},
+  errorIconRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 10,
+  marginBottom: 14,
+},
+errorIconCircle: {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  backgroundColor: "#fee2e2",
+  alignItems: "center",
+  justifyContent: "center",
+},
   phoneBox: {
     width: "100%",
     backgroundColor: "#e6f7f7",

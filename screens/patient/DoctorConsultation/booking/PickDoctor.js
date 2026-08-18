@@ -22,7 +22,7 @@ import ScheduleLaterModal from "../booking/ScheduleLaterModal";
 import PatientCallNowModal from "../booking/PatientCallNowModal";
 import LabTestOptionModal from "../booking/LabTestOptionModal";
 import LabUploadHandler from "../booking/LabUploadHandler";
-import {BASE_URL,NGROK_HEADERS} from "../../../../constants/api";
+import { apiFetch } from "../../../../utils/apiClient";
 const PickDoctor = () => {
   const route = useRoute();
   const navigation = useNavigation();
@@ -48,25 +48,23 @@ const PickDoctor = () => {
   const [openLabUpload, setOpenLabUpload] = useState(false);
   const [pendingBooking, setPendingBooking] = useState(null);
   const [processingLab, setProcessingLab] = useState(false);
-
+const resetBookingFlow = () => {
+  setOpenPickOption(false);
+  setOpenLabOption(false);
+  setOpenLabUpload(false);
+  setOpenScheduleLater(false);
+  setOpenCallNow(false);
+  setPendingBooking(null);
+};
   const fetchDoctors = async (page, perPage) => {
     setIsLoading(true);
     setError(null);
 
-    const token = await AsyncStorage.getItem("token");
+
 
     try {
-      const response = await fetch(
-        `${BASE_URL}/patient/doctors/by-specialization?specialization_id=${id}&page=${page}&per_page=${perPage}`,
-        {
-          method: "GET",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-        },
-      );
+      const response = await apiFetch(
+        `/api/patient/doctors/by-specialization?specialization_id=${id}&page=${page}&per_page=${perPage}`);
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
@@ -150,6 +148,8 @@ const PickDoctor = () => {
 
   const handleGoHome = () => {
     setOpenModalDone(false);
+      resetBookingFlow();   
+      setSelected(null);    
     navigation.navigate("PatientHome");
   };
 
@@ -299,8 +299,10 @@ const PickDoctor = () => {
         processing={processingLab}
         onClose={() => {
           setOpenLabOption(false);
+           setPendingBooking(null); 
         }}
         onChoose={(choice) => {
+            setOpenLabOption(false);
           if (choice === "yes") {
             setOpenLabOption(false);
 
@@ -365,14 +367,19 @@ const PickDoctor = () => {
         onHome={handleGoHome}
         message={t("pickDoctor.bookingDone")}
       />
-      <PatientCallNowModal
-        onClose={() => setOpenCallNow(false)}
-        isOpen={openCallNow}
-        doctorId={
-          selected !== null && doctors[selected] ? doctors[selected].id : null
-        }
-        onConfirm={() => {}}
-      />
+    <PatientCallNowModal
+  onClose={() => setOpenCallNow(false)}
+  isOpen={openCallNow}
+  doctorId={
+    selected !== null && doctors[selected] ? doctors[selected].id : null
+  }
+  onConfirm={() => {}}
+  onChooseAnotherDoctor={() => {
+      resetBookingFlow(); 
+    setOpenCallNow(false);
+    setSelected(null);  
+  }}
+/>
     </View>
   );
 };

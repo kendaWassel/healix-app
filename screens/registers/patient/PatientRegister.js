@@ -10,7 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import MedicalReportModal, { uploadImage, uploadFile } from "./MedicalReportModal";
 import MapPicker from "./MapPicker";
-
+import { apiFetch } from "../../../utils/apiClient";
 export default function PatientRegister() {
   const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
@@ -79,14 +79,10 @@ export default function PatientRegister() {
         },
       };
 
-      const res = await fetch(
-        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/auth/register",
+      const res = await apiFetch(
+        "/api/auth/register",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-          },
           body: JSON.stringify(user),
         }
       );

@@ -293,7 +293,8 @@
   "thankYouFeedback": "شكراً لملاحظاتك!",
   "phoneMissing": "رقم هاتف الطبيب مفقود.",
   "dialerUnavailable": "لا يمكن فتح لوحة الاتصال على هذا الجهاز.",
-  "consultationFailed": "فشل إنشاء الاستشارة"
+  "consultationFailed": "فشل إنشاء الاستشارة",
+  "chooseAnotherDoctor": "اختيار طبيب آخر"
 },
 "patientEndCall": {
   "title": "الاستشارة قيد التنفيذ",
@@ -761,7 +762,9 @@
   "loginSuccess": "تم تسجيل الدخول بنجاح!!",
   "loginFailed": "فشل تسجيل الدخول",
   "loginFailedRetry": "فشل تسجيل الدخول. حاول مرة أخرى.",
-  "tryAgain": "، حاول مرة أخرى"
+  "tryAgain": "، حاول مرة أخرى",
+  "adminNotSupportedTitle": "لوحة الإدارة",
+  "adminNotSupportedMessage": "يُرجى تسجيل الدخول كأدمن من لوحة التحكم عبر الموقع الإلكتروني على جهاز الكمبيوتر."
 }, 
 
 "faq": {

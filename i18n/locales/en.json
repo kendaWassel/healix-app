@@ -262,7 +262,8 @@
   "thankYouFeedback": "Thank you for your feedback!",
   "phoneMissing": "Doctor phone number missing.",
   "dialerUnavailable": "Cannot open phone dialer on this device.",
-  "consultationFailed": "Failed to create consultation"
+  "consultationFailed": "Failed to create consultation",
+  "chooseAnotherDoctor": "Choose another doctor"
 },
 "patientEndCall": {
   "title": "Consultation in Progress",
@@ -762,7 +763,9 @@
   "loginSuccess": "Logged in successfully!!",
   "loginFailed": "Login failed",
   "loginFailedRetry": "Failed to login. Please try again.",
-  "tryAgain": ", Try again"
+  "tryAgain": ", Try again",
+  "adminNotSupportedTitle": "Admin Dashboard",
+  "adminNotSupportedMessage": "Please sign in as an admin from the web dashboard on a computer."
 },
 
 "faq": {

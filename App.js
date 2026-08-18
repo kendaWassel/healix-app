@@ -19,6 +19,7 @@ import Delivery from "./screens/delivery/Delivery";
 import Nurse from "./screens/nurse/Nurse";
 import Physio from "./screens/physio/Physio";
 
+
 const Stack = createNativeStackNavigator();
 
 const STRIPE_PUBLISHABLE_KEY = "pk_test_51Sb7QiADj5gMi232iI6BqSWfA8HBIm1VFNrlZxAtk1U0gPLuZ7KxgQipkKw0Jv2QzcDq1Mjc4lISxsrjcYnY5GpH00wseIAv7q";
@@ -60,7 +61,7 @@ export default function App() {
         <Stack.Screen name="Delivery" component={Delivery} />
         <Stack.Screen name="Nurse" component={Nurse} />
         <Stack.Screen name="Physio" component={Physio} />
-
+ 
       </Stack.Navigator>
     </NavigationContainer>
     </StripeProvider>

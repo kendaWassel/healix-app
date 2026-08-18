@@ -9,8 +9,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { useNavigation } from "@react-navigation/native";
+import { apiFetch } from "../../../utils/apiClient";
 
-const API = "https://unjuicy-schizogenous-gibson.ngrok-free.dev";
 
 export default function DoctorRegister() {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -49,9 +49,7 @@ export default function DoctorRegister() {
     setSpecsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API}/api/specializations`, {
-        headers: { "ngrok-skip-browser-warning": "true" },
-      });
+      const res = await apiFetch(`/api/specializations`);
       const data = await res.json();
       if (!res.ok || data.status !== "success") {
         throw new Error(data.message || "Failed to get specializations");
@@ -89,9 +87,8 @@ export default function DoctorRegister() {
       uri: photoFile.uri, name: "photo.jpg", type: "image/jpeg",
     });
     formData.append("category", "profile");
-    const res = await fetch(`${API}/api/uploads/image`, {
+    const res = await apiFetch(`/api/uploads/image`, {
       method: "POST",
-      headers: { "ngrok-skip-browser-warning": "true" },
       body: formData,
     });
     if (!res.ok) throw new Error("Image upload failed");
@@ -106,9 +103,8 @@ export default function DoctorRegister() {
       type: certificateFile.mimeType || "application/pdf",
     });
     formData.append("category", "certificate");
-    const res = await fetch(`${API}/api/uploads`, {
+    const res = await apiFetch(`/api/uploads`, {
       method: "POST",
-      headers: { "ngrok-skip-browser-warning": "true" },
       body: formData,
     });
     if (!res.ok) throw new Error("File upload failed");
@@ -146,12 +142,8 @@ export default function DoctorRegister() {
         certificate_file_id: fileId,
       };
 
-      const res = await fetch(`${API}/api/auth/register`, {
+      const res = await apiFetch(`/api/auth/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
         body: JSON.stringify(user),
       });
       const data = await res.json();
