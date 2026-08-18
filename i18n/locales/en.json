@@ -626,7 +626,8 @@
   "loadFailed": "Failed to load schedules.",
   "detailsLoaded": "Details loaded successfully.",
   "loadDetailsFailed": "Failed to load Details",
-  "fetchDetailsFailed": "Failed to fetch patient details"
+  "fetchDetailsFailed": "Failed to fetch patient details",
+  "labAnalyses": "Lab Analyses"
 },
 "doctorCallNow": {
   "phoneMissing": "Patient phone number missing.",

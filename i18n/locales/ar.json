@@ -625,7 +625,9 @@
   "loadFailed": "فشل تحميل المواعيد.",
   "detailsLoaded": "تم تحميل التفاصيل بنجاح.",
   "loadDetailsFailed": "فشل تحميل التفاصيل",
-  "fetchDetailsFailed": "فشل جلب تفاصيل المريض"
+  "fetchDetailsFailed": "فشل جلب تفاصيل المريض",
+  "labAnalyses": "تحاليل المختبر"
+
 },
 "doctorCallNow": {
   "phoneMissing": "رقم هاتف المريض مفقود.",
