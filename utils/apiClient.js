@@ -5,8 +5,6 @@ const BASE_URL = "https://unjuicy-schizogenous-gibson.ngrok-free.dev";
 
 export async function apiFetch(endpoint, options = {}) {
   const token = await AsyncStorage.getItem("token");
-
-
   const isFormData = options.body instanceof FormData;
 
   const headers = {
@@ -18,10 +16,24 @@ export async function apiFetch(endpoint, options = {}) {
     ...options.headers,
   };
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  const { timeoutMs, ...restOptions } = options;
+  let signal = restOptions.signal;
+  let timer;
 
-  return response;
+  if (timeoutMs && !signal) {
+    const controller = new AbortController();
+    signal = controller.signal;
+    timer = setTimeout(() => controller.abort(), timeoutMs);
+  }
+
+  try {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      ...restOptions,
+      headers,
+      signal,
+    });
+    return response;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
