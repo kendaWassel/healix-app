@@ -2,13 +2,13 @@ import { useState } from "react";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { NGROK_HEADERS } from "../constants/api";
+import { BASE_URL, NGROK_HEADERS } from "../constants/api";
 
 export function usePdfDownload() {
   const [downloadingId, setDownloadingId] = useState(null);
   const [downloadError, setDownloadError] = useState(null);
 
-  const downloadPdf = async (pdfUrl, fileId, dialogTitle) => {
+  const downloadFromUrl = async (pdfUrl, fileId, dialogTitle) => {
     if (!pdfUrl) {
       setDownloadError("MISSING_URL");
       return;
@@ -64,5 +64,15 @@ export function usePdfDownload() {
     }
   };
 
-  return { downloadPdf, downloadingId, downloadError };
+  // patient-side: API response gives a full pdf_url
+  const downloadPdf = (pdfUrl, fileId, dialogTitle) =>
+    downloadFromUrl(pdfUrl, fileId, dialogTitle);
+
+  // doctor-side: build the URL from patient_id + analysis id
+  const downloadDoctorPdf = (patientId, analysisId, dialogTitle) => {
+    const url = `${BASE_URL}/patients/${patientId}/lab/analyses/${analysisId}/pdf`;
+    return downloadFromUrl(url, analysisId, dialogTitle);
+  };
+
+  return { downloadPdf, downloadDoctorPdf, downloadingId, downloadError };
 }

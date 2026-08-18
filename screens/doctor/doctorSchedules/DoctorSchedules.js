@@ -13,9 +13,11 @@ import DoctorHeader from "../../Components/header/DoctorHeader";
 import Footer from "../../Components/footer/Footer";
 import PatientDetailsModal from "./PatientDetailsModal";
 import DoctorCallNow from "../doctorCallNow/DoctorCallNow";
+import { useNavigation } from "@react-navigation/native";
 import { apiFetch } from "../../../utils/apiClient";
 
 export default function DoctorSchedules() {
+  const navigation = useNavigation();
   const { t } = useTranslation();
 
   const FILTERS = [
@@ -190,6 +192,30 @@ const fetchSchedules = async (page, perPage) => {
           </Text>
         </TouchableOpacity>
       </View>
+      <View style={{ flexDirection: "row", gap: 8 }}>
+    <TouchableOpacity
+      style={styles.detailsButton}
+      onPress={() =>
+        navigation.navigate("PatientLabAnalyses", {
+          patientId: item.patient_id,
+          patientName: item.patient_name,
+        })
+      }
+    >
+      <Text style={styles.detailsButtonText}>{t("doctorSchedules.labAnalyses")}</Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={styles.detailsButton}
+      disabled={isLoadingDetails}
+      onPress={() => handleViewDetails(item.patient_id, item.consultation_id)}
+    >
+      <Text style={styles.detailsButtonText}>
+        {selectedCardId === item.consultation_id
+          ? t("doctorSchedules.loading")
+          : t("doctorSchedules.viewDetails")}
+      </Text>
+    </TouchableOpacity>
+  </View>
     </View>
   );
 
