@@ -340,6 +340,7 @@ const resetBookingFlow = () => {
                     continueBooking();
                   }, 500);
                 }}
+                scheduling={true}
               />
             </View>
           </View>

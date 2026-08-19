@@ -45,19 +45,32 @@ export default function PatientLabAnalyses() {
 const fetchAnalyses = async (page = 1) => {
   setIsLoading(true);
   setError(null);
+  const token = await AsyncStorage.getItem("token");
+
   try {
-    const response = await apiFetch(
-      `/patients/${patientId}/lab/analyses?page=${page}&per_page=${pagination.perPage}`,
-      { method: "GET" }
+    const response = await fetch(
+      `${BASE_URL}/lab/analyses?page=${page}&per_page=${pagination.perPage}`,
+      {
+        method: "GET",
+        headers: {
+          ...NGROK_HEADERS,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
 
+    console.log("Lab analyses status:", response.status);
+
     if (!response.ok) {
-      const serverError = await response.json().catch(() => ({}));
+      const rawText = await response.text().catch(() => "");
+      console.log("Lab analyses error body:", rawText);
+      let serverError = {};
+      try { serverError = JSON.parse(rawText); } catch {}
       throw new Error(serverError.message || t("labHistory.loadFail"));
     }
 
     const data = await response.json();
-    console.log("Patient lab analyses fetched:", data);
+    console.log("Lab analyses fetched:", data);
 
     setAnalyses(Array.isArray(data.data) ? data.data : []);
     if (data.meta) {
@@ -69,7 +82,7 @@ const fetchAnalyses = async (page = 1) => {
       }));
     }
   } catch (err) {
-    console.error("Failed fetching patient lab analyses:", err);
+    console.error("Failed fetching lab analyses:", err);
     setError(err.message || t("labHistory.loadFail"));
   } finally {
     setIsLoading(false);
