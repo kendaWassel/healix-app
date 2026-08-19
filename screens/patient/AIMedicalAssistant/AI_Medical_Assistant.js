@@ -12,7 +12,6 @@ import { apiFetch } from "../../../utils/apiClient";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SIDEBAR_WIDTH = Math.min(300, SCREEN_WIDTH * 0.8);
 const AI_REQUEST_TIMEOUT_MS = 150000;
-const ALLOWED_AUDIO_EXT = ["m4a", "mp3", "wav", "ogg", "webm"];
 
 export default function AI_Medical_Assistant({ isOpen, onClose }) {
   const navigation = useNavigation();
@@ -192,9 +191,7 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
         setMessages((prev) => [...prev, { role: "bot", text: errorText, error: true }]);
         return;
       }
-      // available:false means Healix itself was down this round — every
-      // diagnostic field is a neutral default, not a real safety check, so
-      // this must be branched before touching is_crisis/severity at all.
+
       if (data.available === false) {
         setMessages((prev) => [
           ...prev,
@@ -237,17 +234,16 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
   /* ------------------------------------------------------------------
    * Voice — two-step flow per spec: transcribe audio to text, then send
    * that text through the same healix-messages pipeline as typed text.
-   * The local recording URI is kept and attached to the message so the
-   * patient can play back what they said, for as long as this screen
-   * session stays open.
    *
    * Recording options are set explicitly per platform rather than using
-   * Audio.RecordingOptionsPresets.HIGH_QUALITY. The preset's Android
-   * defaults can produce a file that "looks" fine locally but transcribes
-   * as empty on the backend (iOS worked fine with the same preset, so this
-   * was an Android-specific encoding/bitrate mismatch, not a permissions
-   * or recording-lifecycle bug). Explicit mono/AAC/44.1kHz settings match
-   * what the transcription backend expects on both platforms.
+   * Audio.RecordingOptionsPresets.HIGH_QUALITY, since the preset's Android
+   * output didn't transcribe reliably. Even so, the file's *actual*
+   * container/codec as reported by the OS (via blob.type) doesn't always
+   * match the ".m4a" extension we asked for — confirmed by device logs
+   * showing "audio/mpeg" despite an .m4a filename. Laravel's mimes
+   * validation checks real file content, not the name we send, so
+   * transcribeAudio reads the blob's real MIME type and names/labels the
+   * upload accordingly instead of trusting the URI extension.
    * ------------------------------------------------------------------ */
   const RECORDING_OPTIONS = {
     android: {
@@ -301,26 +297,36 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
     }
   };
 
-  const getAudioExtension = (uri) => {
-    const match = /\.([a-zA-Z0-9]+)(\?|$)/.exec(uri || "");
-    return match ? match[1].toLowerCase() : "m4a";
+  // Maps a blob's real MIME type (as reported by the OS) to the extension
+  // the backend expects. This is the source of truth — NOT the URI's
+  // filename extension, which can lie about the actual container/codec
+  // on some Android devices.
+  const MIME_TO_EXT = {
+    "audio/mp4": "m4a",
+    "audio/x-m4a": "m4a",
+    "audio/m4a": "m4a",
+    "audio/mpeg": "mp3",
+    "audio/mp3": "mp3",
+    "audio/wav": "wav",
+    "audio/x-wav": "wav",
+    "audio/wave": "wav",
+    "audio/ogg": "ogg",
+    "audio/webm": "webm",
   };
 
   const transcribeAudio = async (uri) => {
-    const ext = getAudioExtension(uri);
-    const mimeByExt = {
-      m4a: "audio/m4a",
-      mp3: "audio/mpeg",
-      wav: "audio/wav",
-      ogg: "audio/ogg",
-      webm: "audio/webm",
-    };
+    // Read the file's actual MIME type from the blob itself, instead of
+    // trusting the URI extension (see comment above RECORDING_OPTIONS).
+    const fileInfo = await fetch(uri);
+    const blob = await fileInfo.blob();
+    const actualMimeType = blob.type || "audio/mp4";
+    const actualExt = MIME_TO_EXT[actualMimeType] || "mp3";
 
     const formData = new FormData();
     formData.append("audio", {
       uri,
-      name: `recording.${ALLOWED_AUDIO_EXT.includes(ext) ? ext : "m4a"}`,
-      type: mimeByExt[ext] || "audio/m4a",
+      name: `recording.${actualExt}`,
+      type: actualMimeType,
     });
 
     const response = await apiFetch(
@@ -403,6 +409,9 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
     }
   };
 
+  /* ------------------------------------------------------------------
+   * Text
+   * ------------------------------------------------------------------ */
   const handleSend = async () => {
     const text = input.trim();
     if (!text || isTyping || !conversationId) return;
