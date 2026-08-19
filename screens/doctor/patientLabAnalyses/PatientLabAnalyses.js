@@ -10,7 +10,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
-
+import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import DoctorHeader from "../../Components/header/DoctorHeader";
 import Footer from "../../Components/footer/Footer";
 import { colors } from "../../../constants/colors";
@@ -43,13 +44,15 @@ export default function PatientLabAnalyses() {
   });
 
 const fetchAnalyses = async (page = 1) => {
+  console.log('called')
+  console.log('url:',`${BASE_URL}/patients/${patientId}/lab/analyses`);
   setIsLoading(true);
   setError(null);
   const token = await AsyncStorage.getItem("token");
-
+    
   try {
     const response = await fetch(
-      `${BASE_URL}/lab/analyses?page=${page}&per_page=${pagination.perPage}`,
+      `${BASE_URL}/patients/${patientId}/lab/analyses`,
       {
         method: "GET",
         headers: {
