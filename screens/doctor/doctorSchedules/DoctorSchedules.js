@@ -182,15 +182,6 @@ const fetchSchedules = async (page, perPage) => {
               : t("doctorSchedules.unknown")}
           </Text>
         </View>
-        <TouchableOpacity
-          style={styles.detailsButton}
-          disabled={isLoadingDetails}
-          onPress={() => handleViewDetails(item.patient_id, item.consultation_id)}
-        >
-          <Text style={styles.detailsButtonText}>
-            {selectedCardId === item.consultation_id ? t("doctorSchedules.loading") : t("doctorSchedules.viewDetails")}
-          </Text>
-        </TouchableOpacity>
       </View>
       <View style={{ flexDirection: "row", gap: 8 }}>
     <TouchableOpacity
