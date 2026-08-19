@@ -12,12 +12,14 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
+import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExistingConditions";
 
 export default function PatientDetailsModal({ details, onClose }) {
   const { t, i18n } = useTranslation();
   if (!details) return null;
 
   const chronicDiseases = details.medical_record?.chronic_diseases;
+  const preExistingConditions = details.medical_record?.pre_existing_conditions;
   const otherConditions = details.medical_record?.other_conditions;
   const previousSurgeries = details.medical_record?.previous_surgeries;
   const allergies = details.medical_record?.allergies;
@@ -63,6 +65,23 @@ export default function PatientDetailsModal({ details, onClose }) {
       );
     });
   };
+
+  const renderPreExistingConditions = (value) => {
+  if (!Array.isArray(value) || value.length === 0) {
+    return <Text style={styles.listItem}>• {t("patientDetailsModal.none")}</Text>;
+  }
+  return value.map((v, index) => {
+    const cond = PRE_EXISTING_CONDITIONS.find((c) => c.value === v);
+    const label = cond
+      ? (i18n.language?.startsWith("ar") ? cond.ar : cond.en)
+      : v;
+    return (
+      <Text key={index} style={styles.listItem}>
+        • {label}
+      </Text>
+    );
+  });
+};
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
@@ -111,6 +130,11 @@ export default function PatientDetailsModal({ details, onClose }) {
             <View style={styles.group}>
               <Text style={styles.label}>{t("patientDetailsModal.chronicDiseases")}</Text>
               {renderChronicConditions(chronicDiseases)}
+            </View>
+
+            <View style={styles.group}>
+              <Text style={styles.label}>{t("patientDetailsModal.preExistingConditions")}</Text>
+              {renderPreExistingConditions(preExistingConditions)}
             </View>
 
             {otherConditions ? (

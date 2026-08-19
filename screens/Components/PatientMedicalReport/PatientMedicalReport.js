@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import EditMedicalReportModal from "./EditMedicalReportModal";
 import { apiFetch } from "../../../utils/apiClient";
 import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
+import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExistingConditions";
 
 export default function PatientMedicalReport() {
   const { t, i18n } = useTranslation();
@@ -56,9 +57,6 @@ const fetchPatientGender = async () => {
     return <ActivityIndicator size="large" />;
   }
 
-  // Renders a list field (allergies, medications) as chips, handling both
-  // the new array format and — defensively — any leftover legacy string
-  // data, so old records don't break the screen.
   const renderChipList = (value) => {
     const list = Array.isArray(value)
       ? value
@@ -116,6 +114,27 @@ const fetchPatientGender = async () => {
           ) : (
             <Text style={styles.value}>{t("common.none")}</Text>
           )}
+
+          <Text style={styles.label}>
+  {t("patientMedicalReport.preExistingConditions")}
+</Text>
+{Array.isArray(report.pre_existing_conditions) && report.pre_existing_conditions.length > 0 ? (
+  <View style={styles.chipsRow}>
+    {report.pre_existing_conditions.map((value) => {
+      const cond = PRE_EXISTING_CONDITIONS.find((c) => c.value === value);
+      const label = cond
+        ? (i18n.language?.startsWith("ar") ? cond.ar : cond.en)
+        : value;
+      return (
+        <View key={value} style={styles.chip}>
+          <Text style={styles.chipText}>{label}</Text>
+        </View>
+      );
+    })}
+  </View>
+) : (
+  <Text style={styles.value}>{t("common.none")}</Text>
+)}
 
           {(patientGender === "female" || patientGender === "أنثى") && (
             <>
