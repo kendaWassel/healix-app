@@ -10,7 +10,10 @@ import { colors } from "../../../../constants/colors";
 import { useLabAnalysis } from "../../../Components/LabAnalysis/useLabAnalysis";
 import { usePdfDownload } from "../../../../utils/usePdfDownload";
 
-export default function LabUploadHandler({ onFinished }) {
+export default function LabUploadHandler({
+   onFinished,
+   scheduling=true
+   }) {
   const { file, setFile, report, analyze, loading ,error} = useLabAnalysis();
 console.log('report : ',report)
   const [started, setStarted] = useState(false);
@@ -56,11 +59,11 @@ const isDownloading = downloadingId === report?.id;
           {downloadError && (
             <Text style={styles.errorText}>{downloadError}</Text>
           )}
-
-
+{scheduling &&
           <TouchableOpacity style={styles.continueBtn} onPress={onFinished}>
             <Text style={styles.continueBtnText}>{t("common.continue")}</Text>
           </TouchableOpacity>
+}
         </View>
       )}
           <TouchableOpacity style={styles.cancelBtn} onPress={onFinished}>

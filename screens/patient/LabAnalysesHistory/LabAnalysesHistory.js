@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Linking,
+  Modal 
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -17,6 +18,7 @@ import Footer from "../../Components/footer/Footer";
 import { colors } from "../../../constants/colors";
 import { apiFetch } from "../../../utils/apiClient";
 import { usePdfDownload } from "../../../utils/usePdfDownload";
+import LabUploadHandler from "../DoctorConsultation/booking/LabUploadHandler";
 
 const severityColors = {
   normal: { bg: "#dcfce7", text: "#15803d" },
@@ -33,7 +35,8 @@ export default function LabAnalysesHistory() {
   const [analyses, setAnalyses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showDisclaimer, setShowDisclaimer] = useState(false); 
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false); 
   const [pagination, setPagination] = useState({
     currentPage: 1,
     lastPage: 1,
@@ -213,6 +216,15 @@ export default function LabAnalysesHistory() {
       <View style={styles.container}>
         <Text style={styles.title}>{t("labHistory.title")}</Text>
         <Text style={styles.subtitle}>{t("labHistory.subtitle")}</Text>
+        <View style={styles.headerActionsRow}>
+  <TouchableOpacity
+    style={styles.uploadBtn}
+    onPress={() => setShowUploadModal(true)}
+  >
+    <Ionicons name="cloud-upload-outline" size={18} color={colors.white} />
+    <Text style={styles.uploadBtnText}>{t("labHistory.uploadNewTest")}</Text>
+  </TouchableOpacity>
+</View>
 <View style={styles.disclaimerBox}>
   <View style={styles.disclaimerHeader}>
     <Ionicons name="warning-outline" size={20} color="#b45309" />
@@ -318,6 +330,24 @@ export default function LabAnalysesHistory() {
           </TouchableOpacity>
         </View>
       </View>
+      <Modal
+  visible={showUploadModal}
+  transparent
+  animationType="fade"
+  onRequestClose={() => setShowUploadModal(false)}
+>
+  <View style={styles.uploadModalOverlay}>
+    <View style={styles.uploadModalCard}>
+      <LabUploadHandler
+        onFinished={() => {
+          setShowUploadModal(false);
+          fetchAnalyses(1);
+        }}
+        scheduling={false}
+      />
+    </View>
+  </View>
+</Modal>
       <Footer />
     </View>
   );
@@ -333,7 +363,35 @@ disclaimerBox: {
   borderColor: "#fed7aa",
   borderRadius: 12,
 },
-
+headerActionsRow: {
+  marginBottom: 16,
+},
+uploadBtn: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 8,
+  alignSelf: "flex-start",
+  backgroundColor: colors.darkBlue,
+  paddingHorizontal: 18,
+  paddingVertical: 12,
+  borderRadius: 10,
+},
+uploadBtnText: { color: colors.white, fontWeight: "600" },
+uploadModalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(5,36,67,0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+uploadModalCard: {
+  backgroundColor: colors.white,
+  borderRadius: 16,
+  padding: 20,
+  width: "90%",
+  maxWidth: 420,
+  maxHeight: "85%",
+},
 disclaimerHeader: {
   flexDirection: "row",
   alignItems: "center",
