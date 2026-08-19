@@ -12,7 +12,6 @@ import { apiFetch } from "../../../utils/apiClient";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SIDEBAR_WIDTH = Math.min(300, SCREEN_WIDTH * 0.8);
 const AI_REQUEST_TIMEOUT_MS = 150000;
-
 const ALLOWED_AUDIO_EXT = ["m4a", "mp3", "wav", "ogg", "webm"];
 
 export default function AI_Medical_Assistant({ isOpen, onClose }) {
@@ -71,7 +70,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
       diagnosis: m.diagnosis || null,
       specialty: m.specialty || null,
       patientReport: m.reports?.patient || null,
-   
       audioUri: null,
     }));
 
@@ -154,7 +152,7 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
       setInput("");
       setIsFinished(false);
       setShowHistory(false);
-          setSpeakingMessageIndex(null);
+      setSpeakingMessageIndex(null);
       if (soundRef.current) {
         soundRef.current.unloadAsync().catch(() => {});
         soundRef.current = null;
@@ -178,10 +176,8 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
    * ------------------------------------------------------------------ */
   const sendToHealix = async (text, { isVoice = false, audioUri = null } = {}) => {
     if (!text || !conversationId) return;
-
     setMessages((prev) => [...prev, { role: "user", text, isVoice, audioUri }]);
     setIsTyping(true);
-
     try {
       const response = await apiFetch(
         `/api/patient/conversations/${conversationId}/healix-messages`,
@@ -196,7 +192,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
         setMessages((prev) => [...prev, { role: "bot", text: errorText, error: true }]);
         return;
       }
-
       // available:false means Healix itself was down this round — every
       // diagnostic field is a neutral default, not a real safety check, so
       // this must be branched before touching is_crisis/severity at all.
@@ -207,9 +202,7 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
         ]);
         return;
       }
-
       const isEmergency = data.is_crisis === true || data.severity === "emergency";
-
       setMessages((prev) => [
         ...prev,
         {
@@ -222,11 +215,9 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
           patientReport: data.reports?.patient || null,
         },
       ]);
-
       if (data.stage === "diagnosis" || isEmergency) {
         setIsFinished(true);
       }
-
       setConversations(await fetchConversations());
     } catch (err) {
       const timedOut = err?.name === "AbortError";
@@ -249,7 +240,37 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
    * The local recording URI is kept and attached to the message so the
    * patient can play back what they said, for as long as this screen
    * session stays open.
+   *
+   * Recording options are set explicitly per platform rather than using
+   * Audio.RecordingOptionsPresets.HIGH_QUALITY. The preset's Android
+   * defaults can produce a file that "looks" fine locally but transcribes
+   * as empty on the backend (iOS worked fine with the same preset, so this
+   * was an Android-specific encoding/bitrate mismatch, not a permissions
+   * or recording-lifecycle bug). Explicit mono/AAC/44.1kHz settings match
+   * what the transcription backend expects on both platforms.
    * ------------------------------------------------------------------ */
+  const RECORDING_OPTIONS = {
+    android: {
+      extension: ".m4a",
+      outputFormat: Audio.AndroidOutputFormat.MPEG_4,
+      audioEncoder: Audio.AndroidAudioEncoder.AAC,
+      sampleRate: 44100,
+      numberOfChannels: 1,
+      bitRate: 128000,
+    },
+    ios: {
+      extension: ".m4a",
+      outputFormat: Audio.IOSOutputFormat.MPEG4AAC,
+      audioQuality: Audio.IOSAudioQuality.HIGH,
+      sampleRate: 44100,
+      numberOfChannels: 1,
+      bitRate: 128000,
+      linearPCMBitDepth: 16,
+      linearPCMIsBigEndian: false,
+      linearPCMIsFloat: false,
+    },
+  };
+
   const startRecording = async () => {
     try {
       const permission = await Audio.requestPermissionsAsync();
@@ -258,9 +279,7 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
         return;
       }
       await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
+      const { recording } = await Audio.Recording.createAsync(RECORDING_OPTIONS);
       recordingRef.current = recording;
       setIsListening(true);
     } catch (err) {
@@ -315,78 +334,75 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
     return readResponse(response);
   };
 
- const sendVoiceMessage = async (uri) => {
-  if (!conversationId || !uri) return;
-  setIsTranscribing(true);
-  try {
-    const { ok, data, errorText } = await transcribeAudio(uri);
-    if (!ok) {
-      setMessages((prev) => [...prev, { role: "bot", text: errorText, error: true }]);
-      return;
-    }
-    const transcribedText = (data.text || "").trim();
-
-    if (!transcribedText || transcribedText.length < 2) {
+  const sendVoiceMessage = async (uri) => {
+    if (!conversationId || !uri) return;
+    setIsTranscribing(true);
+    try {
+      const { ok, data, errorText } = await transcribeAudio(uri);
+      if (!ok) {
+        setMessages((prev) => [...prev, { role: "bot", text: errorText, error: true }]);
+        return;
+      }
+      const transcribedText = (data.text || "").trim();
+      if (!transcribedText || transcribedText.length < 2) {
+        setMessages((prev) => [
+          ...prev,
+          { role: "bot", text: t("aiAssistant.noSpeechDetected"), error: true },
+        ]);
+        return;
+      }
+      setIsTranscribing(false);
+      await sendToHealix(transcribedText, { isVoice: true, audioUri: uri });
+    } catch (err) {
+      console.error("Voice message failed:", err);
+      const timedOut = err?.name === "AbortError";
       setMessages((prev) => [
         ...prev,
-        { role: "bot", text: t("aiAssistant.noSpeechDetected"), error: true },
+        {
+          role: "bot",
+          text: timedOut ? t("aiAssistant.requestTimedOut") : t("aiAssistant.connectionError"),
+          error: true,
+        },
       ]);
-      return;
+    } finally {
+      setIsTranscribing(false);
     }
-    setIsTranscribing(false);
-    await sendToHealix(transcribedText, { isVoice: true, audioUri: uri });
-  } catch (err) {
-    console.error("Voice message failed:", err);
-    const timedOut = err?.name === "AbortError";
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "bot",
-        text: timedOut ? t("aiAssistant.requestTimedOut") : t("aiAssistant.connectionError"),
-        error: true,
-      },
-    ]);
-  } finally {
-    setIsTranscribing(false);
-  }
-};
+  };
 
   const toggleListening = () => (isListening ? stopRecording() : startRecording());
 
-const playRecording = async (uri) => {
-  try {
-    if (soundRef.current) {
-      await soundRef.current.unloadAsync();
-      soundRef.current = null;
-    }
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: false,
-      shouldDuckAndroid: false,
-      playThroughEarpieceAndroid: false,
-    });
-    const { sound } = await Audio.Sound.createAsync(
-      { uri },  
-      { shouldPlay: true, volume: 1.0 }
-    );
-    soundRef.current = sound;
-    sound.setOnPlaybackStatusUpdate((status) => {
-      if (status.didJustFinish) {
-        sound.unloadAsync();
-        if (soundRef.current === sound) {
-          soundRef.current = null;
-        }
+  const playRecording = async (uri) => {
+    try {
+      if (soundRef.current) {
+        await soundRef.current.unloadAsync();
+        soundRef.current = null;
       }
-    });
-    await sound.playAsync();
-  } catch (err) {
-    console.error("Failed to play recording:", err);
-  }
-};
-  /* ------------------------------------------------------------------
-   * Text
-   * ------------------------------------------------------------------ */
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+        shouldDuckAndroid: false,
+        playThroughEarpieceAndroid: false,
+      });
+      const { sound } = await Audio.Sound.createAsync(
+        { uri },
+        { shouldPlay: true, volume: 1.0 }
+      );
+      soundRef.current = sound;
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.didJustFinish) {
+          sound.unloadAsync();
+          if (soundRef.current === sound) {
+            soundRef.current = null;
+          }
+        }
+      });
+      await sound.playAsync();
+    } catch (err) {
+      console.error("Failed to play recording:", err);
+    }
+  };
+
   const handleSend = async () => {
     const text = input.trim();
     if (!text || isTyping || !conversationId) return;
@@ -394,66 +410,57 @@ const playRecording = async (uri) => {
     await sendToHealix(text, { isVoice: false });
   };
 
-
-
-
-const synthesizeAndPlay = async (text, messageIndex) => {
-  if (!text) return;
-  setSpeakingMessageIndex(messageIndex);
-  try {
-    if (soundRef.current) {
-      await soundRef.current.unloadAsync();
-      soundRef.current = null;
-    }
-
-    const response = await apiFetch("/api/patient/healix-speech/synthesize", {
-      method: "POST",
-      body: JSON.stringify({ text }),
-      timeoutMs: AI_REQUEST_TIMEOUT_MS,
-    });
-
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      console.error("Synthesize failed:", data.message);
-      setSpeakingMessageIndex(null);
-      return;
-    }
-
-    const blob = await response.blob();
-    const reader = new FileReader();
-    const dataUri = await new Promise((resolve, reject) => {
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: false,
-      shouldDuckAndroid: false,
-      playThroughEarpieceAndroid: false,
-    });
-
-    const { sound } = await Audio.Sound.createAsync(
-      { uri: dataUri },
-      { shouldPlay: true, volume: 1.0 }
-    );
-    soundRef.current = sound;
-    sound.setOnPlaybackStatusUpdate((status) => {
-      if (status.didJustFinish) {
-        sound.unloadAsync();
-        if (soundRef.current === sound) soundRef.current = null;
-        setSpeakingMessageIndex(null);
+  const synthesizeAndPlay = async (text, messageIndex) => {
+    if (!text) return;
+    setSpeakingMessageIndex(messageIndex);
+    try {
+      if (soundRef.current) {
+        await soundRef.current.unloadAsync();
+        soundRef.current = null;
       }
-    });
-    await sound.playAsync();
-  } catch (err) {
-    console.error("Failed to synthesize/play speech:", err);
-    setSpeakingMessageIndex(null);
-  }
-};
-
+      const response = await apiFetch("/api/patient/healix-speech/synthesize", {
+        method: "POST",
+        body: JSON.stringify({ text }),
+        timeoutMs: AI_REQUEST_TIMEOUT_MS,
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        console.error("Synthesize failed:", data.message);
+        setSpeakingMessageIndex(null);
+        return;
+      }
+      const blob = await response.blob();
+      const reader = new FileReader();
+      const dataUri = await new Promise((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+        shouldDuckAndroid: false,
+        playThroughEarpieceAndroid: false,
+      });
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: dataUri },
+        { shouldPlay: true, volume: 1.0 }
+      );
+      soundRef.current = sound;
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.didJustFinish) {
+          sound.unloadAsync();
+          if (soundRef.current === sound) soundRef.current = null;
+          setSpeakingMessageIndex(null);
+        }
+      });
+      await sound.playAsync();
+    } catch (err) {
+      console.error("Failed to synthesize/play speech:", err);
+      setSpeakingMessageIndex(null);
+    }
+  };
 
   return (
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
@@ -479,13 +486,11 @@ const synthesizeAndPlay = async (text, messageIndex) => {
               </TouchableOpacity>
             </View>
           </View>
-
           {/* Disclaimer */}
           <View style={styles.disclaimerBox}>
             <Ionicons name="warning-outline" size={16} color="#d97706" />
             <Text style={styles.disclaimerText}>{t("aiAssistant.disclaimer")}</Text>
           </View>
-
           {/* Messages */}
           {isStarting ? (
             <View style={styles.startingBox}>
@@ -508,7 +513,6 @@ const synthesizeAndPlay = async (text, messageIndex) => {
                       </Text>
                     </View>
                   )}
-
                   <View
                     style={[
                       styles.messageRow,
@@ -542,25 +546,22 @@ const synthesizeAndPlay = async (text, messageIndex) => {
                       </View>
                     )}
                   </View>
-
-             {msg.role === "bot" && msg.text && !msg.error && !msg.unavailable && (
-  <TouchableOpacity
-    onPress={() => synthesizeAndPlay(msg.text, i)}
-    disabled={speakingMessageIndex === i}
-    style={[styles.speakBtn, { marginLeft: 36 }]}
-  >
-    {speakingMessageIndex === i ? (
-      <ActivityIndicator size="small" color="#0e7490" />
-    ) : (
-      <Ionicons name="volume-high-outline" size={16} color="#0e7490" />
-    )}
-    <Text style={styles.speakBtnText}>
-      {speakingMessageIndex === i ? t("aiAssistant.speaking") : t("aiAssistant.playReply")}
-    </Text>
-  </TouchableOpacity>
-)}
-
-
+                  {msg.role === "bot" && msg.text && !msg.error && !msg.unavailable && (
+                    <TouchableOpacity
+                      onPress={() => synthesizeAndPlay(msg.text, i)}
+                      disabled={speakingMessageIndex === i}
+                      style={[styles.speakBtn, { marginLeft: 36 }]}
+                    >
+                      {speakingMessageIndex === i ? (
+                        <ActivityIndicator size="small" color="#0e7490" />
+                      ) : (
+                        <Ionicons name="volume-high-outline" size={16} color="#0e7490" />
+                      )}
+                      <Text style={styles.speakBtnText}>
+                        {speakingMessageIndex === i ? t("aiAssistant.speaking") : t("aiAssistant.playReply")}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                   {msg.isVoice && msg.audioUri && (
                     <TouchableOpacity
                       onPress={() => playRecording(msg.audioUri)}
@@ -570,7 +571,6 @@ const synthesizeAndPlay = async (text, messageIndex) => {
                       <Text style={styles.playBtnText}>{t("aiAssistant.playRecording")}</Text>
                     </TouchableOpacity>
                   )}
-
                   {msg.detectedSymptoms && msg.detectedSymptoms.length > 0 && (
                     <View style={styles.symptomsBox}>
                       <View style={styles.symptomsHeader}>
@@ -588,14 +588,12 @@ const synthesizeAndPlay = async (text, messageIndex) => {
                       </View>
                     </View>
                   )}
-
                   {msg.diagnosis && (
                     <View style={styles.diagnosisCard}>
                       <View style={styles.diagnosisHeader}>
                         <Ionicons name="medical-outline" size={16} color="#052443" />
                         <Text style={styles.diagnosisTitle}>{t("aiAssistant.diagnosisTitle")}</Text>
                       </View>
-
                       {msg.diagnosis.status === "insufficient_information" ? (
                         <Text style={styles.diagnosisInsufficient}>
                           {t("aiAssistant.insufficientInfo")}
@@ -611,7 +609,6 @@ const synthesizeAndPlay = async (text, messageIndex) => {
                           </View>
                         ))
                       )}
-
                       {msg.specialty && (
                         <View style={styles.specialtyBox}>
                           <Ionicons name="git-branch-outline" size={14} color="#0e7490" />
@@ -620,7 +617,6 @@ const synthesizeAndPlay = async (text, messageIndex) => {
                           </Text>
                         </View>
                       )}
-
                       {msg.patientReport && (
                         <View style={styles.patientReportBox}>
                           <Text style={styles.patientReportLabel}>
@@ -633,7 +629,6 @@ const synthesizeAndPlay = async (text, messageIndex) => {
                   )}
                 </View>
               ))}
-
               {(isTyping || isTranscribing) && (
                 <View style={[styles.messageRow, { justifyContent: "flex-start" }]}>
                   <View style={styles.botIcon}>
@@ -644,7 +639,6 @@ const synthesizeAndPlay = async (text, messageIndex) => {
                   </View>
                 </View>
               )}
-
               {isFinished && (
                 <View style={styles.finishedBox}>
                   <Ionicons name="checkmark-circle" size={20} color="#16a34a" />
@@ -653,7 +647,6 @@ const synthesizeAndPlay = async (text, messageIndex) => {
               )}
             </ScrollView>
           )}
-
           {/* Input */}
           <View style={styles.inputRow}>
             <TextInput
@@ -693,7 +686,6 @@ const synthesizeAndPlay = async (text, messageIndex) => {
             </TouchableOpacity>
           </View>
         </View>
-
         {/* Sidebar */}
         {showHistory && (
           <>
@@ -869,8 +861,8 @@ const styles = StyleSheet.create({
   historyItemTitleActive: { color: "#0e7490", fontWeight: "600" },
   historyItemMeta: { fontSize: 11, color: "#9ca3af", marginTop: 2 },
   speakBtn: {
-  flexDirection: "row", alignItems: "center", gap: 4,
-  alignSelf: "flex-start", paddingVertical: 2, marginTop: 2,
-},
-speakBtnText: { fontSize: 11, color: "#0e7490", fontWeight: "600" },
+    flexDirection: "row", alignItems: "center", gap: 4,
+    alignSelf: "flex-start", paddingVertical: 2, marginTop: 2,
+  },
+  speakBtnText: { fontSize: 11, color: "#0e7490", fontWeight: "600" },
 });
