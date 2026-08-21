@@ -11,22 +11,20 @@ import {
   Dimensions,
   Pressable,
   Platform,
-  KeyboardAvoidingView,
+  Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { Audio } from "expo-av";
 import { apiFetch } from "../../../utils/apiClient";
-import { Keyboard } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SIDEBAR_WIDTH = Math.min(300, SCREEN_WIDTH * 0.8);
 const AI_REQUEST_TIMEOUT_MS = 150000;
 
-export default function AI_Medical_Assistant({ navigation}) {
-   const onClose = () => navigation.goBack();
-   const isOpen = true;
- 
+export default function AI_Medical_Assistant({ isOpen, onClose }) {
+  const navigation = useNavigation();
   const { t } = useTranslation();
   const [conversationId, setConversationId] = useState(null);
   const [assessmentId, setAssessmentId] = useState(null);
@@ -46,9 +44,25 @@ export default function AI_Medical_Assistant({ navigation}) {
   const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollRef = useRef(null);
   const recordingRef = useRef(null);
   const soundRef = useRef(null);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow";
+    const hideEvent = Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide";
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const readResponse = async (response) => {
     const data = await response.json().catch(() => ({}));
@@ -126,25 +140,6 @@ export default function AI_Medical_Assistant({ navigation}) {
       setIsStarting(false);
     }
   };
-
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-useEffect(() => {
-  const showEvent = Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow";
-  const hideEvent = Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide";
-
-  const showSub = Keyboard.addListener(showEvent, (e) => {
-    setKeyboardHeight(e.endCoordinates.height);
-  });
-  const hideSub = Keyboard.addListener(hideEvent, () => {
-    setKeyboardHeight(0);
-  });
-
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, []);
 
   const startNewConversation = async () => {
     setIsStarting(true);
@@ -576,10 +571,9 @@ useEffect(() => {
   };
 
   return (
-  
+    <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       <View style={styles.fullScreen}>
-        
-       <View style={[styles.mainArea, { marginBottom: keyboardHeight }]}>
+        <View style={[styles.mainArea, { marginBottom: keyboardHeight }]}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <TouchableOpacity onPress={toggleSidebar} style={styles.iconBtn}>
@@ -801,7 +795,6 @@ useEffect(() => {
             </TouchableOpacity>
           </View>
         </View>
-
         {showHistory && (
           <>
             <Pressable style={styles.backdrop} onPress={closeSidebar} />
@@ -848,7 +841,6 @@ useEffect(() => {
             </View>
           </>
         )}
-
         {showBooking && (
           <View style={styles.bookingOverlay}>
             <View style={styles.bookingModal}>
@@ -992,7 +984,7 @@ useEffect(() => {
           </View>
         )}
       </View>
-  
+    </Modal>
   );
 }
 

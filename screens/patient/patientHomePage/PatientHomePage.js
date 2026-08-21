@@ -9,19 +9,19 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import PatientHeader from "../../Components/header/PatientHeader";
 import Footer from "../../Components/footer/Footer";
 import FAID from "./FAID/FAID";
-import { useNavigation } from "@react-navigation/native";
+import AI_Medical_Assistant from "../AIMedicalAssistant/AI_Medical_Assistant";
 import PatientMedicalReport from "../../Components/PatientMedicalReport/PatientMedicalReport";
 import { LinearGradient } from "expo-linear-gradient";
 import { apiFetch } from "../../../utils/apiClient";
 
 export default function PatientHomePage() {
   const { t } = useTranslation();
-  const navigation = useNavigation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [showSymptomChat, setShowSymptomChat] = useState(false);
   const [patientData, setPatientData] = useState({
     full_name: "",
     email: "",
@@ -31,25 +31,19 @@ export default function PatientHomePage() {
     gender: "",
     address: "",
   });
-
   const [licenseFileName] = useState("");
 
   const fetchPatientProfile = async () => {
     setIsLoading(true);
     setError(null);
-
     try {
-    
       const response = await apiFetch(`/api/patient/profile`);
-
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
         throw new Error(serverError.message || t("patientHome.loadProfileFailed"));
       }
-
       const data = await response.json();
       console.log("Patient profile:", data);
-
       if (data.status === "success" && data.data) {
         const profile = data.data;
         setPatientData({
@@ -78,10 +72,7 @@ export default function PatientHomePage() {
     setIsUpdating(true);
     setError(null);
     setSuccessMsg(null);
-
     try {
-   
-
       const updateData = {
         full_name: patientData.full_name,
         email: patientData.email,
@@ -89,11 +80,9 @@ export default function PatientHomePage() {
         birth_date: patientData.birth_date,
         address: patientData.address,
       };
-
       if (patientData.password) {
         updateData.password = patientData.password;
       }
-
       const response = await apiFetch(
         `/api/patient/profile`,
         {
@@ -101,12 +90,10 @@ export default function PatientHomePage() {
           body: JSON.stringify(updateData),
         }
       );
-
       const data = await response.json();
       if (!response.ok || data.status !== "success") {
         throw new Error(data.message || t("patientHome.updateFailed"));
       }
-
       setSuccessMsg(t("patientHome.updateSuccess"));
       setPatientData((prev) => ({ ...prev, password: "" }));
       setTimeout(() => {
@@ -123,13 +110,9 @@ export default function PatientHomePage() {
   return (
     <View style={styles.screen}>
       <PatientHeader />
-
       {/* Chat Bot Button */}
       <View style={styles.chatBotWrapper}>
-     <TouchableOpacity
-   onPress={() => navigation.navigate("AIMedicalAssistant")}
-    activeOpacity={0.9}
-    >
+        <TouchableOpacity onPress={() => setShowSymptomChat(true)} activeOpacity={0.9}>
           <LinearGradient
             colors={["#052443", "#0a3d62"]}
             start={{ x: 0, y: 0 }}
@@ -146,7 +129,6 @@ export default function PatientHomePage() {
           </LinearGradient>
         </TouchableOpacity>
       </View>
-
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.headerRow}>
           <View>
@@ -165,10 +147,8 @@ export default function PatientHomePage() {
             )}
           </TouchableOpacity>
         </View>
-
         {error && <Text style={styles.errorBox}>{error}</Text>}
         {successMsg && <Text style={styles.successBox}>{successMsg}</Text>}
-
         {isLoading ? (
           <Text style={styles.loadingText}>{t("patientHome.loadingProfile")}</Text>
         ) : (
@@ -184,7 +164,6 @@ export default function PatientHomePage() {
                 />
               </View>
             </View>
-
             <View style={styles.field}>
               <Text style={styles.label}>{t("patientHome.email")}</Text>
               <View style={styles.inputGroup}>
@@ -197,7 +176,6 @@ export default function PatientHomePage() {
                 />
               </View>
             </View>
-
             <View style={styles.field}>
               <Text style={styles.label}>{t("patientHome.phone")}</Text>
               <View style={styles.inputGroup}>
@@ -209,7 +187,6 @@ export default function PatientHomePage() {
                 />
               </View>
             </View>
-
             <View style={styles.field}>
               <Text style={styles.label}>{t("patientHome.birthDate")}</Text>
               <View style={styles.inputGroup}>
@@ -222,9 +199,6 @@ export default function PatientHomePage() {
                 />
               </View>
             </View>
-
-         
-
             <View style={styles.field}>
               <Text style={styles.label}>{t("patientHome.gender")}</Text>
               <View style={styles.inputGroup}>
@@ -236,7 +210,6 @@ export default function PatientHomePage() {
                 />
               </View>
             </View>
-
             <View style={styles.field}>
               <Text style={styles.label}>{t("patientHome.address")}</Text>
               <View style={styles.inputGroup}>
@@ -249,16 +222,16 @@ export default function PatientHomePage() {
                 />
               </View>
             </View>
-
-         
           </View>
         )}
         <PatientMedicalReport />
         <FAID />
         <Footer />
       </ScrollView>
-
-   
+      <AI_Medical_Assistant
+        isOpen={showSymptomChat}
+        onClose={() => setShowSymptomChat(false)}
+      />
     </View>
   );
 }
@@ -266,7 +239,6 @@ export default function PatientHomePage() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fff" },
   container: { padding: 20, paddingBottom: 0 },
-
   headerRow: {
     flexDirection: "row", justifyContent: "space-between",
     alignItems: "flex-start", marginBottom: 16,
@@ -279,7 +251,6 @@ const styles = StyleSheet.create({
   },
   updateBtnDisabled: { opacity: 0.5 },
   updateBtnText: { color: "#fff", fontWeight: "600", fontSize: 14 },
-
   errorBox: {
     backgroundColor: "#fee2e2", borderWidth: 1, borderColor: "#fca5a5",
     color: "#b91c1c", padding: 10, borderRadius: 8, marginBottom: 12,
@@ -289,7 +260,6 @@ const styles = StyleSheet.create({
     color: "#15803d", padding: 10, borderRadius: 8, marginBottom: 12,
   },
   loadingText: { textAlign: "center", color: "#888", paddingVertical: 20 },
-
   form: { gap: 4 },
   field: { marginBottom: 14 },
   label: { fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 },
@@ -299,19 +269,16 @@ const styles = StyleSheet.create({
     paddingVertical: 4, gap: 10,
   },
   input: { flex: 1, fontSize: 14, paddingVertical: 10, color: "#333" },
-
   mapButton: {
     flexDirection: "row", alignItems: "center", gap: 8,
     borderWidth: 1, borderColor: "#d1d5db", borderRadius: 10, padding: 12,
   },
   mapButtonText: { color: "#374151", fontSize: 14 },
-
   fileButton: {
     flexDirection: "row", alignItems: "center", gap: 8,
     borderWidth: 1, borderColor: "#d1d5db", borderRadius: 10, padding: 12,
   },
   fileButtonText: { color: "#374151", fontSize: 14 },
-
   chatBotWrapper: {
     paddingHorizontal: 20,
     paddingTop: 16,
