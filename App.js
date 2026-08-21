@@ -19,8 +19,8 @@ import Delivery from "./screens/delivery/Delivery";
 import Nurse from "./screens/nurse/Nurse";
 import Physio from "./screens/physio/Physio";
 import DeepLinkListener from "./DeepLinkListener";
-import VerifyEmailScreen from "./screens/verifyemailScreen/VerifyEmailScreen";
-import AI_Medical_Assistant from "./screens/patient/AIMedicalAssistant/AI_Medical_Assistant";
+import VerifyEmailScreen from "./screens/VerifyEmailScreen";
+
 const Stack = createNativeStackNavigator();
 
 const STRIPE_PUBLISHABLE_KEY = "pk_test_51Sb7QiADj5gMi232iI6BqSWfA8HBIm1VFNrlZxAtk1U0gPLuZ7KxgQipkKw0Jv2QzcDq1Mjc4lISxsrjcYnY5GpH00wseIAv7q";
@@ -64,11 +64,6 @@ export default function App() {
         <Stack.Screen name="Nurse" component={Nurse} />
         <Stack.Screen name="Physio" component={Physio} />
         <Stack.Screen name="VerifyEmailScreen" component={VerifyEmailScreen} />
-             <Stack.Screen 
-       name="AIMedicalAssistant" 
-       component={AI_Medical_Assistant}
-       options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
-     />
       </Stack.Navigator>
     </NavigationContainer>
     </StripeProvider>
