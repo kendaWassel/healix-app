@@ -8,10 +8,9 @@ import {
   Modal,
   Alert,
   StyleSheet,
-    KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from "react-native";
-
 import { useTranslation } from "react-i18next";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
 import { apiFetch } from "../../../utils/apiClient";
@@ -25,17 +24,31 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
   const [medicines, setMedicines] = useState([
     { name: "", dosage: "", boxes: "", instructions: "" },
   ]);
-
   const [interactionWarnings, setInteractionWarnings] = useState([]);
   const [allergyDirectMatches, setAllergyDirectMatches] = useState([]);
   const [allergyCrossMatches, setAllergyCrossMatches] = useState([]);
   const [pregnancyWarnings, setPregnancyWarnings] = useState([]);
   const [showInteractionPopup, setShowInteractionPopup] = useState(false);
   const [checking, setChecking] = useState(false);
-
   const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
   const [conditionWarnings, setConditionWarnings] = useState([]);
   const [conditionCheckAvailable, setConditionCheckAvailable] = useState(true);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow";
+    const hideEvent = Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide";
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -59,7 +72,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
     const updated = [...medicines];
     updated[index][field] = value;
     setMedicines(updated);
-
     if (field === "name") {
       checkDrugName(value, `medicine-${index}`);
     }
@@ -70,66 +82,57 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
     clearSuggestion();
   };
 
- const checkInteractions = async () => {
-  const drugNames = medicines
-    .map((m) => m.name.trim())
-    .filter((name) => name !== "");
-
-
-  if (drugNames.length < 1) return { hasWarning: false };
-
-  const uniqueDrugNames = [...new Set(drugNames.map((d) => d.toLowerCase()))]
-    .map((lower) => drugNames.find((d) => d.toLowerCase() === lower));
-
-  try {
-    const response = await apiFetch(`/api/doctor/prescriptions/verify`, {
-      method: "POST",
-      body: JSON.stringify({ medications: uniqueDrugNames, patient_id: patientId }),
-    });
-    if (!response.ok) return { hasWarning: false, conditionAvailable: true };
-    const result_json = await response.json();
-    console.log("verify result", result_json);
-    const data = result_json.data || result_json;
-
-    const dangerous = (data.drug_interactions || []).filter(
-      (f) =>
-        f.severity === "Major" ||
-        f.severity === "Moderate" ||
-        f.severity_confidence === "UNCERTAIN"
-    );
-
-    const withAlternatives = dangerous.map((f) => ({
-      ...f,
-      alternatives: f.alternatives?.candidates || [],
-      alt_for: f.drug_b,
-    }));
-
-    const allergyDirect = data.allergy_direct_matches || [];
-    const allergyCross = data.allergy_cross_matches || [];
-
-    return {
-      interactions: withAlternatives,
-      allergyDirect,
-      allergyCross,
-      pregnancy: data.pregnancy_warnings || [],
-      conditions: data.condition_warnings || [],
-      conditionAvailable: data.condition_check_available !== false,
-      hasWarning:
-        data.safe === false ||
-        allergyDirect.length > 0 ||
-        allergyCross.length > 0,
-    };
-  } catch (err) {
-    console.error("DDI check failed:", err);
-    return { hasWarning: false, conditionAvailable: true };
-  }
-};
+  const checkInteractions = async () => {
+    const drugNames = medicines
+      .map((m) => m.name.trim())
+      .filter((name) => name !== "");
+    if (drugNames.length < 1) return { hasWarning: false };
+    const uniqueDrugNames = [...new Set(drugNames.map((d) => d.toLowerCase()))]
+      .map((lower) => drugNames.find((d) => d.toLowerCase() === lower));
+    try {
+      const response = await apiFetch(`/api/doctor/prescriptions/verify`, {
+        method: "POST",
+        body: JSON.stringify({ medications: uniqueDrugNames, patient_id: patientId }),
+      });
+      if (!response.ok) return { hasWarning: false, conditionAvailable: true };
+      const result_json = await response.json();
+      console.log("verify result", result_json);
+      const data = result_json.data || result_json;
+      const dangerous = (data.drug_interactions || []).filter(
+        (f) =>
+          f.severity === "Major" ||
+          f.severity === "Moderate" ||
+          f.severity_confidence === "UNCERTAIN"
+      );
+      const withAlternatives = dangerous.map((f) => ({
+        ...f,
+        alternatives: f.alternatives?.candidates || [],
+        alt_for: f.drug_b,
+      }));
+      const allergyDirect = data.allergy_direct_matches || [];
+      const allergyCross = data.allergy_cross_matches || [];
+      return {
+        interactions: withAlternatives,
+        allergyDirect,
+        allergyCross,
+        pregnancy: data.pregnancy_warnings || [],
+        conditions: data.condition_warnings || [],
+        conditionAvailable: data.condition_check_available !== false,
+        hasWarning:
+          data.safe === false ||
+          allergyDirect.length > 0 ||
+          allergyCross.length > 0,
+      };
+    } catch (err) {
+      console.error("DDI check failed:", err);
+      return { hasWarning: false, conditionAvailable: true };
+    }
+  };
 
   const handleSavePrescription = async () => {
     setChecking(true);
     const result = await checkInteractions();
     setChecking(false);
-
     if (result.hasWarning) {
       setInteractionWarnings(result.interactions || []);
       setAllergyDirectMatches(result.allergyDirect || []);
@@ -140,7 +143,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
       setShowInteractionPopup(true);
       return;
     }
-
     await saveToServer();
   };
 
@@ -185,7 +187,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
             <Text style={styles.confirmText}>
               {t("createPrescription.createConfirm")}
             </Text>
-
             <View style={{ gap: 12, width: "100%" }}>
               <TouchableOpacity
                 onPress={() => {
@@ -196,7 +197,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
               >
                 <Text style={styles.primaryBtnText}>{t("createPrescription.yes")}</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
                 onPress={() => {
                   setShowConfirmPopup(false);
@@ -218,15 +218,10 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
         animationType="fade"
         onRequestClose={() => {}}
       >
-       
-   <KeyboardAvoidingView
-     style={styles.overlay}
-     behavior={Platform.OS === "ios" ? "padding" : "height"}
-   >
-          <View style={styles.formCard}>
+        <View style={styles.overlay}>
+          <View style={[styles.formCard, { marginBottom: keyboardHeight > 0 ? keyboardHeight + 12 : 0 }]}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text style={styles.formTitle}>{t("createPrescription.prescriptionDetails")}</Text>
-
               <View style={styles.fieldWrapper}>
                 <Text style={styles.label}>{t("createPrescription.diagnosis")}</Text>
                 <TextInput
@@ -236,7 +231,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                   style={styles.input}
                 />
               </View>
-
               <View style={styles.fieldWrapper}>
                 <Text style={styles.label}>{t("createPrescription.notes")}</Text>
                 <TextInput
@@ -248,9 +242,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                   style={[styles.input, styles.textarea]}
                 />
               </View>
-
               <Text style={styles.sectionTitle}>{t("createPrescription.medicines")}</Text>
-
               {medicines.map((med, index) => (
                 <View key={index} style={styles.medicineBox}>
                   <TextInput
@@ -259,7 +251,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                     onChangeText={(t2) => handleMedicineChange(index, "name", t2)}
                     style={[styles.input, { marginBottom: 8 }]}
                   />
-
                   {suggestion?.field === `medicine-${index}` && (
                     <View style={styles.suggestionBox}>
                       <Text style={styles.suggestionText}>
@@ -297,7 +288,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                   />
                 </View>
               ))}
-
               <TouchableOpacity
                 onPress={handleAddMedicine}
                 style={styles.addMedicineBtn}
@@ -306,7 +296,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                   {t("createPrescription.addAnotherMedicine")}
                 </Text>
               </TouchableOpacity>
-
               <View style={{ gap: 12, marginTop: 8 }}>
                 <TouchableOpacity
                   onPress={handleSavePrescription}
@@ -317,7 +306,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                     {checking ? t("createPrescription.checkingSafety") : t("createPrescription.savePrescription")}
                   </Text>
                 </TouchableOpacity>
-
                 <TouchableOpacity
                   onPress={() => {
                     setShowFormPopup(false);
@@ -330,7 +318,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
               </View>
             </ScrollView>
           </View>
-     </KeyboardAvoidingView>
+        </View>
       </Modal>
 
       {/* Safety Warnings Popup */}
@@ -347,7 +335,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
               <Text style={styles.warningSubtitle}>
                 {t("createPrescription.reviewBeforeSaving")}
               </Text>
-
               <View style={{ gap: 12, marginBottom: 20 }}>
                 {interactionWarnings.map((w, i) => (
                   <View
@@ -381,13 +368,11 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                         ? t("createPrescription.minor")
                         : t("createPrescription.moderate")}
                     </Text>
-
                     {w.severity_confidence === "UNCERTAIN" && (
                       <Text style={styles.uncertainNote}>
                         {t("createPrescription.uncertainNote")}
                       </Text>
                     )}
-
                     {w.alternatives && w.alternatives.length > 0 && (
                       <View style={styles.altSection}>
                         <Text style={styles.altLabel}>
@@ -408,10 +393,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                     )}
                   </View>
                 ))}
-
-                {/* Direct allergy matches — same active ingredient as a
-                    recorded allergy, under a different name. Highest
-                    severity: this is a confirmed hazard, not a probability. */}
                 {allergyDirectMatches.map((a, i) => (
                   <View key={`direct-${i}`} style={styles.allergyDirectCard}>
                     <Text style={styles.allergyDirectText}>
@@ -428,10 +409,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                     )}
                   </View>
                 ))}
-
-                {/* Cross-reactive allergy matches — structurally/pharmacologically
-                    related to an allergen, but not the same substance. Lower
-                    certainty than a direct match. */}
                 {allergyCrossMatches.map((a, i) => (
                   <View key={`cross-${i}`} style={styles.allergyCard}>
                     <Text style={styles.allergyText}>
@@ -447,24 +424,22 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                     )}
                   </View>
                 ))}
-
-                            {pregnancyWarnings.map((p, i) => (
-                <View key={`preg-${i}`} style={styles.pregnancyCard}>
-                  <Text style={styles.pregnancyText}>
-                    🤰 {p.medication}
-                    {p.ingredient && p.ingredient !== p.medication.toLowerCase()
-                      ? ` (${p.ingredient})`
-                      : ""}
-                  </Text>
-                  <Text style={styles.pregnancySubText}>
-                    {p.category_label || `${t("createPrescription.category")} ${p.category}`}
-                  </Text>
-                  <Text style={styles.pregnancySubText}>
-                    {p.warning_label || p.warning}
-                  </Text>
-                </View>
-              ))}
-
+                {pregnancyWarnings.map((p, i) => (
+                  <View key={`preg-${i}`} style={styles.pregnancyCard}>
+                    <Text style={styles.pregnancyText}>
+                      🤰 {p.medication}
+                      {p.ingredient && p.ingredient !== p.medication.toLowerCase()
+                        ? ` (${p.ingredient})`
+                        : ""}
+                    </Text>
+                    <Text style={styles.pregnancySubText}>
+                      {p.category_label || `${t("createPrescription.category")} ${p.category}`}
+                    </Text>
+                    <Text style={styles.pregnancySubText}>
+                      {p.warning_label || p.warning}
+                    </Text>
+                  </View>
+                ))}
                 {conditionWarnings.map((c, i) => (
                   <View key={`cond-${i}`} style={styles.conditionCard}>
                     <Text style={styles.conditionText}>
@@ -475,7 +450,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                     </Text>
                     <Text style={styles.conditionSubText}>
                       {t("createPrescription.conflictsWith")}{" "}
-                        <Text style={{ fontWeight: "700" }}>{c.condition_label || c.condition}</Text>
+                      <Text style={{ fontWeight: "700" }}>{c.condition_label || c.condition}</Text>
                     </Text>
                     {c.source && (
                       <Text style={styles.conditionSource}>
@@ -484,7 +459,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                     )}
                   </View>
                 ))}
-
                 {!conditionCheckAvailable && (
                   <View style={styles.unavailableCard}>
                     <Text style={styles.unavailableText}>
@@ -722,9 +696,6 @@ const styles = StyleSheet.create({
     color: "#9ca3af",
     marginTop: 4,
   },
-  // Direct allergy match — the highest-severity card style, distinct from
-  // the softer orange of cross-reactivity, since this is a confirmed
-  // same-substance hazard rather than a probabilistic risk.
   allergyDirectCard: {
     borderRadius: 10,
     borderWidth: 2,

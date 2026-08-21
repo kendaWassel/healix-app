@@ -5,7 +5,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import PatientHeader from "../../Components/header/PatientHeader";
 import Footer from "../../Components/footer/Footer";
 import FAID from "./FAID/FAID";
@@ -31,7 +30,7 @@ export default function PatientHomePage() {
     gender: "",
     address: "",
   });
-  const [licenseFileName] = useState("");
+
 
   const fetchPatientProfile = async () => {
     setIsLoading(true);

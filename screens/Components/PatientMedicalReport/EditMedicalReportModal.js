@@ -7,7 +7,8 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  Platform
+  Platform,
+  Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -30,19 +31,33 @@ export default function EditMedicalReportModal({
   const [conditionSearch, setConditionSearch] = useState("");
   const [showConditionsPicker, setShowConditionsPicker] = useState(false);
   const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
-
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [fields, setFields] = useState({
     chronic_diseases: [],
     other_conditions: "",
     previous_surgeries: "",
     is_pregnant: "",
   });
-
   // Allergies and current medications are lists of individual drug names —
   // each entry gets its own resolving check, instead of splitting a single
   // free-text string on commas and hoping the fragments line up.
   const [allergies, setAllergies] = useState([""]);
   const [medications, setMedications] = useState([""]);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow";
+    const hideEvent = Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide";
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (report) {
@@ -187,12 +202,11 @@ export default function EditMedicalReportModal({
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
-        <View style={styles.modal}>
+        <View style={[styles.modal, { marginBottom: keyboardHeight > 0 ? keyboardHeight + 12 : 0 }]}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={styles.title}>
               {t("patientMedicalReport.editTitle")}
             </Text>
-
             <Text style={styles.label}>
               {t("patientMedicalReport.chronicDiseases")}
             </Text>
@@ -233,50 +247,47 @@ export default function EditMedicalReportModal({
                 })}
               </View>
             )}
-
-    {(gender === "female" || gender === "أنثى") && (
-  <>
-    <Text style={styles.label}>
-      {t("medicalReportModal.pregnancyStatus")}
-    </Text>
-    <View style={styles.pregnancyOptionsRow}>
-      <TouchableOpacity
-        onPress={() => setFields({ ...fields, is_pregnant: "yes" })}
-        style={[
-          styles.pregnancyOption,
-          fields.is_pregnant === "yes" && styles.pregnancyOptionSelected,
-        ]}
-      >
-        <Text
-          style={[
-            styles.pregnancyOptionText,
-            fields.is_pregnant === "yes" && styles.pregnancyOptionTextSelected,
-          ]}
-        >
-          {t("medicalReportModal.pregnant")}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => setFields({ ...fields, is_pregnant: "no" })}
-        style={[
-          styles.pregnancyOption,
-          fields.is_pregnant === "no" && styles.pregnancyOptionSelected,
-        ]}
-      >
-        <Text
-          style={[
-            styles.pregnancyOptionText,
-            fields.is_pregnant === "no" && styles.pregnancyOptionTextSelected,
-          ]}
-        >
-          {t("medicalReportModal.notPregnant")}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  </>
-)}
-
+            {(gender === "female" || gender === "أنثى") && (
+              <>
+                <Text style={styles.label}>
+                  {t("medicalReportModal.pregnancyStatus")}
+                </Text>
+                <View style={styles.pregnancyOptionsRow}>
+                  <TouchableOpacity
+                    onPress={() => setFields({ ...fields, is_pregnant: "yes" })}
+                    style={[
+                      styles.pregnancyOption,
+                      fields.is_pregnant === "yes" && styles.pregnancyOptionSelected,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.pregnancyOptionText,
+                        fields.is_pregnant === "yes" && styles.pregnancyOptionTextSelected,
+                      ]}
+                    >
+                      {t("medicalReportModal.pregnant")}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setFields({ ...fields, is_pregnant: "no" })}
+                    style={[
+                      styles.pregnancyOption,
+                      fields.is_pregnant === "no" && styles.pregnancyOptionSelected,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.pregnancyOptionText,
+                        fields.is_pregnant === "no" && styles.pregnancyOptionTextSelected,
+                      ]}
+                    >
+                      {t("medicalReportModal.notPregnant")}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
             <Text style={styles.label}>
               {t("patientMedicalReport.allergies")}
             </Text>
@@ -286,7 +297,6 @@ export default function EditMedicalReportModal({
               "allergies",
               t("patientMedicalReport.addAllergy")
             )}
-
             <Text style={styles.label}>
               {t("patientMedicalReport.currentMedications")}
             </Text>
@@ -296,18 +306,15 @@ export default function EditMedicalReportModal({
               "medications",
               t("patientMedicalReport.addMedication")
             )}
-
             <TouchableOpacity style={styles.save} onPress={updateReport}>
               <Text style={styles.saveText}>{t("common.save")}</Text>
             </TouchableOpacity>
-
             <TouchableOpacity onPress={onClose}>
               <Text style={styles.cancel}>{t("common.cancel")}</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
       </View>
-
       <Modal
         visible={showConditionsPicker}
         transparent
@@ -324,14 +331,12 @@ export default function EditMedicalReportModal({
                 <Ionicons name="close" size={24} color="#666" />
               </TouchableOpacity>
             </View>
-
             <TextInput
               value={conditionSearch}
               onChangeText={setConditionSearch}
               placeholder={t("medicalReportModal.searchCondition")}
               style={styles.pickerSearch}
             />
-
             <ScrollView style={styles.pickerList}>
               {filteredConditions.map((cond) => {
                 const selected = fields.chronic_diseases.includes(cond.value);
@@ -352,7 +357,6 @@ export default function EditMedicalReportModal({
                 );
               })}
             </ScrollView>
-
             <TouchableOpacity
               onPress={() => {
                 setConditionSearch("");
@@ -596,36 +600,35 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 8,
     overflow: "hidden",
-    
   },
   picker: {
     height: Platform.OS === "ios" ? 150 : 50,
   },
   pregnancyOptionsRow: {
-  flexDirection: "row",
-  gap: 10,
-  marginBottom: 10,
-},
-pregnancyOption: {
-  flex: 1,
-  borderWidth: 1,
-  borderColor: "#ddd",
-  borderRadius: 8,
-  paddingVertical: 12,
-  alignItems: "center",
-  backgroundColor: "#fff",
-},
-pregnancyOptionSelected: {
-  backgroundColor: "#ecfeff",
-  borderColor: "#39CCCC",
-},
-pregnancyOptionText: {
-  fontSize: 14,
-  color: "#374151",
-  fontWeight: "500",
-},
-pregnancyOptionTextSelected: {
-  color: "#0e7490",
-  fontWeight: "700",
-},
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 10,
+  },
+  pregnancyOption: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  pregnancyOptionSelected: {
+    backgroundColor: "#ecfeff",
+    borderColor: "#39CCCC",
+  },
+  pregnancyOptionText: {
+    fontSize: 14,
+    color: "#374151",
+    fontWeight: "500",
+  },
+  pregnancyOptionTextSelected: {
+    color: "#0e7490",
+    fontWeight: "700",
+  },
 });

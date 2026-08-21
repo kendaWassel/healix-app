@@ -5,6 +5,8 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Platform,
+  Keyboard,
   TextInput,
   ActivityIndicator,
   Modal as RNModal,
@@ -36,6 +38,7 @@ export default function Receipts() {
   const [isLoadingPharmacist, setIsLoadingPharmacist] = useState(false);
   const [error, setError] = useState(null);
   const [errorPharmacist, setErrorPharmacist] = useState(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [sendPharmacy, setSendPharmacy] = useState(false);
   const [done, setDone] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -350,6 +353,22 @@ export default function Receipts() {
     setCheckLoading(false);
   }
 };
+
+
+   useEffect(() => {
+     const showEvent = Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow";
+     const hideEvent = Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide";
+     const showSub = Keyboard.addListener(showEvent, (e) => {
+       setKeyboardHeight(e.endCoordinates.height);
+     });
+     const hideSub = Keyboard.addListener(hideEvent, () => {
+       setKeyboardHeight(0);
+     });
+     return () => {
+       showSub.remove();
+       hideSub.remove();
+     };
+   }, []);
 
   return (
     <View style={{ flex: 1 }}>
@@ -711,7 +730,7 @@ export default function Receipts() {
         onRequestClose={() => setShowDrugChecker(false)}
       >
         <View style={styles.overlay}>
-          <View style={styles.checkerCard}>
+          <View style={[styles.checkerCard, { marginBottom: keyboardHeight > 0 ? keyboardHeight + 12 : 0 }]}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text style={styles.checkerTitle}>{t("receipts.checkDrugInteraction")}</Text>
 
