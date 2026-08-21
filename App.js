@@ -19,7 +19,7 @@ import Delivery from "./screens/delivery/Delivery";
 import Nurse from "./screens/nurse/Nurse";
 import Physio from "./screens/physio/Physio";
 import DeepLinkListener from "./DeepLinkListener";
-import VerifyEmailScreen from "./screens/VerifyEmailScreen";
+import VerifyEmailScreen from "./screens/verifyemailScreen/VerifyEmailScreen";
 
 const Stack = createNativeStackNavigator();
 
