@@ -8,6 +8,8 @@ import {
   Modal,
   Alert,
   StyleSheet,
+    KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
 import { useTranslation } from "react-i18next";
@@ -221,7 +223,11 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
         animationType="fade"
         onRequestClose={() => {}}
       >
-        <View style={styles.overlay}>
+       
+   <KeyboardAvoidingView
+     style={styles.overlay}
+     behavior={Platform.OS === "ios" ? "padding" : "height"}
+   >
           <View style={styles.formCard}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text style={styles.formTitle}>{t("createPrescription.prescriptionDetails")}</Text>
@@ -329,7 +335,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
               </View>
             </ScrollView>
           </View>
-        </View>
+     </KeyboardAvoidingView>
       </Modal>
 
       {/* Safety Warnings Popup */}

@@ -11,6 +11,7 @@ import {
   Dimensions,
   Pressable,
   Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -37,14 +38,12 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState(null);
-
   const [showBooking, setShowBooking] = useState(false);
   const [bookingOptions, setBookingOptions] = useState(null);
   const [isLoadingBooking, setIsLoadingBooking] = useState(false);
   const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
-
   const scrollRef = useRef(null);
   const recordingRef = useRef(null);
   const soundRef = useRef(null);
@@ -102,14 +101,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
     }
   };
 
-  // NOTE: accepts an optional conversationsList parameter. Previously this
-  // read from the `conversations` state directly, but that value is stale
-  // during the very first load — the effect below calls setConversations(list)
-  // and then immediately calls openConversation(list[0].id) in the same tick,
-  // before React has committed the new state. That meant `meta` was reliably
-  // undefined on first open, silently defaulting isFinished/assessmentId to
-  // false/null even for a genuinely finished conversation. Passing the freshly
-  // fetched list explicitly avoids depending on state timing at all.
   const openConversation = async (id, conversationsList = conversations) => {
     setIsStarting(true);
     closeSidebar();
@@ -201,8 +192,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
       setConversations(list);
       setIsStarting(false);
       if (list.length > 0) {
-        // Pass `list` directly instead of relying on the `conversations`
-        // state — see note above openConversation.
         await openConversation(list[0].id, list);
       } else {
         await startNewConversation();
@@ -322,8 +311,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
       const uri = recording.getURI();
       recordingRef.current = null;
       if (!uri) {
-        // Was a hardcoded Arabic string — now translated, so it doesn't
-        // leak Arabic into an English-language session.
         setMessages((prev) => [
           ...prev,
           { role: "bot", text: t("aiAssistant.audioFileNotObtained"), error: true },
@@ -364,7 +351,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
     }
     if (!uri) {
       console.error("❌ Empty audio URI");
-      // Was a hardcoded Arabic string — now translated.
       setMessages((prev) => [
         ...prev,
         { role: "bot", text: t("aiAssistant.audioFileNotObtained"), error: true },
@@ -376,7 +362,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
       const result = await transcribeAudio(uri);
       const { ok, data, errorText } = result;
       if (!ok) {
-        // Was a hardcoded Arabic fallback string — now translated.
         setMessages((prev) => [
           ...prev,
           {
@@ -572,7 +557,10 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
   return (
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.fullScreen}>
-        <View style={styles.mainArea}>
+        <KeyboardAvoidingView
+          style={styles.mainArea}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <TouchableOpacity onPress={toggleSidebar} style={styles.iconBtn}>
@@ -592,12 +580,10 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
               </TouchableOpacity>
             </View>
           </View>
-
           <View style={styles.disclaimerBox}>
             <Ionicons name="warning-outline" size={16} color="#d97706" />
             <Text style={styles.disclaimerText}>{t("aiAssistant.disclaimer")}</Text>
           </View>
-
           {isStarting ? (
             <View style={styles.startingBox}>
               <ActivityIndicator size="large" color="#39CCCC" />
@@ -762,7 +748,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
               )}
             </ScrollView>
           )}
-
           <View style={styles.inputRow}>
             <TextInput
               value={input}
@@ -796,7 +781,7 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
               <Ionicons name="send" size={18} color="#fff" />
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
 
         {showHistory && (
           <>
@@ -865,7 +850,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
                   <Ionicons name="close" size={24} color="#052443" />
                 </TouchableOpacity>
               </View>
-
               {isLoadingBooking ? (
                 <View style={styles.bookingLoading}>
                   <ActivityIndicator size="large" color="#39CCCC" />
@@ -918,7 +902,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
                               color={isDoctorSelected ? "#0e7490" : "#9ca3af"}
                             />
                           </TouchableOpacity>
-
                           {isDoctorSelected && (
                             <View style={styles.slotsContainer}>
                               <Text style={styles.slotsTitle}>{t("aiAssistant.availableAppointments")}</Text>

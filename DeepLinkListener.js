@@ -7,9 +7,17 @@ export default function DeepLinkListener() {
 
   useEffect(() => {
     const handleDeepLink = (event) => {
-      const { path } = Linking.parse(event.url);
-      if (path === "verify-email") {
-        navigation.navigate("VerifyEmailScreen");
+      if (!event?.url) return;
+      const { path, queryParams } = Linking.parse(event.url);
+      const cleanPath = (path || "").replace(/^\//, "");
+      const token = Array.isArray(queryParams?.token)
+        ? queryParams.token[0]
+        : queryParams?.token;
+      const role = Array.isArray(queryParams?.role)
+        ? queryParams.role[0]
+        : queryParams?.role;
+      if (cleanPath === "verify-email" && token) {
+        navigation.navigate("VerifyEmailScreen", { token, role });
       }
     };
 
