@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Modal,
   ScrollView,
   ActivityIndicator,
   StyleSheet,
@@ -14,7 +13,6 @@ import {
   Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { Audio } from "expo-av";
 import { apiFetch } from "../../../utils/apiClient";
@@ -23,8 +21,9 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SIDEBAR_WIDTH = Math.min(300, SCREEN_WIDTH * 0.8);
 const AI_REQUEST_TIMEOUT_MS = 150000;
 
-export default function AI_Medical_Assistant({ isOpen, onClose }) {
-  const navigation = useNavigation();
+export default function AI_Medical_Assistant({ navigation }) {
+  const onClose = () => navigation.goBack();
+  const isOpen = true;
   const { t } = useTranslation();
   const [conversationId, setConversationId] = useState(null);
   const [assessmentId, setAssessmentId] = useState(null);
@@ -84,7 +83,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
     return { ok: true, data };
   };
 
-  const openSidebar = () => setShowHistory(true);
   const closeSidebar = () => setShowHistory(false);
   const toggleSidebar = () => setShowHistory((value) => !value);
 
@@ -184,24 +182,6 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
   };
 
   useEffect(() => {
-    if (!isOpen) {
-      setConversationId(null);
-      setAssessmentId(null);
-      setMessages([]);
-      setInput("");
-      setIsFinished(false);
-      setShowHistory(false);
-      setShowBooking(false);
-      setBookingOptions(null);
-      setSelectedDoctor(null);
-      setSelectedSlot(null);
-      setSpeakingMessageIndex(null);
-      if (soundRef.current) {
-        soundRef.current.unloadAsync().catch(() => {});
-        soundRef.current = null;
-      }
-      return;
-    }
     (async () => {
       setIsStarting(true);
       const list = await fetchConversations();
@@ -213,7 +193,14 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
         await startNewConversation();
       }
     })();
-  }, [isOpen]);
+
+    return () => {
+      if (soundRef.current) {
+        soundRef.current.unloadAsync().catch(() => {});
+        soundRef.current = null;
+      }
+    };
+  }, []);
 
   const sendToHealix = async (text, { isVoice = false, audioUri = null } = {}) => {
     if (!text || !conversationId) return;
@@ -571,420 +558,418 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
   };
 
   return (
-    <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
-      <View style={styles.fullScreen}>
-        <View style={[styles.mainArea, { marginBottom: keyboardHeight }]}>
-          <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <TouchableOpacity onPress={toggleSidebar} style={styles.iconBtn}>
-                <Ionicons name="menu" size={22} color="#fff" />
-              </TouchableOpacity>
-              <View>
-                <Text style={styles.headerTitle}>{t("aiAssistant.title")}</Text>
-                <Text style={styles.headerSubtitle}>{t("aiAssistant.subtitle")}</Text>
-              </View>
-            </View>
-            <View style={styles.headerActions}>
-              <TouchableOpacity onPress={startNewConversation} style={styles.iconBtn}>
-                <Ionicons name="create-outline" size={22} color="#fff" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={onClose} style={styles.iconBtn}>
-                <Ionicons name="close" size={22} color="#fff" />
-              </TouchableOpacity>
+    <View style={styles.fullScreen}>
+     <View style={[styles.mainArea, { marginBottom: keyboardHeight > 0 ? keyboardHeight + 20: 0 }]}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity onPress={toggleSidebar} style={styles.iconBtn}>
+              <Ionicons name="menu" size={22} color="#fff" />
+            </TouchableOpacity>
+            <View>
+              <Text style={styles.headerTitle}>{t("aiAssistant.title")}</Text>
+              <Text style={styles.headerSubtitle}>{t("aiAssistant.subtitle")}</Text>
             </View>
           </View>
-          <View style={styles.disclaimerBox}>
-            <Ionicons name="warning-outline" size={16} color="#d97706" />
-            <Text style={styles.disclaimerText}>{t("aiAssistant.disclaimer")}</Text>
+          <View style={styles.headerActions}>
+            <TouchableOpacity onPress={startNewConversation} style={styles.iconBtn}>
+              <Ionicons name="create-outline" size={22} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onClose} style={styles.iconBtn}>
+              <Ionicons name="close" size={22} color="#fff" />
+            </TouchableOpacity>
           </View>
-          {isStarting ? (
-            <View style={styles.startingBox}>
-              <ActivityIndicator size="large" color="#39CCCC" />
-            </View>
-          ) : (
-            <ScrollView
-              ref={scrollRef}
-              style={styles.messagesArea}
-              contentContainerStyle={{ padding: 16, gap: 12 }}
-              onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
-            >
-              {messages.map((msg, i) => (
-                <View key={i} style={{ gap: 6 }}>
-                  {msg.isCrisis && (
-                    <View style={styles.crisisBanner}>
-                      <Ionicons name="alert-circle" size={20} color="#fff" />
-                      <Text style={styles.crisisBannerText}>{t("aiAssistant.crisisWarning")}</Text>
+        </View>
+        <View style={styles.disclaimerBox}>
+          <Ionicons name="warning-outline" size={16} color="#d97706" />
+          <Text style={styles.disclaimerText}>{t("aiAssistant.disclaimer")}</Text>
+        </View>
+        {isStarting ? (
+          <View style={styles.startingBox}>
+            <ActivityIndicator size="large" color="#39CCCC" />
+          </View>
+        ) : (
+          <ScrollView
+            ref={scrollRef}
+            style={styles.messagesArea}
+            contentContainerStyle={{ padding: 16, gap: 12 }}
+            onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+          >
+            {messages.map((msg, i) => (
+              <View key={i} style={{ gap: 6 }}>
+                {msg.isCrisis && (
+                  <View style={styles.crisisBanner}>
+                    <Ionicons name="alert-circle" size={20} color="#fff" />
+                    <Text style={styles.crisisBannerText}>{t("aiAssistant.crisisWarning")}</Text>
+                  </View>
+                )}
+                <View
+                  style={[
+                    styles.messageRow,
+                    { justifyContent: msg.role === "user" ? "flex-end" : "flex-start" },
+                  ]}
+                >
+                  {msg.role === "bot" && (
+                    <View style={[styles.botIcon, msg.isCrisis && styles.botIconCrisis]}>
+                      <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
                     </View>
                   )}
                   <View
                     style={[
-                      styles.messageRow,
-                      { justifyContent: msg.role === "user" ? "flex-end" : "flex-start" },
+                      styles.bubble,
+                      msg.role === "user"
+                        ? styles.bubbleUser
+                        : msg.isCrisis
+                        ? styles.bubbleCrisis
+                        : msg.error || msg.unavailable
+                        ? styles.bubbleUrgent
+                        : styles.bubbleBot,
                     ]}
                   >
-                    {msg.role === "bot" && (
-                      <View style={[styles.botIcon, msg.isCrisis && styles.botIconCrisis]}>
-                        <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
-                      </View>
-                    )}
-                    <View
-                      style={[
-                        styles.bubble,
-                        msg.role === "user"
-                          ? styles.bubbleUser
-                          : msg.isCrisis
-                          ? styles.bubbleCrisis
-                          : msg.error || msg.unavailable
-                          ? styles.bubbleUrgent
-                          : styles.bubbleBot,
-                      ]}
-                    >
-                      <Text style={msg.role === "user" ? styles.bubbleTextUser : styles.bubbleTextBot}>
-                        {msg.isVoice ? "🎤 " : ""}
-                        {msg.text}
-                      </Text>
-                    </View>
-                    {msg.role === "user" && (
-                      <View style={styles.userIcon}>
-                        <Ionicons name="person" size={16} color="#374151" />
-                      </View>
-                    )}
+                    <Text style={msg.role === "user" ? styles.bubbleTextUser : styles.bubbleTextBot}>
+                      {msg.isVoice ? "🎤 " : ""}
+                      {msg.text}
+                    </Text>
                   </View>
-                  {msg.role === "bot" && msg.text && !msg.error && !msg.unavailable && (
-                    <TouchableOpacity
-                      onPress={() => synthesizeAndPlay(msg.text, i)}
-                      disabled={speakingMessageIndex === i}
-                      style={[styles.speakBtn, { marginLeft: 36 }]}
-                    >
-                      {speakingMessageIndex === i ? (
-                        <ActivityIndicator size="small" color="#0e7490" />
-                      ) : (
-                        <Ionicons name="volume-high-outline" size={16} color="#0e7490" />
-                      )}
-                      <Text style={styles.speakBtnText}>
-                        {speakingMessageIndex === i ? t("aiAssistant.speaking") : t("aiAssistant.playReply")}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                  {msg.isVoice && msg.audioUri && (
-                    <TouchableOpacity onPress={() => playRecording(msg.audioUri)} style={styles.playBtn}>
-                      <Ionicons name="play-circle" size={16} color="#0e7490" />
-                      <Text style={styles.playBtnText}>{t("aiAssistant.playRecording")}</Text>
-                    </TouchableOpacity>
-                  )}
-                  {msg.detectedSymptoms && msg.detectedSymptoms.length > 0 && (
-                    <View style={styles.symptomsBox}>
-                      <View style={styles.symptomsHeader}>
-                        <Ionicons name="pulse-outline" size={14} color="#052443" />
-                        <Text style={styles.symptomsLabel}>{t("aiAssistant.detectedSymptoms")}</Text>
-                      </View>
-                      <View style={styles.symptomsChips}>
-                        {msg.detectedSymptoms.map((symptom, j) => (
-                          <View key={j} style={styles.symptomChip}>
-                            <Text style={styles.symptomChipText}>
-                              {typeof symptom === "string" ? symptom : symptom.name}
-                            </Text>
-                          </View>
-                        ))}
-                      </View>
+                  {msg.role === "user" && (
+                    <View style={styles.userIcon}>
+                      <Ionicons name="person" size={16} color="#374151" />
                     </View>
                   )}
-                  {msg.diagnosis && (
-                    <View style={styles.diagnosisCard}>
-                      <View style={styles.diagnosisHeader}>
-                        <Ionicons name="medical-outline" size={16} color="#052443" />
-                        <Text style={styles.diagnosisTitle}>{t("aiAssistant.diagnosisTitle")}</Text>
-                      </View>
-                      {msg.diagnosis.status === "insufficient_information" ? (
-                        <Text style={styles.diagnosisInsufficient}>
-                          {t("aiAssistant.insufficientInfo")}
+                </View>
+                {msg.role === "bot" && msg.text && !msg.error && !msg.unavailable && (
+                  <TouchableOpacity
+                    onPress={() => synthesizeAndPlay(msg.text, i)}
+                    disabled={speakingMessageIndex === i}
+                    style={[styles.speakBtn, { marginLeft: 36 }]}
+                  >
+                    {speakingMessageIndex === i ? (
+                      <ActivityIndicator size="small" color="#0e7490" />
+                    ) : (
+                      <Ionicons name="volume-high-outline" size={16} color="#0e7490" />
+                    )}
+                    <Text style={styles.speakBtnText}>
+                      {speakingMessageIndex === i ? t("aiAssistant.speaking") : t("aiAssistant.playReply")}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                {msg.isVoice && msg.audioUri && (
+                  <TouchableOpacity onPress={() => playRecording(msg.audioUri)} style={styles.playBtn}>
+                    <Ionicons name="play-circle" size={16} color="#0e7490" />
+                    <Text style={styles.playBtnText}>{t("aiAssistant.playRecording")}</Text>
+                  </TouchableOpacity>
+                )}
+                {msg.detectedSymptoms && msg.detectedSymptoms.length > 0 && (
+                  <View style={styles.symptomsBox}>
+                    <View style={styles.symptomsHeader}>
+                      <Ionicons name="pulse-outline" size={14} color="#052443" />
+                      <Text style={styles.symptomsLabel}>{t("aiAssistant.detectedSymptoms")}</Text>
+                    </View>
+                    <View style={styles.symptomsChips}>
+                      {msg.detectedSymptoms.map((symptom, j) => (
+                        <View key={j} style={styles.symptomChip}>
+                          <Text style={styles.symptomChipText}>
+                            {typeof symptom === "string" ? symptom : symptom.name}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+                {msg.diagnosis && (
+                  <View style={styles.diagnosisCard}>
+                    <View style={styles.diagnosisHeader}>
+                      <Ionicons name="medical-outline" size={16} color="#052443" />
+                      <Text style={styles.diagnosisTitle}>{t("aiAssistant.diagnosisTitle")}</Text>
+                    </View>
+                    {msg.diagnosis.status === "insufficient_information" ? (
+                      <Text style={styles.diagnosisInsufficient}>
+                        {t("aiAssistant.insufficientInfo")}
+                      </Text>
+                    ) : (
+                      Array.isArray(msg.diagnosis.differential) &&
+                      msg.diagnosis.differential.map((d, k) => (
+                        <View key={k} style={styles.diagnosisRow}>
+                          <Text style={styles.diagnosisName}>{d.name_ar}</Text>
+                          <Text style={styles.diagnosisScore}>
+                            {Math.round((d.match_score || 0) * 100)}%
+                          </Text>
+                        </View>
+                      ))
+                    )}
+                    {msg.specialty && (
+                      <View style={styles.specialtyBox}>
+                        <Ionicons name="git-branch-outline" size={14} color="#0e7490" />
+                        <Text style={styles.specialtyText}>
+                          {t("aiAssistant.suggestedSpecialty")}: {msg.specialty}
                         </Text>
-                      ) : (
-                        Array.isArray(msg.diagnosis.differential) &&
-                        msg.diagnosis.differential.map((d, k) => (
-                          <View key={k} style={styles.diagnosisRow}>
-                            <Text style={styles.diagnosisName}>{d.name_ar}</Text>
-                            <Text style={styles.diagnosisScore}>
-                              {Math.round((d.match_score || 0) * 100)}%
-                            </Text>
-                          </View>
-                        ))
-                      )}
-                      {msg.specialty && (
-                        <View style={styles.specialtyBox}>
-                          <Ionicons name="git-branch-outline" size={14} color="#0e7490" />
-                          <Text style={styles.specialtyText}>
-                            {t("aiAssistant.suggestedSpecialty")}: {msg.specialty}
-                          </Text>
-                        </View>
-                      )}
-                      {msg.patientReport && (
-                        <View style={styles.patientReportBox}>
-                          <Text style={styles.patientReportLabel}>
-                            {t("aiAssistant.patientReportTitle")}
-                          </Text>
-                          <Text style={styles.patientReportText}>{msg.patientReport}</Text>
-                        </View>
-                      )}
-                    </View>
-                  )}
-                </View>
-              ))}
-              {(isTyping || isTranscribing) && (
-                <View style={[styles.messageRow, { justifyContent: "flex-start" }]}>
-                  <View style={styles.botIcon}>
-                    <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
+                      </View>
+                    )}
+                    {msg.patientReport && (
+                      <View style={styles.patientReportBox}>
+                        <Text style={styles.patientReportLabel}>
+                          {t("aiAssistant.patientReportTitle")}
+                        </Text>
+                        <Text style={styles.patientReportText}>{msg.patientReport}</Text>
+                      </View>
+                    )}
                   </View>
-                  <View style={styles.bubbleBot}>
-                    <ActivityIndicator size="small" color="#9ca3af" />
-                  </View>
+                )}
+              </View>
+            ))}
+            {(isTyping || isTranscribing) && (
+              <View style={[styles.messageRow, { justifyContent: "flex-start" }]}>
+                <View style={styles.botIcon}>
+                  <Ionicons name="chatbubble-ellipses" size={16} color="#fff" />
                 </View>
-              )}
-              {isFinished && (
-                <View style={styles.finishedBox}>
-                  <Ionicons name="checkmark-circle" size={20} color="#16a34a" />
-                  <Text style={styles.finishedText}>{t("aiAssistant.interviewFinished")}</Text>
+                <View style={styles.bubbleBot}>
+                  <ActivityIndicator size="small" color="#9ca3af" />
                 </View>
+              </View>
+            )}
+            {isFinished && (
+              <View style={styles.finishedBox}>
+                <Ionicons name="checkmark-circle" size={20} color="#16a34a" />
+                <Text style={styles.finishedText}>{t("aiAssistant.interviewFinished")}</Text>
+              </View>
+            )}
+            {isFinished && assessmentId && (
+              <TouchableOpacity
+                onPress={() => {
+                  setShowBooking(true);
+                  loadBookingOptions();
+                }}
+                style={styles.bookBtn}
+                disabled={isLoadingBooking}
+              >
+                <Ionicons name="calendar-outline" size={18} color="#fff" />
+                <Text style={styles.bookBtnText}>{t("aiAssistant.bookAppointment")}</Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+        )}
+        <View style={styles.inputRow}>
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder={
+              isListening
+                ? t("aiAssistant.listening")
+                : isTranscribing
+                ? t("aiAssistant.transcribing")
+                : t("aiAssistant.describeSymptoms")
+            }
+            editable={!isTyping && !isTranscribing && !isFinished}
+            style={styles.textInput}
+          />
+          <TouchableOpacity
+            onPress={toggleListening}
+            disabled={isTyping || isTranscribing || isFinished}
+            style={[styles.micBtn, isListening && styles.micBtnActive]}
+          >
+            {isTranscribing ? (
+              <ActivityIndicator size="small" color="#6b7280" />
+            ) : (
+              <Ionicons name={isListening ? "mic-off" : "mic"} size={18} color={isListening ? "#fff" : "#6b7280"} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleSend}
+            disabled={!input.trim() || isTyping || isFinished}
+            style={[styles.sendBtn, (!input.trim() || isTyping || isFinished) && styles.sendBtnDisabled]}
+          >
+            <Ionicons name="send" size={18} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+      {showHistory && (
+        <>
+          <Pressable style={styles.backdrop} onPress={closeSidebar} />
+          <View style={styles.sidebar}>
+            <View style={styles.sidebarHeader}>
+              <Text style={styles.sidebarTitle}>{t("aiAssistant.previousChats")}</Text>
+              <TouchableOpacity onPress={closeSidebar}>
+                <Ionicons name="close" size={20} color="#052443" />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={startNewConversation} style={styles.newChatBtn}>
+              <Ionicons name="add-circle-outline" size={18} color="#39CCCC" />
+              <Text style={styles.newChatBtnText}>{t("aiAssistant.newChat")}</Text>
+            </TouchableOpacity>
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
+              {conversations.length === 0 && (
+                <Text style={styles.historyEmpty}>{t("aiAssistant.noPreviousChats")}</Text>
               )}
-              {isFinished && assessmentId && (
+              {conversations.map((c) => (
                 <TouchableOpacity
-                  onPress={() => {
-                    setShowBooking(true);
-                    loadBookingOptions();
-                  }}
-                  style={styles.bookBtn}
-                  disabled={isLoadingBooking}
+                  key={c.id}
+                  onPress={() => openConversation(c.id)}
+                  style={[styles.historyItem, c.id === conversationId && styles.historyItemActive]}
                 >
-                  <Ionicons name="calendar-outline" size={18} color="#fff" />
-                  <Text style={styles.bookBtnText}>{t("aiAssistant.bookAppointment")}</Text>
+                  <Ionicons
+                    name="chatbubble-outline"
+                    size={16}
+                    color={c.id === conversationId ? "#0e7490" : "#6b7280"}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[styles.historyItemTitle, c.id === conversationId && styles.historyItemTitleActive]}
+                      numberOfLines={1}
+                    >
+                      {c.title || `#${c.id}`}
+                    </Text>
+                    <Text style={styles.historyItemMeta}>
+                      {c.ended_at ? t("aiAssistant.completed") : t("aiAssistant.inProgress")}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
-              )}
+              ))}
             </ScrollView>
-          )}
-          <View style={styles.inputRow}>
-            <TextInput
-              value={input}
-              onChangeText={setInput}
-              placeholder={
-                isListening
-                  ? t("aiAssistant.listening")
-                  : isTranscribing
-                  ? t("aiAssistant.transcribing")
-                  : t("aiAssistant.describeSymptoms")
-              }
-              editable={!isTyping && !isTranscribing && !isFinished}
-              style={styles.textInput}
-            />
-            <TouchableOpacity
-              onPress={toggleListening}
-              disabled={isTyping || isTranscribing || isFinished}
-              style={[styles.micBtn, isListening && styles.micBtnActive]}
-            >
-              {isTranscribing ? (
-                <ActivityIndicator size="small" color="#6b7280" />
-              ) : (
-                <Ionicons name={isListening ? "mic-off" : "mic"} size={18} color={isListening ? "#fff" : "#6b7280"} />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleSend}
-              disabled={!input.trim() || isTyping || isFinished}
-              style={[styles.sendBtn, (!input.trim() || isTyping || isFinished) && styles.sendBtnDisabled]}
-            >
-              <Ionicons name="send" size={18} color="#fff" />
-            </TouchableOpacity>
+          </View>
+        </>
+      )}
+      {showBooking && (
+        <View style={styles.bookingOverlay}>
+          <View style={styles.bookingModal}>
+            <View style={styles.bookingHeader}>
+              <View>
+                <Text style={styles.bookingTitle}>{t("aiAssistant.bookAppointment")}</Text>
+                <Text style={styles.bookingSubtitle}>{t("aiAssistant.chooseDoctorAndTime")}</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => {
+                  if (!isBookingSubmitting) {
+                    setShowBooking(false);
+                    setSelectedDoctor(null);
+                    setSelectedSlot(null);
+                  }
+                }}
+              >
+                <Ionicons name="close" size={24} color="#052443" />
+              </TouchableOpacity>
+            </View>
+            {isLoadingBooking ? (
+              <View style={styles.bookingLoading}>
+                <ActivityIndicator size="large" color="#39CCCC" />
+                <Text style={styles.bookingLoadingText}>{t("aiAssistant.loadingDoctors")}</Text>
+              </View>
+            ) : bookingOptions?.can_book === false ? (
+              <View style={styles.noDoctorsBox}>
+                <Ionicons name="calendar-outline" size={42} color="#9ca3af" />
+                <Text style={styles.noDoctorsTitle}>{t("aiAssistant.noDoctorsAvailable")}</Text>
+                <Text style={styles.noDoctorsText}>
+                  {t("aiAssistant.noDoctorsAvailableDescription")}
+                </Text>
+              </View>
+            ) : (
+              <ScrollView
+                style={styles.bookingScroll}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                showsVerticalScrollIndicator={false}
+              >
+                {bookingOptions?.doctors?.length > 0 ? (
+                  bookingOptions.doctors.map((doctor) => {
+                    const isDoctorSelected = selectedDoctor?.id === doctor.id;
+                    return (
+                      <View
+                        key={doctor.id}
+                        style={[styles.doctorCard, isDoctorSelected && styles.doctorCardSelected]}
+                      >
+                        <TouchableOpacity
+                          onPress={() => {
+                            setSelectedDoctor(doctor);
+                            setSelectedSlot(null);
+                          }}
+                          disabled={isBookingSubmitting}
+                          style={styles.doctorHeader}
+                        >
+                          <View style={styles.doctorIcon}>
+                            <Ionicons name="person" size={20} color="#0e7490" />
+                          </View>
+                          <View style={styles.doctorInfo}>
+                            <Text style={styles.doctorName}>
+                              {doctor.name || doctor.full_name || `Doctor #${doctor.id}`}
+                            </Text>
+                            {doctor.specialty && (
+                              <Text style={styles.doctorSpecialty}>{doctor.specialty}</Text>
+                            )}
+                          </View>
+                          <Ionicons
+                            name={isDoctorSelected ? "checkmark-circle" : "chevron-down"}
+                            size={20}
+                            color={isDoctorSelected ? "#0e7490" : "#9ca3af"}
+                          />
+                        </TouchableOpacity>
+                        {isDoctorSelected && (
+                          <View style={styles.slotsContainer}>
+                            <Text style={styles.slotsTitle}>{t("aiAssistant.availableAppointments")}</Text>
+                            {Array.isArray(doctor.available_slots) && doctor.available_slots.length > 0 ? (
+                              <View style={styles.slotsGrid}>
+                                {doctor.available_slots.map((slot, index) => {
+                                  const scheduledAt =
+                                    typeof slot === "string" ? slot : slot.scheduled_at || slot.datetime || slot.start;
+                                  const label =
+                                    typeof slot === "string"
+                                      ? slot.split(" ").pop()?.substring(0, 5)
+                                      : slot.label || slot.time || scheduledAt;
+                                  const isSelected = selectedSlot === scheduledAt;
+                                  return (
+                                    <TouchableOpacity
+                                      key={index}
+                                      onPress={() => setSelectedSlot(scheduledAt)}
+                                      disabled={isBookingSubmitting}
+                                      style={[styles.slotBtn, isSelected && styles.slotBtnSelected]}
+                                    >
+                                      <Ionicons
+                                        name="time-outline"
+                                        size={14}
+                                        color={isSelected ? "#fff" : "#0e7490"}
+                                      />
+                                      <Text style={[styles.slotText, isSelected && styles.slotTextSelected]}>
+                                        {label}
+                                      </Text>
+                                    </TouchableOpacity>
+                                  );
+                                })}
+                              </View>
+                            ) : (
+                              <Text style={styles.noSlotsText}>{t("aiAssistant.noAvailableSlots")}</Text>
+                            )}
+                            {selectedSlot && selectedDoctor?.id === doctor.id && (
+                              <TouchableOpacity
+                                onPress={() => bookConsultation(doctor.id, "schedule", selectedSlot)}
+                                disabled={isBookingSubmitting}
+                                style={[
+                                  styles.confirmBookingBtn,
+                                  isBookingSubmitting && styles.confirmBookingBtnDisabled,
+                                ]}
+                              >
+                                {isBookingSubmitting ? (
+                                  <ActivityIndicator size="small" color="#fff" />
+                                ) : (
+                                  <Ionicons name="calendar" size={18} color="#fff" />
+                                )}
+                                <Text style={styles.confirmBookingText}>
+                                  {isBookingSubmitting ? t("aiAssistant.booking") : t("aiAssistant.confirmBooking")}
+                                </Text>
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                        )}
+                      </View>
+                    );
+                  })
+                ) : (
+                  <View style={styles.noDoctorsBox}>
+                    <Ionicons name="medical-outline" size={42} color="#9ca3af" />
+                    <Text style={styles.noDoctorsTitle}>{t("aiAssistant.noDoctorsAvailable")}</Text>
+                  </View>
+                )}
+              </ScrollView>
+            )}
           </View>
         </View>
-        {showHistory && (
-          <>
-            <Pressable style={styles.backdrop} onPress={closeSidebar} />
-            <View style={styles.sidebar}>
-              <View style={styles.sidebarHeader}>
-                <Text style={styles.sidebarTitle}>{t("aiAssistant.previousChats")}</Text>
-                <TouchableOpacity onPress={closeSidebar}>
-                  <Ionicons name="close" size={20} color="#052443" />
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity onPress={startNewConversation} style={styles.newChatBtn}>
-                <Ionicons name="add-circle-outline" size={18} color="#39CCCC" />
-                <Text style={styles.newChatBtnText}>{t("aiAssistant.newChat")}</Text>
-              </TouchableOpacity>
-              <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
-                {conversations.length === 0 && (
-                  <Text style={styles.historyEmpty}>{t("aiAssistant.noPreviousChats")}</Text>
-                )}
-                {conversations.map((c) => (
-                  <TouchableOpacity
-                    key={c.id}
-                    onPress={() => openConversation(c.id)}
-                    style={[styles.historyItem, c.id === conversationId && styles.historyItemActive]}
-                  >
-                    <Ionicons
-                      name="chatbubble-outline"
-                      size={16}
-                      color={c.id === conversationId ? "#0e7490" : "#6b7280"}
-                    />
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={[styles.historyItemTitle, c.id === conversationId && styles.historyItemTitleActive]}
-                        numberOfLines={1}
-                      >
-                        {c.title || `#${c.id}`}
-                      </Text>
-                      <Text style={styles.historyItemMeta}>
-                        {c.ended_at ? t("aiAssistant.completed") : t("aiAssistant.inProgress")}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          </>
-        )}
-        {showBooking && (
-          <View style={styles.bookingOverlay}>
-            <View style={styles.bookingModal}>
-              <View style={styles.bookingHeader}>
-                <View>
-                  <Text style={styles.bookingTitle}>{t("aiAssistant.bookAppointment")}</Text>
-                  <Text style={styles.bookingSubtitle}>{t("aiAssistant.chooseDoctorAndTime")}</Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => {
-                    if (!isBookingSubmitting) {
-                      setShowBooking(false);
-                      setSelectedDoctor(null);
-                      setSelectedSlot(null);
-                    }
-                  }}
-                >
-                  <Ionicons name="close" size={24} color="#052443" />
-                </TouchableOpacity>
-              </View>
-              {isLoadingBooking ? (
-                <View style={styles.bookingLoading}>
-                  <ActivityIndicator size="large" color="#39CCCC" />
-                  <Text style={styles.bookingLoadingText}>{t("aiAssistant.loadingDoctors")}</Text>
-                </View>
-              ) : bookingOptions?.can_book === false ? (
-                <View style={styles.noDoctorsBox}>
-                  <Ionicons name="calendar-outline" size={42} color="#9ca3af" />
-                  <Text style={styles.noDoctorsTitle}>{t("aiAssistant.noDoctorsAvailable")}</Text>
-                  <Text style={styles.noDoctorsText}>
-                    {t("aiAssistant.noDoctorsAvailableDescription")}
-                  </Text>
-                </View>
-              ) : (
-                <ScrollView
-                  style={styles.bookingScroll}
-                  contentContainerStyle={{ paddingBottom: 20 }}
-                  showsVerticalScrollIndicator={false}
-                >
-                  {bookingOptions?.doctors?.length > 0 ? (
-                    bookingOptions.doctors.map((doctor) => {
-                      const isDoctorSelected = selectedDoctor?.id === doctor.id;
-                      return (
-                        <View
-                          key={doctor.id}
-                          style={[styles.doctorCard, isDoctorSelected && styles.doctorCardSelected]}
-                        >
-                          <TouchableOpacity
-                            onPress={() => {
-                              setSelectedDoctor(doctor);
-                              setSelectedSlot(null);
-                            }}
-                            disabled={isBookingSubmitting}
-                            style={styles.doctorHeader}
-                          >
-                            <View style={styles.doctorIcon}>
-                              <Ionicons name="person" size={20} color="#0e7490" />
-                            </View>
-                            <View style={styles.doctorInfo}>
-                              <Text style={styles.doctorName}>
-                                {doctor.name || doctor.full_name || `Doctor #${doctor.id}`}
-                              </Text>
-                              {doctor.specialty && (
-                                <Text style={styles.doctorSpecialty}>{doctor.specialty}</Text>
-                              )}
-                            </View>
-                            <Ionicons
-                              name={isDoctorSelected ? "checkmark-circle" : "chevron-down"}
-                              size={20}
-                              color={isDoctorSelected ? "#0e7490" : "#9ca3af"}
-                            />
-                          </TouchableOpacity>
-                          {isDoctorSelected && (
-                            <View style={styles.slotsContainer}>
-                              <Text style={styles.slotsTitle}>{t("aiAssistant.availableAppointments")}</Text>
-                              {Array.isArray(doctor.available_slots) && doctor.available_slots.length > 0 ? (
-                                <View style={styles.slotsGrid}>
-                                  {doctor.available_slots.map((slot, index) => {
-                                    const scheduledAt =
-                                      typeof slot === "string" ? slot : slot.scheduled_at || slot.datetime || slot.start;
-                                    const label =
-                                      typeof slot === "string"
-                                        ? slot.split(" ").pop()?.substring(0, 5)
-                                        : slot.label || slot.time || scheduledAt;
-                                    const isSelected = selectedSlot === scheduledAt;
-                                    return (
-                                      <TouchableOpacity
-                                        key={index}
-                                        onPress={() => setSelectedSlot(scheduledAt)}
-                                        disabled={isBookingSubmitting}
-                                        style={[styles.slotBtn, isSelected && styles.slotBtnSelected]}
-                                      >
-                                        <Ionicons
-                                          name="time-outline"
-                                          size={14}
-                                          color={isSelected ? "#fff" : "#0e7490"}
-                                        />
-                                        <Text style={[styles.slotText, isSelected && styles.slotTextSelected]}>
-                                          {label}
-                                        </Text>
-                                      </TouchableOpacity>
-                                    );
-                                  })}
-                                </View>
-                              ) : (
-                                <Text style={styles.noSlotsText}>{t("aiAssistant.noAvailableSlots")}</Text>
-                              )}
-                              {selectedSlot && selectedDoctor?.id === doctor.id && (
-                                <TouchableOpacity
-                                  onPress={() => bookConsultation(doctor.id, "schedule", selectedSlot)}
-                                  disabled={isBookingSubmitting}
-                                  style={[
-                                    styles.confirmBookingBtn,
-                                    isBookingSubmitting && styles.confirmBookingBtnDisabled,
-                                  ]}
-                                >
-                                  {isBookingSubmitting ? (
-                                    <ActivityIndicator size="small" color="#fff" />
-                                  ) : (
-                                    <Ionicons name="calendar" size={18} color="#fff" />
-                                  )}
-                                  <Text style={styles.confirmBookingText}>
-                                    {isBookingSubmitting ? t("aiAssistant.booking") : t("aiAssistant.confirmBooking")}
-                                  </Text>
-                                </TouchableOpacity>
-                              )}
-                            </View>
-                          )}
-                        </View>
-                      );
-                    })
-                  ) : (
-                    <View style={styles.noDoctorsBox}>
-                      <Ionicons name="medical-outline" size={42} color="#9ca3af" />
-                      <Text style={styles.noDoctorsTitle}>{t("aiAssistant.noDoctorsAvailable")}</Text>
-                    </View>
-                  )}
-                </ScrollView>
-              )}
-            </View>
-          </View>
-        )}
-      </View>
-    </Modal>
+      )}
+    </View>
   );
 }
 
