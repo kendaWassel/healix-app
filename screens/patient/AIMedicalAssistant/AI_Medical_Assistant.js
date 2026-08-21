@@ -14,7 +14,6 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { Audio } from "expo-av";
 import { apiFetch } from "../../../utils/apiClient";
@@ -24,8 +23,10 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SIDEBAR_WIDTH = Math.min(300, SCREEN_WIDTH * 0.8);
 const AI_REQUEST_TIMEOUT_MS = 150000;
 
-export default function AI_Medical_Assistant({ isOpen, onClose }) {
-  const navigation = useNavigation();
+export default function AI_Medical_Assistant({ navigation}) {
+   const onClose = () => navigation.goBack();
+   const isOpen = true;
+ 
   const { t } = useTranslation();
   const [conversationId, setConversationId] = useState(null);
   const [assessmentId, setAssessmentId] = useState(null);
@@ -575,12 +576,7 @@ useEffect(() => {
   };
 
   return (
-    <Modal visible={isOpen}
-     transparent
-      animationType="fade"
-       onRequestClose={onClose}
-        statusBarTranslucent
-       >
+  
       <View style={styles.fullScreen}>
         
        <View style={[styles.mainArea, { marginBottom: keyboardHeight }]}>
@@ -996,7 +992,7 @@ useEffect(() => {
           </View>
         )}
       </View>
-    </Modal>
+  
   );
 }
 
