@@ -559,7 +559,7 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
       <View style={styles.fullScreen}>
         <KeyboardAvoidingView
           style={styles.mainArea}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <View style={styles.header}>
             <View style={styles.headerLeft}>
