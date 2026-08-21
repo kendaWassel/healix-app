@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import i18n from "../i18n/i18n";
 import { Platform } from "react-native";
-const BASE_URL = "https://unjuicy-schizogenous-gibson.ngrok-free.dev";
+const BASE_URL = "https://healix-backend-production.up.railway.app";
 
 export async function apiFetch(endpoint, options = {}) {
   const token = await AsyncStorage.getItem("token");
