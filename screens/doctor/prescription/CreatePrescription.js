@@ -27,11 +27,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
   ]);
 
   const [interactionWarnings, setInteractionWarnings] = useState([]);
-  // Allergy matches split into two tiers: direct (same active ingredient
-  // under a different brand name — e.g. Paracetamol vs a recorded Panadol
-  // allergy) and cross-reactive (structurally/pharmacologically related but
-  // not the same substance). Kept separate because a direct match is a
-  // confirmed hazard, while cross-reactivity is a probabilistic risk.
   const [allergyDirectMatches, setAllergyDirectMatches] = useState([]);
   const [allergyCrossMatches, setAllergyCrossMatches] = useState([]);
   const [pregnancyWarnings, setPregnancyWarnings] = useState([]);
