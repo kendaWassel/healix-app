@@ -18,6 +18,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { Audio } from "expo-av";
 import { apiFetch } from "../../../utils/apiClient";
+import { Keyboard } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SIDEBAR_WIDTH = Math.min(300, SCREEN_WIDTH * 0.8);
@@ -124,6 +125,25 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
       setIsStarting(false);
     }
   };
+
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+useEffect(() => {
+  const showEvent = Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow";
+  const hideEvent = Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide";
+
+  const showSub = Keyboard.addListener(showEvent, (e) => {
+    setKeyboardHeight(e.endCoordinates.height);
+  });
+  const hideSub = Keyboard.addListener(hideEvent, () => {
+    setKeyboardHeight(0);
+  });
+
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
 
   const startNewConversation = async () => {
     setIsStarting(true);
@@ -555,13 +575,15 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
   };
 
   return (
-    <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={isOpen}
+     transparent
+      animationType="fade"
+       onRequestClose={onClose}
+        statusBarTranslucent
+       >
       <View style={styles.fullScreen}>
-        <KeyboardAvoidingView
-          style={styles.mainArea}
-             behavior="padding"
-            keyboardVerticalOffset={Platform.OS === "android" ? 0 : 0}
-        >
+        
+       <View style={[styles.mainArea, { marginBottom: keyboardHeight }]}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <TouchableOpacity onPress={toggleSidebar} style={styles.iconBtn}>
@@ -782,7 +804,7 @@ export default function AI_Medical_Assistant({ isOpen, onClose }) {
               <Ionicons name="send" size={18} color="#fff" />
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
+        </View>
 
         {showHistory && (
           <>
