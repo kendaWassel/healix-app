@@ -973,7 +973,19 @@
   "playRecording": "تشغيل التسجيل",
   "noSpeechDetected": "لم يُكتشَف أي كلام. حاولي التسجيل مرة أخرى في مكان هادئ.",
   "playReply": "استماع",
-"speaking": "جارٍ التحدث..."
+  "speaking": "جارٍ التحدث...",
+  "bookAppointment": "حجز موعد",
+  "chooseDoctorAndTime": "اختر طبيباً وموعداً متاحاً",
+  "loadingDoctors": "جارٍ تحميل الأطباء...",
+  "noDoctorsAvailable": "لا يوجد أطباء متاحون",
+  "noDoctorsAvailableDescription": "لا يوجد أطباء متاحون لهذا التخصص في الوقت الحالي.",
+  "availableAppointments": "المواعيد المتاحة",
+  "noAvailableSlots": "لا توجد مواعيد متاحة.",
+  "confirmBooking": "تأكيد الحجز",
+  "booking": "جارٍ الحجز...",
+  "consultationBooked": "تم حجز الاستشارة بنجاح!",
+  "audioFileNotObtained": "لم يتم الحصول على ملف التسجيل الصوتي.",
+"transcriptionFailed": "فشل تحويل الصوت إلى نص."
 },
 "forgotPassword": {
   "linkText": "نسيت كلمة المرور؟",
@@ -1115,6 +1127,12 @@
   "title": "الإشعارات",
   "empty": "لا توجد إشعارات بعد",
   "markAllRead": "تحديد الكل كمقروء"
+},
+"verifyEmail": {
+  "title": "تم تفعيل البريد الإلكتروني!",
+  "subtitle": "تم تفعيل حسابك بنجاح. يمكنك الآن تسجيل الدخول.",
+  "redirecting": "جارٍ التوجيه لتسجيل الدخول خلال {{seconds}} ثانية...",
+  "goToLoginNow": "الذهاب لتسجيل الدخول الآن"
 }
 }
 

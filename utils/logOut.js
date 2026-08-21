@@ -1,19 +1,15 @@
 // utils/logout.js
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./apiClient";
 
-const API_BASE = "https://unjuicy-schizogenous-gibson.ngrok-free.dev";
+
 
 export async function performLogout(navigation) {
   try {
-    const token = await AsyncStorage.getItem("token");
 
-    await fetch(`${API_BASE}/api/auth/logout`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "ngrok-skip-browser-warning": "true",
-        Authorization: `Bearer ${token}`,
-      },
+
+    await apiFetch(`/api/auth/logout`, {
+      method: "POST"
     });
   } catch (err) {
     console.error("Logout request failed:", err);

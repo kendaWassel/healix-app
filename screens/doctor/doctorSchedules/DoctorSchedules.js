@@ -151,7 +151,7 @@ const fetchSchedules = async (page, perPage) => {
         <Text style={styles.patientName}>{item.patient_name || t("doctorSchedules.unknown")}</Text>
         <View style={[styles.statusBadge, statusStyle(item.status)]}>
           <Text style={[styles.statusText, statusTextStyle(item.status)]}>
-            {item.status || t("doctorSchedules.unknown")}
+            {item.status || item.status_label || t("doctorSchedules.unknown")}
           </Text>
         </View>
       </View>

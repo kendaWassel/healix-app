@@ -86,7 +86,7 @@ const ReceiptDetails = ({ open, onClose, prescription_id }) => {
                 </Text>
                 <Text style={styles.infoLine}>
                   <Text style={styles.infoLabel}>{t("receiptDetails.status")} </Text>
-                  {receipt.status}
+                   {receipt.status_label || receipt.status}
                 </Text>
               </View>
 

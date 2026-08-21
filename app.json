@@ -3,6 +3,7 @@
     "name": "Healix",
     "slug": "medical-app",
     "version": "1.0.0",
+    "scheme": "healix",
     "orientation": "portrait",
     "icon": "./assets/Logo-dark.png",
     "userInterfaceStyle": "light",
@@ -23,6 +24,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#052443"
       },
+      "softwareKeyboardLayoutMode": "pan",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDVsG_l8IRcPhEoZFZOcrDbyLWdZ7HOpCo"
@@ -37,14 +39,6 @@
               "scheme": "tel"
             }
           }
-        },
-        {
-          "intent": {
-            "action": "android.intent.action.DIAL",
-            "data": {
-              "scheme": "tel"
-            }
-          }
         }
       ],
       "package": "com.anonymous.medicalapp",
@@ -52,7 +46,6 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.RECORD_AUDIO"
-        
       ]
     },
     "web": {

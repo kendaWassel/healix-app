@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import EditMedicalReportModal from "./EditMedicalReportModal";
 import { apiFetch } from "../../../utils/apiClient";
 import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
-import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExistingConditions";
+import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExisitingConditions";
 
 export default function PatientMedicalReport() {
   const { t, i18n } = useTranslation();

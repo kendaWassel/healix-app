@@ -10,10 +10,10 @@
     "ok": "OK",
     "yes": "Yes",
     "no": "No",
-        "edit":"Edit",
+    "edit":"Edit",
     "save":"Save",
     "none":"None",
-    "continue":"continue"
+    "continue":"Continue"
 
   },
  "header": {
@@ -70,8 +70,8 @@
     "value": "Value",
     "status": "Status",
     "waitingMessage": "Analyzing your medical tests, please wait...",
-    "downloadPdf":"download file",
-    "downloadFail":"error downloading"
+    "downloadPdf":"Download file",
+    "downloadFail":"Error Downloading"
   },
 
   "labOption": {
@@ -494,7 +494,7 @@
   "otherConditionsPlaceholder": "Any condition not listed above",
   "otherConditionsNote": "Shown to your doctor for review — not included in automatic contraindication checks",
   "addAllergy": "Add another allergy",
-" addMedication": "Add another medication"
+  "addMedication": "Add another medication"
 },
 "mapPicker": {
   "title": "Pick your location",
@@ -975,7 +975,19 @@
     "playRecording": "Play recording",
     "noSpeechDetected": "No speech was detected. Please try recording again in a quiet environment.",
     "playReply": "Listen",
-"speaking": "Speaking..."
+"speaking": "Speaking...",
+  "bookAppointment": "Book Appointment",
+  "chooseDoctorAndTime": "Choose a doctor and available appointment time",
+  "loadingDoctors": "Loading doctors...",
+  "noDoctorsAvailable": "No Doctors Available",
+  "noDoctorsAvailableDescription": "There are no doctors available for this specialty at the moment.",
+  "availableAppointments": "Available Appointments",
+  "noAvailableSlots": "No available appointment slots.",
+  "confirmBooking": "Confirm Booking",
+  "booking": "Booking...",
+  "consultationBooked": "Consultation booked successfully!",
+  "audioFileNotObtained": "Failed to get the audio recording file.",
+"transcriptionFailed": "Failed to convert audio to text."
 },
 
 "forgotPassword": {
@@ -1114,6 +1126,12 @@
   "title": "Notifications",
   "empty": "No notifications yet",
   "markAllRead": "Mark all as read"
+},
+"verifyEmail": {
+  "title": "Email Verified!",
+  "subtitle": "Your account has been successfully verified. You can now log in.",
+  "redirecting": "Redirecting to login in {{seconds}}s...",
+  "goToLoginNow": "Go to Login Now"
 }
 
 }
