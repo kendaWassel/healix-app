@@ -8,6 +8,8 @@ import {
   Modal,
   ActivityIndicator,
   StyleSheet,
+  Platform,
+  Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -15,7 +17,6 @@ import { apiFetch } from "../../utils/apiClient";
 
 export default function ForgotPasswordModal({ isOpen, onClose }) {
   const { t, i18n } = useTranslation();
-
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -25,6 +26,22 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow";
+    const hideEvent = Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide";
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -38,7 +55,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
     }
   }, [isOpen]);
 
-
   const handleSendCode = async () => {
     if (!email.trim()) {
       setError(t("forgotPassword.emailRequired"));
@@ -46,18 +62,15 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
     }
     setError(null);
     setIsLoading(true);
-
     try {
       const response = await apiFetch(`/api/auth/forgot-password`, {
         method: "POST",
         body: JSON.stringify({ email }),
       });
-
       const data = await response.json();
       if (!response.ok || data.status !== "success") {
         throw new Error(data.message || t("forgotPassword.sendCodeFailed"));
       }
-
       setStep(2);
     } catch (err) {
       setError(err.message || t("forgotPassword.sendCodeFailed"));
@@ -66,7 +79,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
     }
   };
 
-
   const handleVerifyOtp = async () => {
     if (!otp.trim()) {
       setError(t("forgotPassword.codeRequired"));
@@ -74,18 +86,15 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
     }
     setError(null);
     setIsLoading(true);
-
     try {
       const response = await apiFetch(`/api/auth/verify-reset-otp`, {
         method: "POST",
         body: JSON.stringify({ email, otp }),
       });
-
       const data = await response.json();
       if (!response.ok || data.status !== "success") {
         throw new Error(data.message || t("forgotPassword.invalidCode"));
       }
-
       setResetToken(data.data.reset_token);
       setStep(3);
     } catch (err) {
@@ -106,7 +115,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
     }
     setError(null);
     setIsLoading(true);
-
     try {
       const response = await apiFetch(`/api/auth/reset-password`, {
         method: "POST",
@@ -117,12 +125,10 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
           password_confirmation: confirmPassword,
         }),
       });
-
       const data = await response.json();
       if (!response.ok || data.status !== "success") {
         throw new Error(data.message || t("forgotPassword.resetFailed"));
       }
-
       setStep(4);
     } catch (err) {
       setError(err.message || t("forgotPassword.resetFailed"));
@@ -134,7 +140,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
   return (
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={styles.card}>
+        <View style={[styles.card, { marginBottom: keyboardHeight > 0 ? keyboardHeight + 12 : 0 }]}>
           {step !== 4 && (
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <Ionicons name="close" size={22} color="#374151" />
@@ -146,9 +152,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
             <>
               <Text style={styles.title}>{t("forgotPassword.step1Title")}</Text>
               <Text style={styles.subtitle}>{t("forgotPassword.step1Subtitle")}</Text>
-
               {error && <Text style={styles.error}>{error}</Text>}
-
               <View style={styles.inputGroup}>
                 <Ionicons name="mail" size={20} color="#39CCCC" />
                 <TextInput
@@ -161,7 +165,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                   editable={!isLoading}
                 />
               </View>
-
               <TouchableOpacity
                 style={[styles.primaryBtn, isLoading && styles.btnDisabled]}
                 onPress={handleSendCode}
@@ -183,9 +186,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
               <Text style={styles.subtitle}>
                 {t("forgotPassword.step2Subtitle", { email })}
               </Text>
-
               {error && <Text style={styles.error}>{error}</Text>}
-
               <View style={styles.inputGroup}>
                 <Ionicons name="key" size={20} color="#39CCCC" />
                 <TextInput
@@ -198,7 +199,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                   maxLength={6}
                 />
               </View>
-
               <TouchableOpacity
                 style={[styles.primaryBtn, isLoading && styles.btnDisabled]}
                 onPress={handleVerifyOtp}
@@ -210,7 +210,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                   <Text style={styles.primaryBtnText}>{t("forgotPassword.verifyCode")}</Text>
                 )}
               </TouchableOpacity>
-
               <TouchableOpacity onPress={handleSendCode} disabled={isLoading} style={{ marginTop: 12 }}>
                 <Text style={styles.linkText}>{t("forgotPassword.resendCode")}</Text>
               </TouchableOpacity>
@@ -222,9 +221,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
             <>
               <Text style={styles.title}>{t("forgotPassword.step3Title")}</Text>
               <Text style={styles.subtitle}>{t("forgotPassword.step3Subtitle")}</Text>
-
               {error && <Text style={styles.error}>{error}</Text>}
-
               <View style={styles.inputGroup}>
                 <Ionicons name="lock-closed" size={20} color="#39CCCC" />
                 <TextInput
@@ -239,7 +236,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                   <Ionicons name={passwordShown ? "eye" : "eye-off"} size={20} color="#767676" />
                 </TouchableOpacity>
               </View>
-
               <View style={styles.inputGroup}>
                 <Ionicons name="lock-closed" size={20} color="#39CCCC" />
                 <TextInput
@@ -251,7 +247,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                   editable={!isLoading}
                 />
               </View>
-
               <TouchableOpacity
                 style={[styles.primaryBtn, isLoading && styles.btnDisabled]}
                 onPress={handleResetPassword}
@@ -274,7 +269,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
               </View>
               <Text style={styles.title}>{t("forgotPassword.successTitle")}</Text>
               <Text style={styles.subtitle}>{t("forgotPassword.successSubtitle")}</Text>
-
               <TouchableOpacity style={styles.primaryBtn} onPress={onClose}>
                 <Text style={styles.primaryBtnText}>{t("forgotPassword.backToLogin")}</Text>
               </TouchableOpacity>

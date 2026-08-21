@@ -8,14 +8,15 @@ import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "../../../utils/apiClient";
 
 export default function CareProviderRegister() {
+  const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
-
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -23,14 +24,11 @@ export default function CareProviderRegister() {
   const [type, setType] = useState("");
   const [gender, setGender] = useState("");
   const [sessionFee, setSessionFee] = useState("");
-
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [licenseFile, setLicenseFile] = useState(null);
   const [licenseFileName, setLicenseFileName] = useState("");
-
   const navigation = useNavigation();
-  const API = "https://unjuicy-schizogenous-gibson.ngrok-free.dev";
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -61,7 +59,7 @@ export default function CareProviderRegister() {
       method: "POST",
       body: formData,
     });
-    if (!res.ok) throw new Error("Image upload failed");
+    if (!res.ok) throw new Error(t("careProviderRegister.imageUploadFailed"));
     return (await res.json()).image_id;
   };
 
@@ -77,7 +75,7 @@ export default function CareProviderRegister() {
       method: "POST",
       body: formData,
     });
-    if (!res.ok) throw new Error("File upload failed");
+    if (!res.ok) throw new Error(t("careProviderRegister.fileUploadFailed"));
     return (await res.json()).file_id;
   };
 
@@ -88,24 +86,21 @@ export default function CareProviderRegister() {
     try {
       const imageId = await uploadImage();
       const fileId = await uploadFile();
-
       const user = {
         role: "care_provider", full_name: fullName, email,
         care_provider_image_id: imageId, phone, password, type, gender,
         session_fee: parseInt(sessionFee) || 0, license_file_id: fileId,
       };
-
       const res = await apiFetch(`/api/auth/register`, {
         method: "POST",
         body: JSON.stringify(user),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Registration failed");
-
-      setSuccessMsg("Check your email for Activation link");
+      if (!res.ok) throw new Error(data.message || t("careProviderRegister.registrationFailed"));
+      setSuccessMsg(t("careProviderRegister.checkEmailActivation"));
       setTimeout(() => navigation.navigate("Login"), 800);
     } catch (err) {
-      setError(err.message || "Failed to create user. Please try again.");
+      setError(err.message || t("careProviderRegister.createUserFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -118,12 +113,10 @@ export default function CareProviderRegister() {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={26} color="#052443" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Care Provider Setup</Text>
+        <Text style={styles.headerTitle}>{t("careProviderRegister.title")}</Text>
         <View style={{ width: 26 }} />
       </View>
-
-      <Text style={styles.subtitle}>Fill your information to register</Text>
-
+      <Text style={styles.subtitle}>{t("careProviderRegister.subtitle")}</Text>
       {error && <Text style={styles.error}>{error}</Text>}
       {successMsg && <Text style={styles.success}>{successMsg}</Text>}
 
@@ -134,7 +127,7 @@ export default function CareProviderRegister() {
         ) : (
           <View style={styles.photoPlaceholder}>
             <Ionicons name="camera" size={26} color="#39CCCC" />
-            <Text style={styles.photoText}>Add Photo</Text>
+            <Text style={styles.photoText}>{t("careProviderRegister.addPhoto")}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -145,7 +138,7 @@ export default function CareProviderRegister() {
           <Ionicons name="person" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type full name"
+            placeholder={t("careProviderRegister.fullNamePlaceholder")}
             value={fullName}
             onChangeText={setFullName}
           />
@@ -156,7 +149,7 @@ export default function CareProviderRegister() {
           <Ionicons name="call" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type phone number"
+            placeholder={t("careProviderRegister.phonePlaceholder")}
             keyboardType="numeric"
             value={phone}
             onChangeText={setPhone}
@@ -168,17 +161,17 @@ export default function CareProviderRegister() {
           <View style={[styles.inputGroup, styles.half]}>
             <Ionicons name="briefcase" size={18} color="#39CCCC" />
             <Picker style={styles.picker} selectedValue={type} onValueChange={setType}>
-              <Picker.Item label="Type" value="" />
-              <Picker.Item label="Physio" value="physiotherapist" />
-              <Picker.Item label="Nurse" value="nurse" />
+              <Picker.Item label={t("careProviderRegister.typePlaceholder")} value="" />
+              <Picker.Item label={t("careProviderRegister.physio")} value="physiotherapist" />
+              <Picker.Item label={t("careProviderRegister.nurse")} value="nurse" />
             </Picker>
           </View>
           <View style={[styles.inputGroup, styles.half]}>
             <Ionicons name="male-female" size={18} color="#39CCCC" />
             <Picker style={styles.picker} selectedValue={gender} onValueChange={setGender}>
-              <Picker.Item label="Gender" value="" />
-              <Picker.Item label="Female" value="female" />
-              <Picker.Item label="Male" value="male" />
+              <Picker.Item label={t("careProviderRegister.genderPlaceholder")} value="" />
+              <Picker.Item label={t("careProviderRegister.female")} value="female" />
+              <Picker.Item label={t("careProviderRegister.male")} value="male" />
             </Picker>
           </View>
         </View>
@@ -188,7 +181,7 @@ export default function CareProviderRegister() {
           <Ionicons name="mail" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type email"
+            placeholder={t("careProviderRegister.emailPlaceholder")}
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -201,7 +194,7 @@ export default function CareProviderRegister() {
           <Ionicons name="lock-closed" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type Password..."
+            placeholder={t("careProviderRegister.passwordPlaceholder")}
             secureTextEntry={!passwordShown}
             value={password}
             onChangeText={setPassword}
@@ -219,7 +212,7 @@ export default function CareProviderRegister() {
         <TouchableOpacity style={styles.inputGroup} onPress={pickDocument}>
           <Ionicons name="cloud-upload" size={20} color="#39CCCC" />
           <Text style={styles.fileText} numberOfLines={1}>
-            {licenseFileName || "Upload License File"}
+            {licenseFileName || t("careProviderRegister.uploadLicenseFile")}
           </Text>
         </TouchableOpacity>
 
@@ -228,7 +221,7 @@ export default function CareProviderRegister() {
           <Ionicons name="cash" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Session fee..."
+            placeholder={t("careProviderRegister.sessionFeePlaceholder")}
             keyboardType="numeric"
             value={sessionFee}
             onChangeText={setSessionFee}
@@ -245,7 +238,7 @@ export default function CareProviderRegister() {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Register</Text>
+            <Text style={styles.buttonText}>{t("careProviderRegister.registerButton")}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -255,20 +248,17 @@ export default function CareProviderRegister() {
 
 const styles = StyleSheet.create({
   container: { backgroundColor: "#fff", flexGrow: 1, paddingBottom: 40 },
-
   header: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingHorizontal: 20, paddingTop: Platform.OS === "ios" ? 50 : 30,
     paddingBottom: 10,
   },
   headerTitle: { fontSize: 17, fontWeight: "600", color: "#052443" },
-
   subtitle: {
     fontSize: 15, color: "#767676", textAlign: "center", marginBottom: 16,
   },
   error: { color: "red", textAlign: "center", marginBottom: 8, paddingHorizontal: 20 },
   success: { color: "green", textAlign: "center", marginBottom: 8, paddingHorizontal: 20 },
-
   photoCircle: {
     width: 90, height: 90, borderRadius: 45, borderWidth: 1,
     borderColor: "#e0e0e0", alignSelf: "center", overflow: "hidden",
@@ -277,11 +267,9 @@ const styles = StyleSheet.create({
   photoImg: { width: "100%", height: "100%" },
   photoPlaceholder: { flex: 1, justifyContent: "center", alignItems: "center" },
   photoText: { fontSize: 10, color: "#767676", marginTop: 4 },
-
   form: { paddingHorizontal: 24 },
   row: { flexDirection: "row", gap: 10 },
   half: { flex: 1 },
-
   inputGroup: {
     flexDirection: "row", alignItems: "center", borderWidth: 1,
     borderColor: "#e0e0e0", borderRadius: 10, paddingHorizontal: 14,
@@ -291,7 +279,6 @@ const styles = StyleSheet.create({
   picker: { flex: 1, color: "#767676" },
   fileText: { flex: 1, color: "#767676", fontSize: 14 },
   dollar: { color: "#767676", fontSize: 16 },
-
   button: {
     backgroundColor: "#052443", padding: 16, borderRadius: 10,
     alignItems: "center", marginTop: 18,

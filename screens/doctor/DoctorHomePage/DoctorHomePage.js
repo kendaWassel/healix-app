@@ -11,12 +11,11 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import DoctorHeader from "../../Components/header/DoctorHeader";
 import Footer from "../../Components/footer/Footer";
-import {BASE_URL,NGROK_HEADERS} from "../../../constants/api";
+import { apiFetch } from "../../../utils/apiClient";
 const DoctorHomePage = () => {
   const { t } = useTranslation();
 
@@ -44,18 +43,9 @@ const DoctorHomePage = () => {
     setError(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        `${BASE_URL}/doctor/profile`,
-        {
-          method: "GET",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-        }
-      );
+  
+      const response = await apiFetch(
+        `/api/doctor/profile`);
 
       const data = await response.json();
       console.log("Doctor profile:", data);
@@ -122,7 +112,7 @@ const DoctorHomePage = () => {
     setSuccessMsg(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
+  
 
       // 🔹 بما أن الباك اند يستقبل ملفات مباشرة، يجب استخدام FormData
       const formData = new FormData();
@@ -142,15 +132,10 @@ const DoctorHomePage = () => {
         });
       }
 
-      const response = await fetch(
-        `${BASE_URL}/doctor/profile`,
+      const response = await apiFetch(
+        `/api/doctor/profile`,
         {
           method: "POST",
-            headers: {
-              ...NGROK_HEADERS,
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
           body: formData,
         }
       );
