@@ -278,7 +278,13 @@ export default function MedicalReportModal({
               <Ionicons name="close" size={26} color="#666" />
             </TouchableOpacity>
           </View>
-          <ScrollView style={styles.body}>
+        <ScrollView
+  style={styles.body}
+  contentContainerStyle={{
+    paddingBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 20,
+  }}
+  keyboardShouldPersistTaps="handled"
+>
             <Text style={styles.label}>{t("medicalReportModal.diagnosis")}</Text>
             <TextInput
               style={styles.input}
