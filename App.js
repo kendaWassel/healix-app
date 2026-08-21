@@ -18,7 +18,8 @@ import Pharmacist from "./screens/Pharmacist/Pharmacist";
 import Delivery from "./screens/delivery/Delivery";
 import Nurse from "./screens/nurse/Nurse";
 import Physio from "./screens/physio/Physio";
-
+import DeepLinkListener from "./DeepLinkListener";
+import VerifyEmailScreen from "./screens/verifyemailScreen/VerifyEmailScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,7 @@ export default function App() {
   return (
     <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
     <NavigationContainer>
+       <DeepLinkListener />
       <Stack.Navigator
         initialRouteName="Landing"
         screenOptions={{ headerShown: false }}
@@ -61,7 +63,8 @@ export default function App() {
         <Stack.Screen name="Delivery" component={Delivery} />
         <Stack.Screen name="Nurse" component={Nurse} />
         <Stack.Screen name="Physio" component={Physio} />
- 
+        <Stack.Screen name="VerifyEmailScreen" component={VerifyEmailScreen} />
+        
       </Stack.Navigator>
     </NavigationContainer>
     </StripeProvider>

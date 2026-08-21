@@ -1,12 +1,13 @@
 import { useState } from "react";
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, Image,
   ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
+import { LinearGradient } from "expo-linear-gradient";
 import ForgotPasswordModal from "./ForgetPasswordModal";
 import { apiFetch } from "../../utils/apiClient";
 
@@ -73,11 +74,18 @@ export default function UserLogin() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.header}>
-          <Text style={{ color: "#fff", fontSize: 36, fontWeight: "bold" }}>
-            Heal<Text style={{ color: "#39CCCC" }}>ix</Text>
-          </Text>
-        </View>
+       <LinearGradient
+          colors={["#052443", "#0a3a6b"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.header}
+        >
+          <Image
+            source={require("../../assets/Logo-light.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </LinearGradient>
         <View style={styles.form}>
           <Text style={styles.title}>
             {t("userLogin.title")} <Text style={styles.titleCyan}>{t("userLogin.titleCyan")}</Text>
@@ -158,15 +166,20 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   scroll: { flexGrow: 1 },
   header: {
-    backgroundColor: "#052443",
-    paddingVertical: 50,
+    paddingVertical: 45,
     alignItems: "center",
     justifyContent: "center",
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+      borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
+    shadowColor: "#052443",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+      elevation: 8,
+  
   },
   logo: { width: 180, height: 120 },
-  form: { padding: 28, marginTop: 120 },
+  form: { padding: 28, marginTop: 60 },
   title: {
     fontSize: 26, fontWeight: "bold", color: "#052443", textAlign: "center",
   },

@@ -40,7 +40,7 @@ export default function DoctorRegister() {
 
   const navigation = useNavigation();
 
-  // تحميل التخصصات عند فتح الشاشة
+
   useEffect(() => {
     fetchSpecs();
   }, []);

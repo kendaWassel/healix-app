@@ -1,8 +1,5 @@
-// hooks/useDrugSuggestion.js
 import { useState, useCallback, useRef } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const DDI_URL = "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/ddi";
+import { apiFetch } from "../../../utils/apiClient";
 
 export function useDrugSuggestion() {
   const [suggestion, setSuggestion] = useState(null);
@@ -10,28 +7,18 @@ export function useDrugSuggestion() {
 
   const checkDrugName = useCallback((value, fieldKey) => {
     clearTimeout(timeoutRef.current);
-
     if (!value || value.trim().length < 3) {
       setSuggestion(null);
       return;
     }
-
-    // wait 600ms after finishing write
+ 
     timeoutRef.current = setTimeout(async () => {
       try {
-        const token = await AsyncStorage.getItem("token");   // 👈 await مضاف
-        const res = await fetch(
-          `${DDI_URL}/resolve?name=${encodeURIComponent(value)}`,
-          {
-            headers: {
-              "ngrok-skip-browser-warning": "true",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const res = await apiFetch(
+          `/api/ddi/resolve?name=${encodeURIComponent(value)}`
         );
         const data = await res.json();
         const result = data.data || data;
-
         if (result.resolved === false && result.suggestion) {
           setSuggestion({
             field: fieldKey,

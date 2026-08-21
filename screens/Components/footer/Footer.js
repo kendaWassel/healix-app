@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
@@ -7,9 +7,11 @@ const Footer = () => {
 
   return (
     <View style={styles.footer}>
-      <Text style={styles.logo}>
-        Heal<Text style={{ color: "#39CCCC" }}>ix</Text>
-      </Text>
+       <Image
+                      source={require("../../../assets/Logo-light.png")}
+                      style={styles.logo}
+                      resizeMode="contain"
+                    />
       <Text style={styles.tagline}>{t("footer.tagline")}</Text>
 
       <View style={styles.socialRow}>
@@ -40,7 +42,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: -20,
   },
-  logo: { fontSize: 33, fontWeight: "bold", color: "#fff" },
+  logo: {
+   width: 140,
+   height: 45,
+   marginBottom: 4,
+ },
   tagline: { fontSize: 13, color: "#9fb3c8", marginTop: 6, marginBottom: 16 },
   socialRow: { flexDirection: "row", gap: 14, marginBottom: 20 },
   socialBtn: {

@@ -221,7 +221,7 @@ export default function MyOrders() {
                     <Text style={styles.patientName}>{order.patient}</Text>
                     <Text style={styles.sourceText}>
                       <Text style={styles.labelCyan}>{t("myOrdersScreen.source")} </Text>
-                      {order.source}
+                      {order.source_label || order.source}
                     </Text>
 
                     <View style={{ marginTop: 10 }}>
