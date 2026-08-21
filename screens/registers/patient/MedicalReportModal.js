@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   Modal, ScrollView, Platform, Keyboard,
@@ -54,6 +54,7 @@ export default function MedicalReportModal({
   gender,
 }) {
   const { t, i18n } = useTranslation();
+  const scrollRef = useRef(null);
   const [conditionSearch, setConditionSearch] = useState("");
   const [showConditionsPicker, setShowConditionsPicker] = useState(false);
   const [preExistingSearch, setPreExistingSearch] = useState("");
@@ -89,6 +90,23 @@ export default function MedicalReportModal({
       hideSub.remove();
     };
   }, []);
+
+  // Scrolls the currently-focused TextInput into view above the keyboard.
+  // scrollResponderScrollNativeHandleToKeyboard is the built-in RN API for
+  // this exact purpose — it measures the focused node's position relative
+  // to the keyboard and scrolls just enough to clear it, rather than
+  // relying on the user to scroll manually. The small delay lets the
+  // keyboard's show animation start first so the measurement is accurate.
+  const handleInputFocus = (event) => {
+    const nodeHandle = event.target;
+    setTimeout(() => {
+      scrollRef.current?.scrollResponderScrollNativeHandleToKeyboard(
+        nodeHandle,
+        130,
+        true
+      );
+    }, 100);
+  };
 
   useEffect(() => {
     const parseList = (value) => {
@@ -234,6 +252,7 @@ export default function MedicalReportModal({
               placeholder={placeholder}
               editable={!disabled}
               onChangeText={(text) => updateListItem(setter, index, text, field)}
+              onFocus={handleInputFocus}
             />
             {!disabled && list.length > 1 && (
               <TouchableOpacity
@@ -278,19 +297,21 @@ export default function MedicalReportModal({
               <Ionicons name="close" size={26} color="#666" />
             </TouchableOpacity>
           </View>
-        <ScrollView
-  style={styles.body}
-  contentContainerStyle={{
-    paddingBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 20,
-  }}
-  keyboardShouldPersistTaps="handled"
->
+          <ScrollView
+            ref={scrollRef}
+            style={styles.body}
+            contentContainerStyle={{
+              paddingBottom: keyboardHeight > 0 ? keyboardHeight + 40 : 20,
+            }}
+            keyboardShouldPersistTaps="handled"
+          >
             <Text style={styles.label}>{t("medicalReportModal.diagnosis")}</Text>
             <TextInput
               style={styles.input}
               placeholder={t("medicalReportModal.diagnosisPlaceholder")}
               value={fields.diagnosis}
               onChangeText={(t2) => setFields({ ...fields, diagnosis: t2 })}
+              onFocus={handleInputFocus}
             />
             <TouchableOpacity
               style={[styles.fileBtn, isEdit && styles.fileBtnDisabled]}
@@ -312,7 +333,6 @@ export default function MedicalReportModal({
                 {fileName || t("medicalReportModal.medicalFiles")}
               </Text>
             </TouchableOpacity>
-
             <Text style={styles.label}>{t("medicalReportModal.chronicDiseases")}</Text>
             <TouchableOpacity
               onPress={() => !isEdit && setShowConditionsPicker(true)}
@@ -354,7 +374,6 @@ export default function MedicalReportModal({
                 })}
               </View>
             )}
-
             <Text style={styles.label}>{t("medicalReportModal.preExistingConditions")}</Text>
             <TouchableOpacity
               onPress={() => !isEdit && setShowPreExistingPicker(true)}
@@ -396,7 +415,6 @@ export default function MedicalReportModal({
                 })}
               </View>
             )}
-
             <Text style={styles.label}>{t("medicalReportModal.otherConditions")}</Text>
             <Text style={styles.hint}>{t("medicalReportModal.otherConditionsNote")}</Text>
             <TextInput
@@ -405,6 +423,7 @@ export default function MedicalReportModal({
               value={fields.other_conditions}
               onChangeText={(t2) => setFields({ ...fields, other_conditions: t2 })}
               editable={!isEdit}
+              onFocus={handleInputFocus}
             />
             <Text style={styles.label}>{t("medicalReportModal.previousSurgeries")}</Text>
             <TextInput
@@ -413,8 +432,8 @@ export default function MedicalReportModal({
               value={fields.previous_surgeries}
               onChangeText={(t2) => setFields({ ...fields, previous_surgeries: t2 })}
               editable={!isEdit}
+              onFocus={handleInputFocus}
             />
-
             <Text style={styles.label}>{t("medicalReportModal.allergies")}</Text>
             {renderDrugList(
               allergies,
@@ -424,7 +443,6 @@ export default function MedicalReportModal({
               t("medicalReportModal.allergiesPlaceholder"),
               isEdit
             )}
-
             {(gender === "female" || gender === "أنثى") && (
               <>
                 <Text style={styles.label}>{t("medicalReportModal.pregnancyStatus")}</Text>
@@ -468,7 +486,6 @@ export default function MedicalReportModal({
                 </View>
               </>
             )}
-
             <Text style={styles.label}>{t("medicalReportModal.currentMedications")}</Text>
             {renderDrugList(
               medications,
@@ -492,7 +509,6 @@ export default function MedicalReportModal({
           </View>
         </View>
       </View>
-
       <Modal
         visible={showConditionsPicker}
         transparent
@@ -552,7 +568,6 @@ export default function MedicalReportModal({
           </View>
         </View>
       </Modal>
-
       <Modal
         visible={showPreExistingPicker}
         transparent
