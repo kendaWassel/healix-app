@@ -9,20 +9,19 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import PatientHeader from "../../Components/header/PatientHeader";
 import Footer from "../../Components/footer/Footer";
 import FAID from "./FAID/FAID";
-import AI_Medical_Assistant from "../AIMedicalAssistant/AI_Medical_Assistant";
+import { useNavigation } from "@react-navigation/native";
 import PatientMedicalReport from "../../Components/PatientMedicalReport/PatientMedicalReport";
 import { LinearGradient } from "expo-linear-gradient";
 import { apiFetch } from "../../../utils/apiClient";
 
 export default function PatientHomePage() {
   const { t } = useTranslation();
+  const navigation = useNavigation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
-  const [showSymptomChat, setShowSymptomChat] = useState(false);
-
   const [patientData, setPatientData] = useState({
     full_name: "",
     email: "",
@@ -127,7 +126,10 @@ export default function PatientHomePage() {
 
       {/* Chat Bot Button */}
       <View style={styles.chatBotWrapper}>
-        <TouchableOpacity onPress={() => setShowSymptomChat(true)} activeOpacity={0.9}>
+     <TouchableOpacity
+   onPress={() => navigation.navigate("AIMedicalAssistant")}
+    activeOpacity={0.9}
+    >
           <LinearGradient
             colors={["#052443", "#0a3d62"]}
             start={{ x: 0, y: 0 }}
@@ -256,10 +258,7 @@ export default function PatientHomePage() {
         <Footer />
       </ScrollView>
 
-      <AI_Medical_Assistant
-        isOpen={showSymptomChat}
-        onClose={() => setShowSymptomChat(false)}
-      />
+   
     </View>
   );
 }
