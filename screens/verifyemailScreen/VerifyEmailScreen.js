@@ -1,94 +1,71 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+
 
 export default function VerifyEmailScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const [countdown, setCountdown] = useState(3);
+  const route = useRoute();
+  const [status, setStatus] = useState("loading"); 
 
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          navigation.reset({ index: 0, routes: [{ name: "Login" }] });
-          return 0;
-        }
-        return prev - 1;
+ useEffect(() => {
+  const finalizeVerification = async () => {
+    const { token, role } = route.params || {};
+    if (!token) {
+      setStatus("error");
+      return;
+    }
+    await AsyncStorage.setItem("token", token);
+    setStatus("success");
+    setTimeout(() => {
+      const routes = {
+        patient: "Patient",
+        doctor: "Doctor",
+        pharmacist: "Pharmacist",
+        nurse: "Nurse",
+        physiotherapist: "Physio",
+        delivery: "Delivery",
+      };
+      navigation.reset({
+        index: 0,
+        routes: [{ name: routes[role] || "Login" }],
       });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
+    }, 1500);
+  };
+  finalizeVerification();
+}, []);
   return (
     <View style={styles.container}>
-      <View style={styles.iconCircle}>
-        <Ionicons name="checkmark-circle" size={72} color="#16a34a" />
-      </View>
-      <Text style={styles.title}>{t("verifyEmail.title")}</Text>
-      <Text style={styles.subtitle}>{t("verifyEmail.subtitle")}</Text>
-      <Text style={styles.countdown}>
-        {t("verifyEmail.redirecting", { seconds: countdown })}
-      </Text>
-      <TouchableOpacity
-        onPress={() => navigation.reset({ index: 0, routes: [{ name: "Login" }] })}
-        style={styles.button}
-      >
-        <Text style={styles.buttonText}>{t("verifyEmail.goToLoginNow")}</Text>
-      </TouchableOpacity>
+      {status === "loading" && (
+        <>
+          <ActivityIndicator size="large" color="#39CCCC" />
+          <Text style={styles.subtitle}>{t("verifyEmail.verifying")}</Text>
+        </>
+      )}
+      {status === "success" && (
+        <>
+          <Ionicons name="checkmark-circle" size={72} color="#16a34a" />
+          <Text style={styles.title}>{t("verifyEmail.title")}</Text>
+          <Text style={styles.subtitle}>{t("verifyEmail.subtitle")}</Text>
+        </>
+      )}
+      {status === "error" && (
+        <>
+          <Ionicons name="alert-circle" size={72} color="#dc2626" />
+          <Text style={styles.title}>{t("verifyEmail.errorTitle")}</Text>
+          <Text style={styles.subtitle}>{t("verifyEmail.errorSubtitle")}</Text>
+        </>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 32,
-  },
-  iconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "#f0fdf4",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#052443",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: "#6b7280",
-    textAlign: "center",
-    marginBottom: 20,
-    lineHeight: 22,
-  },
-  countdown: {
-    fontSize: 13,
-    color: "#9ca3af",
-    marginBottom: 30,
-  },
-  button: {
-    backgroundColor: "#052443",
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 10,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 15,
-  },
+  container: { flex: 1, backgroundColor: "#fff", justifyContent: "center", alignItems: "center", padding: 32 },
+  title: { fontSize: 22, fontWeight: "700", color: "#052443", textAlign: "center", marginTop: 20, marginBottom: 10 },
+  subtitle: { fontSize: 15, color: "#6b7280", textAlign: "center", lineHeight: 22 },
 });
