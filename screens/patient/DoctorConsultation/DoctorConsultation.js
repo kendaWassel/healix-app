@@ -52,7 +52,7 @@ export default function DoctorConsultation() {
       setSpecialitytypes(data.data);
 
       const totalItems = data.meta.total;
-      const totalPages = Math.ceil(totalItems / (perPage || 6));
+       const totalPages = Math.ceil(totalItems / (perPage || 6));
       setPagination((prev) => ({
         ...prev,
         totalItems,
