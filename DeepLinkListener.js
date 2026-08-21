@@ -8,8 +8,9 @@ export default function DeepLinkListener() {
   useEffect(() => {
     const handleDeepLink = (event) => {
       if (!event?.url) return;
-      const { path, queryParams } = Linking.parse(event.url);
-      const cleanPath = (path || "").replace(/^\//, "");
+      const { path, hostname, queryParams } = Linking.parse(event.url);
+    
+      const cleanPath = (path || hostname || "").replace(/^\//, "");
       const token = Array.isArray(queryParams?.token)
         ? queryParams.token[0]
         : queryParams?.token;
