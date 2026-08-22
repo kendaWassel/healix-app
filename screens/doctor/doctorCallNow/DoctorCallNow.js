@@ -25,11 +25,8 @@ export default function DoctorCallNow({ navigation, route }) {
   const appState = useRef(AppState.currentState);
 
   const finish = () => {
-    if (onDone) {
-      onDone();
-    } else {
-      navigation.goBack();
-    }
+   if (onDone) onDone();
+   navigation.goBack();
   };
 
   useEffect(() => {

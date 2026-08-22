@@ -708,7 +708,8 @@
   "file": "ملف",
   "close": "إغلاق",
   "otherConditions": "حالات أخرى",
-  "currentMedications": "الأدوية الحالية"
+  "currentMedications": "الأدوية الحالية",
+  "preExistingConditions": "الأمراض السابقة"
 } , 
 
 "createPrescription": {
