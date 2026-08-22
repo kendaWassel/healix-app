@@ -708,7 +708,8 @@
   "file": "File",
   "close": "Close",
   "otherConditions": "Other Conditions",
-  "currentMedications": "Current Medications"
+  "currentMedications": "Current Medications",
+  "preExistingConditions": "Pre-existing Conditions"
 },
 
 "createPrescription": {
