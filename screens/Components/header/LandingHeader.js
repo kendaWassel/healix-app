@@ -10,13 +10,13 @@ const LandingHeader = () => {
   return (
     <View style={styles.nav}>
       {/* Logo */}
-      <TouchableOpacity onPress={() => navigation.navigate("DoctorHome")}>
+  
                   <Image
                     source={require("../../../assets/Logo-dark.png")}
                     style={styles.logo}
                     resizeMode="contain"
                   />
-                </TouchableOpacity>
+     
      
 
       {/* الأزرار */}

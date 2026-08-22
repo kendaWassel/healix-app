@@ -119,7 +119,8 @@
     "addMedication": "إضافة دواء آخر",
     "allergiesPlaceholder": "مثال: panadol",
     "medicationsPlaceholder": "مثال: Metformin",
-    "updateSuccess": "تم تحديث التقرير الطبي بنجاح"
+    "updateSuccess": "تم تحديث التقرير الطبي بنجاح",
+    "preExistingConditions" :"الأمراض السابقة"
   },
   "deliveryHome": {
     "title": "معلومات الحساب",
