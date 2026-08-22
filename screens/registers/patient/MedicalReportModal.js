@@ -54,6 +54,7 @@ export const uploadFile = async (medicalFile) => {
 export default function MedicalReportModal({ navigation, route }) {
   const {
     initialValues,
+   showTreatmentPlan,
     gender,
     onSubmit,
     isEdit,
@@ -80,6 +81,7 @@ export default function MedicalReportModal({ navigation, route }) {
   const [medicalFile, setMedicalFile] = useState(null);
   const [photoName, setPhotoName] = useState("");
   const [fileName, setFileName] = useState("");
+  const [treatmentPlan, setTreatmentPlan] = useState("");
 
   const handleClose = () => {
     navigation.goBack();
@@ -110,6 +112,7 @@ export default function MedicalReportModal({ navigation, route }) {
       setMedications(parseList(initialValues.current_medications));
       setPhotoFile(initialValues.photoFile || null);
       setMedicalFile(initialValues.medicalFile || null);
+      setTreatmentPlan(initialValues.treatment_plan || "");
     }
     clearSuggestion();
   }, []);
@@ -143,6 +146,7 @@ export default function MedicalReportModal({ navigation, route }) {
         current_medications: medications.map((m) => m.trim()).filter(Boolean),
         photoFile,
         medicalFile,
+        ...(showTreatmentPlan ? { treatment_plan: treatmentPlan } : {}),
       });
     }
     navigation.goBack();
@@ -452,6 +456,18 @@ export default function MedicalReportModal({ navigation, route }) {
           t("medicalReportModal.currentMedicationsPlaceholder"),
           false
         )}
+           {showTreatmentPlan && (
+         <>
+           <Text style={styles.label}>{t("modifyMedicalReport.treatmentPlan")}</Text>
+           <TextInput
+             value={treatmentPlan}
+             onChangeText={setTreatmentPlan}
+             placeholder={t("modifyMedicalReport.treatmentPlanPlaceholder")}
+             placeholderTextColor="#9ca3af"
+             style={styles.input}
+           />
+         </>
+       )}
       </KeyboardAwareScrollView>
       <View style={styles.footer}>
         <View style={styles.footerRow}>

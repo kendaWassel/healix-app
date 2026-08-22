@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  Alert,
-  StyleSheet,
-  Platform,
-  Keyboard,
-} from "react-native";
+ import {
+   View,
+   Text,
+   TextInput,
+   TouchableOpacity,
+   ScrollView,
+   Modal,
+   Alert,
+   StyleSheet,
+   Platform,
+   Keyboard,
+ } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useTranslation } from "react-i18next";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
 import { apiFetch } from "../../../utils/apiClient";
@@ -220,7 +221,12 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
       >
         <View style={styles.overlay}>
           <View style={[styles.formCard, { marginBottom: keyboardHeight > 0 ? keyboardHeight + 12 : 0 }]}>
-            <ScrollView showsVerticalScrollIndicator={false}>
+           <KeyboardAwareScrollView
+             showsVerticalScrollIndicator={false}
+             enableOnAndroid={true}
+             extraScrollHeight={20}
+             keyboardShouldPersistTaps="handled"
+           >
               <Text style={styles.formTitle}>{t("createPrescription.prescriptionDetails")}</Text>
               <View style={styles.fieldWrapper}>
                 <Text style={styles.label}>{t("createPrescription.diagnosis")}</Text>
@@ -316,7 +322,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
                   <Text style={styles.dangerBtnText}>{t("createPrescription.cancel")}</Text>
                 </TouchableOpacity>
               </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
           </View>
         </View>
       </Modal>
