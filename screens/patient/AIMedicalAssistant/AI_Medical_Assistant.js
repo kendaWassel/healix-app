@@ -11,6 +11,7 @@ import {
   Pressable,
   Platform,
   Keyboard,
+    Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -114,7 +115,50 @@ export default function AI_Medical_Assistant({ navigation }) {
       return [];
     }
   };
+const deleteConversation = async (id) => {
+   try {
+     const response = await apiFetch(`/api/patient/conversations/${id}`, {
+       method: "DELETE",
+     });
+     if (!response.ok) {
+       const data = await response.json().catch(() => ({}));
+       Alert.alert(
+         t("aiAssistant.deleteFailedTitle"),
+         data.message || t("aiAssistant.deleteFailedMessage")
+       );
+       return;
+     }
+     const updatedList = await fetchConversations();
+     setConversations(updatedList);
+     // If the deleted conversation was the one currently open, fall back
+     // to the next most recent conversation, or start a fresh one if none remain.
+     if (id === conversationId) {
+       if (updatedList.length > 0) {
+         await openConversation(updatedList[0].id, updatedList);
+       } else {
+         await startNewConversation();
+       }
+     }
+   } catch (err) {
+     console.error("Failed to delete conversation:", err);
+     Alert.alert(t("aiAssistant.deleteFailedTitle"), t("aiAssistant.connectionError"));
+   }
+ };
 
+ const confirmDeleteConversation = (id, title) => {
+   Alert.alert(
+     t("aiAssistant.deleteConfirmTitle"),
+     t("aiAssistant.deleteConfirmMessage", { title: title || `#${id}` }),
+     [
+       { text: t("common.cancel"), style: "cancel" },
+       {
+         text: t("common.delete") || t("aiAssistant.deleteAction"),
+         style: "destructive",
+         onPress: () => deleteConversation(id),
+       },
+     ]
+   );
+ };
   const openConversation = async (id, conversationsList = conversations) => {
     setIsStarting(true);
     closeSidebar();
@@ -821,6 +865,17 @@ export default function AI_Medical_Assistant({ navigation }) {
                       {c.ended_at ? t("aiAssistant.completed") : t("aiAssistant.inProgress")}
                     </Text>
                   </View>
+
+                  <TouchableOpacity
+                   onPress={(e) => {
+                     e.stopPropagation?.();
+                     confirmDeleteConversation(c.id, c.title);
+                   }}
+                   style={styles.deleteConvBtn}
+                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                 >
+                   <Ionicons name="trash-outline" size={16} color="#dc2626" />
+                 </TouchableOpacity>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -1264,4 +1319,5 @@ const styles = StyleSheet.create({
   noDoctorsBox: { minHeight: 220, justifyContent: "center", alignItems: "center", padding: 20 },
   noDoctorsTitle: { fontSize: 15, fontWeight: "700", color: "#374151", marginTop: 12, textAlign: "center" },
   noDoctorsText: { fontSize: 12, color: "#9ca3af", marginTop: 6, textAlign: "center", lineHeight: 18 },
+  deleteConvBtn: { padding: 4 },
 });

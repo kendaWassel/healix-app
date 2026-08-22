@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from "react";
- import {
-   View,
-   Text,
-   TextInput,
-   TouchableOpacity,
-   ScrollView,
-   Modal,
-   Alert,
-   StyleSheet,
-   Platform,
-   Keyboard,
- } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  ScrollView,
+  Alert,
+  StyleSheet,
+} from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useTranslation } from "react-i18next";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
 import { apiFetch } from "../../../utils/apiClient";
 
-const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId }) => {
+
+export default function CreatePrescriptionScreen({ navigation, route }) {
+  const { consultationId, patientId, onDone } = route.params || {};
   const { t } = useTranslation();
-  const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [showConfirmPopup, setShowConfirmPopup] = useState(true);
   const [showFormPopup, setShowFormPopup] = useState(false);
   const [diagnosis, setDiagnosis] = useState("");
   const [notes, setNotes] = useState("");
@@ -34,33 +34,14 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
   const { suggestion, checkDrugName, clearSuggestion } = useDrugSuggestion();
   const [conditionWarnings, setConditionWarnings] = useState([]);
   const [conditionCheckAvailable, setConditionCheckAvailable] = useState(true);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-  useEffect(() => {
-    const showEvent = Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow";
-    const hideEvent = Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide";
-    const showSub = Keyboard.addListener(showEvent, (e) => {
-      setKeyboardHeight(e.endCoordinates.height);
-    });
-    const hideSub = Keyboard.addListener(hideEvent, () => {
-      setKeyboardHeight(0);
-    });
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      setShowConfirmPopup(true);
-      setShowFormPopup(false);
-      setDiagnosis("");
-      setNotes("");
-      setMedicines([{ name: "", dosage: "", boxes: "", instructions: "" }]);
-      clearSuggestion();
-    }
-  }, [isOpen]);
+  const finish = () => {
+     if (onDone) {
+     onDone();
+   } else {
+     navigation.goBack();
+   }
+  };
 
   const handleAddMedicine = () => {
     setMedicines([
@@ -97,7 +78,6 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
       });
       if (!response.ok) return { hasWarning: false, conditionAvailable: true };
       const result_json = await response.json();
-      console.log("verify result", result_json);
       const data = result_json.data || result_json;
       const dangerous = (data.drug_interactions || []).filter(
         (f) =>
@@ -162,7 +142,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
         const data = await response.json();
         console.log("Prescription saved:", data);
         setShowInteractionPopup(false);
-        if (onSave) onSave();
+        finish();
       } else {
         const errorData = await response.json();
         Alert.alert("Error", errorData.message || t("createPrescription.saveFailed"));
@@ -174,8 +154,8 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
   };
 
   return (
-    <>
-      {/* Confirm Popup */}
+    <View style={{ flex: 1, backgroundColor: "#f3f4f6" }}>
+      {/* Confirm Popup — no TextInputs, safe as a small Modal */}
       <Modal
         visible={showConfirmPopup}
         transparent
@@ -201,7 +181,7 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
               <TouchableOpacity
                 onPress={() => {
                   setShowConfirmPopup(false);
-                  if (onClose) onClose();
+                  finish();
                 }}
                 style={styles.dangerBtn}
               >
@@ -212,122 +192,114 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
         </View>
       </Modal>
 
-      {/* Prescription Form */}
-      <Modal
-        visible={showFormPopup}
-        transparent
-        animationType="fade"
-        onRequestClose={() => {}}
-      >
-        <View style={styles.overlay}>
-          <View style={[styles.formCard, { marginBottom: keyboardHeight > 0 ? keyboardHeight + 12 : 0 }]}>
-           <KeyboardAwareScrollView
-             showsVerticalScrollIndicator={false}
-             enableOnAndroid={true}
-             extraScrollHeight={20}
-             keyboardShouldPersistTaps="handled"
-           >
-              <Text style={styles.formTitle}>{t("createPrescription.prescriptionDetails")}</Text>
-              <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>{t("createPrescription.diagnosis")}</Text>
+      {/* Prescription Form — real screen content now, not a Modal */}
+      {showFormPopup && (
+        <View style={{ flex: 1 }}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>{t("createPrescription.prescriptionDetails")}</Text>
+            <TouchableOpacity onPress={finish}>
+              <Text style={styles.headerClose}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          <KeyboardAwareScrollView
+            style={{ flex: 1, paddingHorizontal: 20 }}
+            enableOnAndroid={true}
+            extraScrollHeight={20}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.fieldWrapper}>
+              <Text style={styles.label}>{t("createPrescription.diagnosis")}</Text>
+              <TextInput
+                value={diagnosis}
+                onChangeText={setDiagnosis}
+                placeholder={t("createPrescription.diagnosisPlaceholder")}
+                style={styles.input}
+              />
+            </View>
+            <View style={styles.fieldWrapper}>
+              <Text style={styles.label}>{t("createPrescription.notes")}</Text>
+              <TextInput
+                value={notes}
+                onChangeText={setNotes}
+                placeholder={t("createPrescription.notesPlaceholder")}
+                multiline
+                numberOfLines={3}
+                style={[styles.input, styles.textarea]}
+              />
+            </View>
+            <Text style={styles.sectionTitle}>{t("createPrescription.medicines")}</Text>
+            {medicines.map((med, index) => (
+              <View key={index} style={styles.medicineBox}>
                 <TextInput
-                  value={diagnosis}
-                  onChangeText={setDiagnosis}
-                  placeholder={t("createPrescription.diagnosisPlaceholder")}
+                  placeholder={t("createPrescription.medicineNamePlaceholder")}
+                  value={med.name}
+                  onChangeText={(t2) => handleMedicineChange(index, "name", t2)}
+                  style={[styles.input, { marginBottom: 8 }]}
+                />
+                {suggestion?.field === `medicine-${index}` && (
+                  <View style={styles.suggestionBox}>
+                    <Text style={styles.suggestionText}>
+                      {t("drugSuggestion.didYouMean")}{" "}
+                      <Text style={styles.suggestionValue}>
+                        {suggestion.value}
+                      </Text>
+                      ?
+                    </Text>
+                    <TouchableOpacity onPress={() => acceptSuggestion(index)}>
+                      <Text style={styles.suggestionUseBtn}>{t("drugSuggestion.useIt")}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                <TextInput
+                  placeholder={t("createPrescription.dosagePlaceholder")}
+                  value={med.dosage}
+                  onChangeText={(t2) => handleMedicineChange(index, "dosage", t2)}
+                  style={[styles.input, { marginBottom: 8 }]}
+                />
+                <TextInput
+                  placeholder={t("createPrescription.boxesPlaceholder")}
+                  value={med.boxes}
+                  onChangeText={(t2) => handleMedicineChange(index, "boxes", t2)}
+                  keyboardType="numeric"
+                  style={[styles.input, { marginBottom: 8 }]}
+                />
+                <TextInput
+                  placeholder={t("createPrescription.instructionsPlaceholder")}
+                  value={med.instructions}
+                  onChangeText={(t2) =>
+                    handleMedicineChange(index, "instructions", t2)
+                  }
                   style={styles.input}
                 />
               </View>
-              <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>{t("createPrescription.notes")}</Text>
-                <TextInput
-                  value={notes}
-                  onChangeText={setNotes}
-                  placeholder={t("createPrescription.notesPlaceholder")}
-                  multiline
-                  numberOfLines={3}
-                  style={[styles.input, styles.textarea]}
-                />
-              </View>
-              <Text style={styles.sectionTitle}>{t("createPrescription.medicines")}</Text>
-              {medicines.map((med, index) => (
-                <View key={index} style={styles.medicineBox}>
-                  <TextInput
-                    placeholder={t("createPrescription.medicineNamePlaceholder")}
-                    value={med.name}
-                    onChangeText={(t2) => handleMedicineChange(index, "name", t2)}
-                    style={[styles.input, { marginBottom: 8 }]}
-                  />
-                  {suggestion?.field === `medicine-${index}` && (
-                    <View style={styles.suggestionBox}>
-                      <Text style={styles.suggestionText}>
-                        {t("drugSuggestion.didYouMean")}{" "}
-                        <Text style={styles.suggestionValue}>
-                          {suggestion.value}
-                        </Text>
-                        ?
-                      </Text>
-                      <TouchableOpacity onPress={() => acceptSuggestion(index)}>
-                        <Text style={styles.suggestionUseBtn}>{t("drugSuggestion.useIt")}</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  <TextInput
-                    placeholder={t("createPrescription.dosagePlaceholder")}
-                    value={med.dosage}
-                    onChangeText={(t2) => handleMedicineChange(index, "dosage", t2)}
-                    style={[styles.input, { marginBottom: 8 }]}
-                  />
-                  <TextInput
-                    placeholder={t("createPrescription.boxesPlaceholder")}
-                    value={med.boxes}
-                    onChangeText={(t2) => handleMedicineChange(index, "boxes", t2)}
-                    keyboardType="numeric"
-                    style={[styles.input, { marginBottom: 8 }]}
-                  />
-                  <TextInput
-                    placeholder={t("createPrescription.instructionsPlaceholder")}
-                    value={med.instructions}
-                    onChangeText={(t2) =>
-                      handleMedicineChange(index, "instructions", t2)
-                    }
-                    style={styles.input}
-                  />
-                </View>
-              ))}
+            ))}
+            <TouchableOpacity
+              onPress={handleAddMedicine}
+              style={styles.addMedicineBtn}
+            >
+              <Text style={styles.addMedicineBtnText}>
+                {t("createPrescription.addAnotherMedicine")}
+              </Text>
+            </TouchableOpacity>
+            <View style={{ gap: 12, marginTop: 8, marginBottom: 24 }}>
               <TouchableOpacity
-                onPress={handleAddMedicine}
-                style={styles.addMedicineBtn}
+                onPress={handleSavePrescription}
+                disabled={checking}
+                style={[styles.primaryBtn, checking && styles.btnDisabled]}
               >
-                <Text style={styles.addMedicineBtnText}>
-                  {t("createPrescription.addAnotherMedicine")}
+                <Text style={styles.primaryBtnText}>
+                  {checking ? t("createPrescription.checkingSafety") : t("createPrescription.savePrescription")}
                 </Text>
               </TouchableOpacity>
-              <View style={{ gap: 12, marginTop: 8 }}>
-                <TouchableOpacity
-                  onPress={handleSavePrescription}
-                  disabled={checking}
-                  style={[styles.primaryBtn, checking && styles.btnDisabled]}
-                >
-                  <Text style={styles.primaryBtnText}>
-                    {checking ? t("createPrescription.checkingSafety") : t("createPrescription.savePrescription")}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setShowFormPopup(false);
-                    if (onClose) onClose();
-                  }}
-                  style={styles.dangerBtn}
-                >
-                  <Text style={styles.dangerBtnText}>{t("createPrescription.cancel")}</Text>
-                </TouchableOpacity>
-              </View>
-            </KeyboardAwareScrollView>
-          </View>
+              <TouchableOpacity onPress={finish} style={styles.dangerBtn}>
+                <Text style={styles.dangerBtnText}>{t("createPrescription.cancel")}</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAwareScrollView>
         </View>
-      </Modal>
+      )}
 
-      {/* Safety Warnings Popup */}
+      {/* Safety Warnings Popup — no TextInputs, safe as a Modal */}
       <Modal
         visible={showInteractionPopup}
         transparent
@@ -490,9 +462,9 @@ const CreatePrescription = ({ isOpen, onClose, onSave, consultationId, patientId
           </View>
         </View>
       </Modal>
-    </>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   overlay: {
@@ -500,6 +472,26 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(5,36,67,0.5)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 16,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  headerClose: {
+    fontSize: 22,
+    color: "#6b7280",
   },
   confirmCard: {
     backgroundColor: "#fff",
@@ -528,15 +520,9 @@ const styles = StyleSheet.create({
     maxWidth: 420,
     maxHeight: "80%",
   },
-  formTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 20,
-    textAlign: "center",
-  },
   fieldWrapper: {
     marginBottom: 14,
+    marginTop: 14,
   },
   label: {
     fontWeight: "500",
@@ -551,6 +537,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     color: "#111827",
+    backgroundColor: "#fff",
   },
   textarea: {
     height: 80,
@@ -561,6 +548,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#111827",
     marginBottom: 10,
+    marginTop: 10,
   },
   medicineBox: {
     borderWidth: 1,
@@ -568,6 +556,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
+    backgroundColor: "#fff",
   },
   suggestionBox: {
     flexDirection: "row",
@@ -747,16 +736,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginTop: 4,
   },
-  allergyChip: {
-    backgroundColor: "#fed7aa",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  allergyChipText: {
-    fontSize: 11,
-    color: "#9a3412",
-  },
   pregnancyCard: {
     borderRadius: 10,
     borderWidth: 2,
@@ -809,5 +788,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-
-export default CreatePrescription;

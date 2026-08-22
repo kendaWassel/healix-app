@@ -259,7 +259,9 @@ export default function NewOrders() {
               {prescriptions.map((item) => (
                 <View key={item.prescription_id} style={styles.card}>
                   <Text style={styles.patientName}>{item.patient}</Text>
+               <Text style={styles.sourceText}>
                {t("newOrdersScreen.source")} {item.source_label || item.source}
+                  </Text>
                   {item.medicines && item.medicines.length > 0 ? (
                     <View style={{ marginTop: 8 }}>
                       {item.medicines.map((m, i) => (
