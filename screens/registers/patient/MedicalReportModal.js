@@ -46,17 +46,7 @@ export const uploadFile = async (medicalFile) => {
   return (await res.json()).file_id;
 };
 
-// NOTE: this is a full navigation screen (not a Modal). Two extra
-// route.params control what happens after a successful submit:
-// - afterSuccessScreen: if provided, shows DoneModal (which lives HERE,
-//   the last screen still on the nav stack after any earlier `replace`
-//   calls in the caller chain), then navigates to that screen name when
-//   the user taps "Go home".
-// - if afterSuccessScreen is absent (e.g. PatientRegister flow), behavior
-//   is unchanged: onSubmit runs, then navigation.goBack() immediately.
-// onSubmit should return `true` on success to trigger DoneModal; any other
-// return value (including undefined, e.g. PatientRegister's sync handler)
-// falls through to the plain goBack() path.
+
 export default function MedicalReportModal({ navigation, route }) {
   const {
     initialValues,
