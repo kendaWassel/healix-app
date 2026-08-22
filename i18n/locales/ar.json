@@ -13,7 +13,8 @@
         "edit": "تعديل",
     "save": "حفظ",
     "none": "لا يوجد",
-    "continue": "المتابعة"
+    "continue": "المتابعة",
+     "delete": "حذف"
   },
   "header": {
   "home": "الرئيسية",
@@ -523,7 +524,8 @@
   "otherConditionsPlaceholder": "أي حالة غير مذكورة أعلاه",
   "otherConditionsNote": "تُعرض للطبيب للمراجعة، ولا تدخل في الفحص الآلي للتعارضات",
   "addAllergy": "إضافة حساسية أخرى",
-  "addMedication": "إضافة دواء آخر"
+  "addMedication": "إضافة دواء آخر",
+  "preExistingConditions": "الأمراض السابقة"
 },
 "mapPicker": {
   "title": "اختر موقعك",
@@ -672,7 +674,8 @@
   "enterReason": "الرجاء إدخال سبب الخدمة",
   "selectScheduledTime": "الرجاء اختيار وقت محدد",
   "requestServiceFailed": "فشل طلب الخدمة",
-  "requestServiceFailedRetry": "فشل طلب الخدمة. حاول مرة أخرى."
+  "requestServiceFailedRetry": "فشل طلب الخدمة. حاول مرة أخرى.",
+  "consultationCompletedMsg": "تم إنهاء الاستشارة وتحديث السجل الطبي بنجاح"
 },
 
 "modifyMedicalReport": {
@@ -985,7 +988,12 @@
   "booking": "جارٍ الحجز...",
   "consultationBooked": "تم حجز الاستشارة بنجاح!",
   "audioFileNotObtained": "لم يتم الحصول على ملف التسجيل الصوتي.",
-"transcriptionFailed": "فشل تحويل الصوت إلى نص."
+"transcriptionFailed": "فشل تحويل الصوت إلى نص.",
+  "deleteConfirmTitle": "حذف المحادثة",
+  "deleteConfirmMessage": "هل أنتِ متأكدة من حذف \"{{title}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+  "deleteFailedTitle": "فشل الحذف",
+  "deleteFailedMessage": "تعذّر حذف المحادثة، حاولي مجدداً",
+  "deleteAction": "حذف"
 },
 "forgotPassword": {
   "linkText": "نسيت كلمة المرور؟",

@@ -103,7 +103,7 @@ const DoctorHomePage = () => {
     );
 
     setNewImageAsset(manipulated);
-    setDoctorData((prev) => ({ ...prev, image: manipulated.uri }));   // معاينة فورية محلية
+    setDoctorData((prev) => ({ ...prev, image: manipulated.uri }));   
   };
 
   const handleUpdate = async () => {

@@ -14,6 +14,7 @@ import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
 import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExisitingConditions";
 import { apiFetch } from "../../../utils/apiClient";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
+import DoneModal from "../../patient/DoctorConsultation/booking/DoneModal";
 
 export const uploadImage = async (photoFile) => {
   const formData = new FormData();
@@ -45,20 +46,26 @@ export const uploadFile = async (medicalFile) => {
   return (await res.json()).file_id;
 };
 
-// NOTE: this is a full navigation screen (not a Modal) — Android's Dialog
-// window (which RN's <Modal> renders into) doesn't participate in keyboard
-// resize/pan behavior, breaking every keyboard-avoidance approach tried.
-// initialValues / gender / onSubmit / isEdit / errorMessage now arrive via
-// route.params instead of direct props, since callers navigate to this
-// screen instead of rendering it inline.
+// NOTE: this is a full navigation screen (not a Modal). Two extra
+// route.params control what happens after a successful submit:
+// - afterSuccessScreen: if provided, shows DoneModal (which lives HERE,
+//   the last screen still on the nav stack after any earlier `replace`
+//   calls in the caller chain), then navigates to that screen name when
+//   the user taps "Go home".
+// - if afterSuccessScreen is absent (e.g. PatientRegister flow), behavior
+//   is unchanged: onSubmit runs, then navigation.goBack() immediately.
+// onSubmit should return `true` on success to trigger DoneModal; any other
+// return value (including undefined, e.g. PatientRegister's sync handler)
+// falls through to the plain goBack() path.
 export default function MedicalReportModal({ navigation, route }) {
   const {
     initialValues,
-   showTreatmentPlan,
     gender,
     onSubmit,
     isEdit,
     errorMessage,
+    showTreatmentPlan,
+    afterSuccessScreen,
   } = route?.params || {};
 
   const { t, i18n } = useTranslation();
@@ -82,6 +89,7 @@ export default function MedicalReportModal({ navigation, route }) {
   const [photoName, setPhotoName] = useState("");
   const [fileName, setFileName] = useState("");
   const [treatmentPlan, setTreatmentPlan] = useState("");
+  const [showDone, setShowDone] = useState(false);
 
   const handleClose = () => {
     navigation.goBack();
@@ -139,8 +147,9 @@ export default function MedicalReportModal({ navigation, route }) {
   };
 
   const handleSubmit = async () => {
+    let success;
     if (onSubmit) {
-      await onSubmit({
+      success = await onSubmit({
         ...fields,
         allergies: allergies.map((a) => a.trim()).filter(Boolean),
         current_medications: medications.map((m) => m.trim()).filter(Boolean),
@@ -149,7 +158,11 @@ export default function MedicalReportModal({ navigation, route }) {
         ...(showTreatmentPlan ? { treatment_plan: treatmentPlan } : {}),
       });
     }
-    navigation.goBack();
+    if (afterSuccessScreen && success === true) {
+      setShowDone(true);
+    } else {
+      navigation.goBack();
+    }
   };
 
   const toggleCondition = (value) => {
@@ -456,18 +469,18 @@ export default function MedicalReportModal({ navigation, route }) {
           t("medicalReportModal.currentMedicationsPlaceholder"),
           false
         )}
-           {showTreatmentPlan && (
-         <>
-           <Text style={styles.label}>{t("modifyMedicalReport.treatmentPlan")}</Text>
-           <TextInput
-             value={treatmentPlan}
-             onChangeText={setTreatmentPlan}
-             placeholder={t("modifyMedicalReport.treatmentPlanPlaceholder")}
-             placeholderTextColor="#9ca3af"
-             style={styles.input}
-           />
-         </>
-       )}
+        {showTreatmentPlan && (
+          <>
+            <Text style={styles.label}>{t("modifyMedicalReport.treatmentPlan")}</Text>
+            <TextInput
+              value={treatmentPlan}
+              onChangeText={setTreatmentPlan}
+              placeholder={t("modifyMedicalReport.treatmentPlanPlaceholder")}
+              placeholderTextColor="#9ca3af"
+              style={styles.input}
+            />
+          </>
+        )}
       </KeyboardAwareScrollView>
       <View style={styles.footer}>
         <View style={styles.footerRow}>
@@ -479,6 +492,7 @@ export default function MedicalReportModal({ navigation, route }) {
           ) : null}
         </View>
       </View>
+
       <Modal
         visible={showConditionsPicker}
         transparent
@@ -538,6 +552,7 @@ export default function MedicalReportModal({ navigation, route }) {
           </View>
         </View>
       </Modal>
+
       <Modal
         visible={showPreExistingPicker}
         transparent
@@ -597,6 +612,15 @@ export default function MedicalReportModal({ navigation, route }) {
           </View>
         </View>
       </Modal>
+
+      <DoneModal
+        isOpen={showDone}
+        onHome={() => {
+          setShowDone(false);
+         navigation.navigate("Doctor", { screen: afterSuccessScreen });
+        }}
+        message={t("doctorEndCall.consultationCompletedMsg")}
+      />
     </View>
   );
 }

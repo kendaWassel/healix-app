@@ -12,7 +12,6 @@ import { useTranslation } from "react-i18next";
 import DoctorHeader from "../../Components/header/DoctorHeader";
 import Footer from "../../Components/footer/Footer";
 import PatientDetailsModal from "./PatientDetailsModal";
-import DoctorCallNow from "../doctorCallNow/DoctorCallNow";
 import { useNavigation } from "@react-navigation/native";
 import { apiFetch } from "../../../utils/apiClient";
 
@@ -42,7 +41,6 @@ export default function DoctorSchedules() {
     totalPages: 1,
   });
   const [patientPhone, setPatientPhone] = useState(null);
-  const [showCallModal, setShowCallModal] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [selectedCardId, setSelectedCardId] = useState(null);
   const [selectedConsultationId, setSelectedConsultationId] = useState(null);
@@ -160,10 +158,12 @@ const fetchSchedules = async (page, perPage) => {
         <TouchableOpacity
           style={styles.callButton}
           onPress={() => {
-            setSelectedPatientId(item.patient_id);
-            setPatientPhone(item.patient_phone);
-            setSelectedConsultationId(item.consultation_id || item.id);
-            setShowCallModal(true);
+               navigation.navigate("DoctorCallNowScreen", {
+             patientId: item.patient_id,
+             patient_phone: item.patient_phone,
+             consultationId: item.consultation_id || item.id,
+             onDone: () => fetchSchedules(pagination.currentPage, pagination.itemsPerPage),
+           });
           }}
         >
           <Ionicons name="call" size={16} color="#fff" />
@@ -300,19 +300,7 @@ const fetchSchedules = async (page, perPage) => {
         />
       )}
 
-      <DoctorCallNow
-        isOpen={showCallModal}
-        onClose={() => {
-          setShowCallModal(false);
-          setSelectedPatientId(null);
-          setPatientPhone(null);
-          setSelectedConsultationId(null);
-          fetchSchedules(pagination.currentPage, pagination.itemsPerPage);
-        }}
-        patientId={selectedPatientId}
-        patient_phone={patientPhone}
-        consultationId={selectedConsultationId}
-      />
+
     </View>
   );
 }

@@ -13,7 +13,8 @@
     "edit":"Edit",
     "save":"Save",
     "none":"None",
-    "continue":"Continue"
+    "continue":"Continue",
+   "delete": "Delete"
 
   },
  "header": {
@@ -494,7 +495,8 @@
   "otherConditionsPlaceholder": "Any condition not listed above",
   "otherConditionsNote": "Shown to your doctor for review — not included in automatic contraindication checks",
   "addAllergy": "Add another allergy",
-  "addMedication": "Add another medication"
+  "addMedication": "Add another medication",
+   "preExistingConditions": "Pre-existing Conditions"
 },
 "mapPicker": {
   "title": "Pick your location",
@@ -672,7 +674,8 @@
   "enterReason": "Please enter a reason for the service",
   "selectScheduledTime": "Please select a scheduled time",
   "requestServiceFailed": "Failed to request service",
-  "requestServiceFailedRetry": "Failed to request service. Please try again."
+  "requestServiceFailedRetry": "Failed to request service. Please try again.",
+   "consultationCompletedMsg": "Consultation ended and medical record updated successfully"
 },
 
 "modifyMedicalReport": {
@@ -987,7 +990,12 @@
   "booking": "Booking...",
   "consultationBooked": "Consultation booked successfully!",
   "audioFileNotObtained": "Failed to get the audio recording file.",
-"transcriptionFailed": "Failed to convert audio to text."
+"transcriptionFailed": "Failed to convert audio to text.",
+  "deleteConfirmTitle": "Delete Conversation",
+  "deleteConfirmMessage": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
+  "deleteFailedTitle": "Delete Failed",
+  "deleteFailedMessage": "Could not delete the conversation, please try again",
+  "deleteAction": "Delete"
 },
 
 "forgotPassword": {

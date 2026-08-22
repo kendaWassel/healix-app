@@ -23,6 +23,9 @@ import VerifyEmailScreen from "./screens/verifyemailScreen/VerifyEmailScreen";
 import AI_Medical_Assistant from "./screens/patient/AIMedicalAssistant/AI_Medical_Assistant";
 import EditMedicalReportModal from "./screens/Components/PatientMedicalReport/EditMedicalReportModal";
 import MedicalReportModal from "./screens/registers/patient/MedicalReportModal";
+import CreatePrescriptionScreen from "./screens/doctor/prescription/CreatePrescription";
+import DoctorEndCallModal from "./screens/doctor/doctorCallNow/DoctorEndCallModal";
+import DoctorCallNow from "./screens/doctor/doctorCallNow/DoctorCallNow";
 const Stack = createNativeStackNavigator();
 
 const STRIPE_PUBLISHABLE_KEY = "pk_test_51Sb7QiADj5gMi232iI6BqSWfA8HBIm1VFNrlZxAtk1U0gPLuZ7KxgQipkKw0Jv2QzcDq1Mjc4lISxsrjcYnY5GpH00wseIAv7q";
@@ -82,6 +85,23 @@ export default function App() {
    component={MedicalReportModal}
    options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
  />
+
+   <Stack.Screen
+     name="CreatePrescriptionScreen"
+     component={CreatePrescriptionScreen}
+     options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+   />
+   <Stack.Screen
+     name="DoctorEndCallScreen"
+     component={DoctorEndCallModal}
+     options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+   />
+   <Stack.Screen
+     name="DoctorCallNowScreen"
+     component={DoctorCallNow}
+     options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+   />
+
       </Stack.Navigator>
     </NavigationContainer>
     </StripeProvider>
