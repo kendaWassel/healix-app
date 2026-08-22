@@ -21,6 +21,8 @@ import Physio from "./screens/physio/Physio";
 import DeepLinkListener from "./DeepLinkListener";
 import VerifyEmailScreen from "./screens/verifyemailScreen/VerifyEmailScreen";
 import AI_Medical_Assistant from "./screens/patient/AIMedicalAssistant/AI_Medical_Assistant";
+import EditMedicalReportModal from "./screens/Components/PatientMedicalReport/EditMedicalReportModal";
+import MedicalReportModal from "./screens/registers/patient/MedicalReportModal";
 const Stack = createNativeStackNavigator();
 
 const STRIPE_PUBLISHABLE_KEY = "pk_test_51Sb7QiADj5gMi232iI6BqSWfA8HBIm1VFNrlZxAtk1U0gPLuZ7KxgQipkKw0Jv2QzcDq1Mjc4lISxsrjcYnY5GpH00wseIAv7q";
@@ -69,7 +71,17 @@ export default function App() {
          component={AI_Medical_Assistant}
          options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
        />
+           <Stack.Screen
+         name="EditMedicalReportScreen"
+         component={EditMedicalReportModal}
+         options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+       />
 
+       + <Stack.Screen
+   name="MedicalReportScreen"
+   component={MedicalReportModal}
+   options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+ />
       </Stack.Navigator>
     </NavigationContainer>
     </StripeProvider>

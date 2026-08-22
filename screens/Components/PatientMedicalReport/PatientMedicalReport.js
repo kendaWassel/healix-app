@@ -8,17 +8,17 @@ import {
 } from "react-native";
 
 import { useTranslation } from "react-i18next";
-import EditMedicalReportModal from "./EditMedicalReportModal";
+import { useNavigation } from "@react-navigation/native";
 import { apiFetch } from "../../../utils/apiClient";
 import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
 import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExisitingConditions";
 
 export default function PatientMedicalReport() {
   const { t, i18n } = useTranslation();
-
+const navigation = useNavigation();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+ 
  const [patientGender, setPatientGender] = useState(null); 
 
   const fetchMedicalReport = async () => {
@@ -86,7 +86,13 @@ const fetchPatientGender = async () => {
 
         <TouchableOpacity
           style={styles.editBtn}
-          onPress={() => setEditOpen(true)}
+         onPress={() =>
+           navigation.navigate("EditMedicalReportScreen", {
+             report,
+             gender: patientGender,
+             onSaved: fetchMedicalReport,
+           })
+         }
         >
           <Text style={styles.editText}>{t("common.edit")}</Text>
         </TouchableOpacity>
@@ -185,18 +191,7 @@ const fetchPatientGender = async () => {
         <Text>{t("patientMedicalReport.noReport")}</Text>
       )}
 
-      <EditMedicalReportModal
-        visible={editOpen}
-        onClose={() => {
-          setEditOpen(false);
-        }}
-        report={report}
-          gender={patientGender}
-        onSaved={() => {
-          setEditOpen(false);
-          fetchMedicalReport();
-        }}
-      />
+
     </View>
   );
 }
