@@ -77,7 +77,7 @@ export default function App() {
          options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
        />
 
-       + <Stack.Screen
+        <Stack.Screen
    name="MedicalReportScreen"
    component={MedicalReportModal}
    options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
