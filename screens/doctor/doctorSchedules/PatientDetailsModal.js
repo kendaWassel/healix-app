@@ -13,7 +13,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
 import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExistingConditions";
-
 export default function PatientDetailsModal({ details, onClose }) {
   const { t, i18n } = useTranslation();
   if (!details) return null;
