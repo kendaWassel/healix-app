@@ -117,7 +117,8 @@
     "allergiesPlaceholder": "e.g. Panadol",
     "medicationsPlaceholder": "e.g. Metformin",
     "noReport":"No medical report available",
-    "updateSuccess":"Medical report updated successfully"
+    "updateSuccess":"Medical report updated successfully",
+    "preExistingConditions" :"Pre existing Conditions"
   },
   "deliveryHome": {
     "title": "Account Information",
@@ -496,7 +497,7 @@
   "otherConditionsNote": "Shown to your doctor for review — not included in automatic contraindication checks",
   "addAllergy": "Add another allergy",
   "addMedication": "Add another medication",
-   "preExistingConditions": "Pre-existing Conditions"
+   "preExistingConditions": "Pre existing Conditions"
 },
 "mapPicker": {
   "title": "Pick your location",
@@ -709,7 +710,7 @@
   "close": "Close",
   "otherConditions": "Other Conditions",
   "currentMedications": "Current Medications",
-  "preExistingConditions": "Pre-existing Conditions"
+  "preExistingConditions": "Pre existing Conditions"
 },
 
 "createPrescription": {
