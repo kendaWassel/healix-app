@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
+import React, { useEffect } from "react";
+import { Alert } from "react-native";
 import { useTranslation } from "react-i18next";
-import MedicalReportModal from "../../registers/patient/MedicalReportModal";
+import { useNavigation } from "@react-navigation/native";
 import { apiFetch } from "../../../utils/apiClient";
+
+
 export default function ModifyMedicalReport({
   isOpen,
   onClose,
@@ -12,50 +14,21 @@ export default function ModifyMedicalReport({
   consultationId,
 }) {
   const { t } = useTranslation();
-  const [editOpen, setEditOpen] = useState(false);
-  const [fields, setFields] = useState({
-    diagnosis: "",
-    chronic_diseases: "",
-    previous_surgeries: "",
-    allergies: "",
-    current_medications: "",
-    treatment_plan: "",
-  });
-
-  useEffect(() => {
-    if (isOpen) {
-      setEditOpen(true);
-      if (medicalReport) {
-        setFields({
-          diagnosis: medicalReport.diagnosis || "",
-          chronic_diseases: medicalReport.chronic_diseases || "",
-          previous_surgeries: medicalReport.previous_surgeries || "",
-          allergies: medicalReport.allergies || "",
-          current_medications: medicalReport.current_medications || "",
-          treatment_plan: medicalReport.treatment_plan || "",
-        });
-      }
-    }
-  }, [isOpen, medicalReport]);
+  const navigation = useNavigation();
 
   const handleLocalSubmit = async (formFields) => {
-
     try {
       const dataToSubmit = {
         ...formFields,
-        treatment_plan: fields.treatment_plan,
         consultation_id: consultationId,
       };
-
- const response = await apiFetch(`/api/patients/${patientId}/medical-record/update`, {
-  method: "PUT",
-  body: JSON.stringify(dataToSubmit),
-});
-
+      const response = await apiFetch(`/api/patients/${patientId}/medical-record/update`, {
+        method: "PUT",
+        body: JSON.stringify(dataToSubmit),
+      });
       if (response.ok) {
         const data = await response.json();
         console.log("Medical report updated:", data);
-        setEditOpen(false);
         if (onSave) onSave(dataToSubmit);
       } else {
         const errorData = await response.json();
@@ -67,52 +40,25 @@ export default function ModifyMedicalReport({
     }
   };
 
-  if (!isOpen || !editOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      const fields = {
+        diagnosis: medicalReport?.diagnosis || "",
+        chronic_diseases: medicalReport?.chronic_diseases || "",
+        previous_surgeries: medicalReport?.previous_surgeries || "",
+        allergies: medicalReport?.allergies || "",
+        current_medications: medicalReport?.current_medications || "",
+        treatment_plan: medicalReport?.treatment_plan || "",
+      };
+      navigation.navigate("MedicalReportScreen", {
+        initialValues: fields,
+        isEdit: true,
+        showTreatmentPlan: true,
+        onSubmit: handleLocalSubmit,
+      });
+      if (onClose) onClose();
+    }
+  }, [isOpen]);
 
-  return (
-    <MedicalReportModal
-      open={editOpen}
-      onClose={() => {
-        setEditOpen(false);
-        if (onClose) onClose();
-      }}
-      onSubmit={handleLocalSubmit}
-      initialValues={fields}
-      isEdit={true}
-    >
-      <View style={styles.fieldWrapper}>
-        <Text style={styles.label}>{t("modifyMedicalReport.treatmentPlan")}</Text>
-        <TextInput
-          value={fields.treatment_plan}
-          onChangeText={(text) =>
-            setFields({ ...fields, treatment_plan: text })
-          }
-          placeholder={t("modifyMedicalReport.treatmentPlanPlaceholder")}
-          placeholderTextColor="#9ca3af"
-          style={styles.input}
-        />
-      </View>
-    </MedicalReportModal>
-  );
+  return null;
 }
-
-const styles = StyleSheet.create({
-  fieldWrapper: {
-    marginBottom: 4,
-  },
-  label: {
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: 6,
-    fontSize: 14,
-  },
-  input: {
-    width: "100%",
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: "#111827",
-  },
-});
