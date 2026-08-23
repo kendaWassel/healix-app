@@ -8,10 +8,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { CardField, useStripe } from "@stripe/stripe-react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-
-const API_BASE = "https://unjuicy-schizogenous-gibson.ngrok-free.dev";
+import { apiFetch } from "../../../utils/apiClient";
 
 export default function PaymentScreen({ payableType, payableId, onSuccess }) {
   const { confirmPayment } = useStripe();
@@ -21,14 +19,12 @@ export default function PaymentScreen({ payableType, payableId, onSuccess }) {
   const [displayAmount, setDisplayAmount] = useState(null);
   const [alertInfo, setAlertInfo] = useState(null);
 
-  const lang = () => (i18n.language?.startsWith("ar") ? "ar" : "en");
-
   const showAlert = (title, message) => setAlertInfo({ title, message });
 
-  const pollStatus = async (intentId, headers) => {
+  const pollStatus = async (intentId) => {
     for (let i = 0; i < 5; i++) {
       await new Promise((r) => setTimeout(r, 2000));
-      const res = await fetch(`${API_BASE}/api/payments/status/${intentId}`, { headers });
+      const res = await apiFetch(`/api/payments/status/${intentId}`);
       const json = await res.json();
       if (json.data?.status === "paid") return true;
       if (json.data?.status === "failed" || json.data?.status === "cancelled") return false;
@@ -39,17 +35,8 @@ export default function PaymentScreen({ payableType, payableId, onSuccess }) {
   const handlePay = async () => {
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem("token");
-      const headers = {
-        "Content-Type": "application/json",
-        "Accept-Language": lang(),
-        "ngrok-skip-browser-warning": "true",
-        Authorization: `Bearer ${token}`,
-      };
-
-      const res = await fetch(`${API_BASE}/api/payments/intent`, {
+      const res = await apiFetch(`/api/payments/intent`, {
         method: "POST",
-        headers,
         body: JSON.stringify({ payable_type: payableType, payable_id: payableId }),
       });
       const json = await res.json();
@@ -77,7 +64,6 @@ export default function PaymentScreen({ payableType, payableId, onSuccess }) {
       }
 
       const { client_secret, payment_intent_id } = json.data;
-
       if (json.data.amount != null) {
         setDisplayAmount(`${(json.data.amount / 100).toFixed(2)} ${json.data.currency}`);
       }
@@ -85,21 +71,19 @@ export default function PaymentScreen({ payableType, payableId, onSuccess }) {
       const { error } = await confirmPayment(client_secret, {
         paymentMethodType: "Card",
       });
-
       if (error) {
         showAlert(t("payment.failed"), error.message);
         return;
       }
 
-      const confirmed = await pollStatus(payment_intent_id, headers);
-
+      const confirmed = await pollStatus(payment_intent_id);
       if (confirmed) {
         onSuccess?.();
       } else {
         showAlert(t("payment.processing"), t("payment.processingHint"));
         setTimeout(() => {
-    onSuccess?.();   
-  }, 1500);
+          onSuccess?.();
+        }, 1500);
       }
     } catch (e) {
       showAlert(t("payment.error"), t("payment.connectionError"));
@@ -113,14 +97,12 @@ export default function PaymentScreen({ payableType, payableId, onSuccess }) {
       {displayAmount && (
         <Text style={styles.amountText}>{displayAmount}</Text>
       )}
-
       <CardField
         postalCodeEnabled={false}
         placeholders={{ number: "4242 4242 4242 4242" }}
         style={styles.cardField}
         onCardChange={(d) => setCardComplete(d.complete)}
       />
-
       <TouchableOpacity
         onPress={handlePay}
         disabled={!cardComplete || loading}

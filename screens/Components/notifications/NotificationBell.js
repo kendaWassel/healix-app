@@ -123,6 +123,29 @@ export default function NotificationBell() {
     }
   };
 
+
+// Delete a single notification
+const deleteNotification = async (id) => {
+  try {
+    const res = await apiFetch(`/api/notifications/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      throw new Error("Failed to delete notification");
+    }
+
+    setNotifications((prev) => {
+      const target = prev.find((n) => n.id === id);
+      if (target && !target.read_at) {
+        setUnreadCount((count) => Math.max(0, count - 1));
+      }
+      return prev.filter((n) => n.id !== id);
+    });
+  } catch (err) {
+    console.error("Failed to delete notification:", err);
+  }
+};
+  
   // Get notification title according to current language
   const getNotificationTitle = (notification) => {
     if (i18n.language === "ar") {
@@ -230,49 +253,57 @@ export default function NotificationBell() {
                 keyExtractor={(item) => String(item.id)}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.listContent}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    onPress={() =>
-                      !item.read_at && markAsRead(item.id)
-                    }
-                    activeOpacity={0.7}
-                    style={[
-                      styles.notifCard,
-                      !item.read_at &&
-                        styles.notifCardUnread,
-                    ]}
-                  >
-                    <View style={styles.notifRow}>
-                      {/* Unread Dot */}
-                      {!item.read_at && (
-                        <View style={styles.dot} />
-                      )}
-
-                      <View style={styles.notifContent}>
-                        {/* Notification Title */}
-                        <Text style={styles.notifTitle}>
-                          {getNotificationTitle(item)}
-                        </Text>
-
-                        {/* Notification Message */}
-                        <Text style={styles.notifBody}>
-                          {getNotificationMessage(item)}
-                        </Text>
-
-                        {/* Notification Time */}
-                        <Text style={styles.notifTime}>
-                          {new Date(
-                            item.created_at
-                          ).toLocaleString(
-                            i18n.language === "ar"
-                              ? "ar"
-                              : "en"
-                          )}
-                        </Text>
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                )}
+   renderItem={({ item }) => (
+  <TouchableOpacity
+    onPress={() =>
+      !item.read_at && markAsRead(item.id)
+    }
+    activeOpacity={0.7}
+    style={[
+      styles.notifCard,
+      !item.read_at &&
+        styles.notifCardUnread,
+    ]}
+  >
+    <View style={styles.notifRow}>
+      {/* Unread Dot */}
+      {!item.read_at && (
+        <View style={styles.dot} />
+      )}
+      <View style={styles.notifContent}>
+        {/* Notification Title */}
+        <Text style={styles.notifTitle}>
+          {getNotificationTitle(item)}
+        </Text>
+        {/* Notification Message */}
+        <Text style={styles.notifBody}>
+          {getNotificationMessage(item)}
+        </Text>
+        {/* Notification Time */}
+        <Text style={styles.notifTime}>
+          {new Date(
+            item.created_at
+          ).toLocaleString(
+            i18n.language === "ar"
+              ? "ar"
+              : "en"
+          )}
+        </Text>
+      </View>
+      {/* Delete Button */}
+      <TouchableOpacity
+        onPress={(e) => {
+          e.stopPropagation?.();
+          deleteNotification(item.id);
+        }}
+        style={styles.deleteBtn}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Ionicons name="trash-outline" size={18} color="#9ca3af" />
+      </TouchableOpacity>
+    </View>
+  </TouchableOpacity>
+)}
               />
             )}
           </View>
@@ -432,4 +463,8 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 4,
   },
+  deleteBtn: {
+  padding: 4,
+  marginLeft: 8,
+},
 });

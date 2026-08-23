@@ -45,9 +45,7 @@ export default function PatientDetailsModal({ details, onClose }) {
     return <Text style={styles.listItem}>• {value}</Text>;
   };
 
-  // Chronic conditions are stored as DrugCentral-standard English values
-  // ("Diabetes mellitus"), so translate each one back to a readable label
-  // instead of showing the raw lookup key.
+
   const renderChronicConditions = (value) => {
     if (!Array.isArray(value) || value.length === 0) {
       return <Text style={styles.listItem}>• {t("patientDetailsModal.none")}</Text>;

@@ -259,7 +259,9 @@ export default function NewOrders() {
               {prescriptions.map((item) => (
                 <View key={item.prescription_id} style={styles.card}>
                   <Text style={styles.patientName}>{item.patient}</Text>
-                  <Text style={styles.sourceText}>{t("newOrdersScreen.source")} {item.source}</Text>
+               <Text style={styles.sourceText}>
+               {t("newOrdersScreen.source")} {item.source_label || item.source}
+                  </Text>
                   {item.medicines && item.medicines.length > 0 ? (
                     <View style={{ marginTop: 8 }}>
                       {item.medicines.map((m, i) => (
@@ -666,9 +668,6 @@ export default function NewOrders() {
                 </View>
               )}
 
-              {/* Direct allergy matches — same active ingredient as a
-                  recorded allergy under a different name. Highest severity:
-                  confirmed hazard, not a probability. */}
               {safetyWarnings?.allergyDirect && safetyWarnings.allergyDirect.length > 0 && (
                 <View style={{ marginBottom: 16 }}>
                   <Text style={styles.safetySectionTitle}>{t("newOrdersScreen.allergyWarnings")}</Text>
@@ -691,9 +690,7 @@ export default function NewOrders() {
                 </View>
               )}
 
-              {/* Cross-reactive matches — structurally/pharmacologically
-                  related to an allergen, not the same substance. Lower
-                  certainty than a direct match. */}
+ 
               {safetyWarnings?.allergyCross && safetyWarnings.allergyCross.length > 0 && (
                 <View style={{ marginBottom: 16 }}>
                   <Text style={styles.safetySectionTitle}>{t("newOrdersScreen.crossReactiveWarnings")}</Text>

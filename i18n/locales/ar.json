@@ -13,7 +13,8 @@
         "edit": "تعديل",
     "save": "حفظ",
     "none": "لا يوجد",
-    "continue": "المتابعة"
+    "continue": "المتابعة",
+     "delete": "حذف"
   },
   "header": {
   "home": "الرئيسية",
@@ -675,7 +676,8 @@
   "enterReason": "الرجاء إدخال سبب الخدمة",
   "selectScheduledTime": "الرجاء اختيار وقت محدد",
   "requestServiceFailed": "فشل طلب الخدمة",
-  "requestServiceFailedRetry": "فشل طلب الخدمة. حاول مرة أخرى."
+  "requestServiceFailedRetry": "فشل طلب الخدمة. حاول مرة أخرى.",
+  "consultationCompletedMsg": "تم إنهاء الاستشارة وتحديث السجل الطبي بنجاح"
 },
 
 "modifyMedicalReport": {
@@ -708,7 +710,8 @@
   "file": "ملف",
   "close": "إغلاق",
   "otherConditions": "حالات أخرى",
-  "currentMedications": "الأدوية الحالية"
+  "currentMedications": "الأدوية الحالية",
+  "preExistingConditions": "الأمراض السابقة"
 } , 
 
 "createPrescription": {
@@ -976,7 +979,24 @@
   "playRecording": "تشغيل التسجيل",
   "noSpeechDetected": "لم يُكتشَف أي كلام. حاولي التسجيل مرة أخرى في مكان هادئ.",
   "playReply": "استماع",
-"speaking": "جارٍ التحدث..."
+  "speaking": "جارٍ التحدث...",
+  "bookAppointment": "حجز موعد",
+  "chooseDoctorAndTime": "اختر طبيباً وموعداً متاحاً",
+  "loadingDoctors": "جارٍ تحميل الأطباء...",
+  "noDoctorsAvailable": "لا يوجد أطباء متاحون",
+  "noDoctorsAvailableDescription": "لا يوجد أطباء متاحون لهذا التخصص في الوقت الحالي.",
+  "availableAppointments": "المواعيد المتاحة",
+  "noAvailableSlots": "لا توجد مواعيد متاحة.",
+  "confirmBooking": "تأكيد الحجز",
+  "booking": "جارٍ الحجز...",
+  "consultationBooked": "تم حجز الاستشارة بنجاح!",
+  "audioFileNotObtained": "لم يتم الحصول على ملف التسجيل الصوتي.",
+"transcriptionFailed": "فشل تحويل الصوت إلى نص.",
+  "deleteConfirmTitle": "حذف المحادثة",
+  "deleteConfirmMessage": "هل أنتِ متأكدة من حذف \"{{title}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+  "deleteFailedTitle": "فشل الحذف",
+  "deleteFailedMessage": "تعذّر حذف المحادثة، حاولي مجدداً",
+  "deleteAction": "حذف"
 },
 "forgotPassword": {
   "linkText": "نسيت كلمة المرور؟",
@@ -1118,6 +1138,102 @@
   "title": "الإشعارات",
   "empty": "لا توجد إشعارات بعد",
   "markAllRead": "تحديد الكل كمقروء"
+},
+"verifyEmail": {
+  "title": "تم تفعيل البريد الإلكتروني!",
+  "subtitle": "تم تفعيل حسابك بنجاح. يمكنك الآن تسجيل الدخول.",
+  "redirecting": "جارٍ التوجيه لتسجيل الدخول خلال {{seconds}} ثانية...",
+  "goToLoginNow": "الذهاب لتسجيل الدخول الآن"
+},
+"doctorRegister": {
+  "title": "إنشاء حساب طبيب",
+  "subtitle": "املأ معلوماتك للتسجيل",
+  "specsFailed": "فشل تحميل التخصصات",
+  "specsFailedRetry": "فشل تحميل التخصصات. يرجى المحاولة مرة أخرى.",
+  "loading": "جارٍ التحميل...",
+  "addPhoto": "إضافة صورة",
+  "fullNamePlaceholder": "أدخل الاسم الكامل",
+  "phonePlaceholder": "أدخل رقم الهاتف",
+  "specializationPlaceholder": "التخصص",
+  "genderPlaceholder": "الجنس",
+  "female": "أنثى",
+  "male": "ذكر",
+  "emailPlaceholder": "أدخل البريد الإلكتروني",
+  "passwordPlaceholder": "أدخل كلمة المرور...",
+  "medicalCertificate": "الشهادة الطبية",
+  "consultationFeePlaceholder": "رسوم الاستشارة...",
+  "from": "من",
+  "to": "إلى",
+  "registrationFailed": "فشل التسجيل",
+  "checkEmailActivation": "تحققي من بريدك الإلكتروني لرابط التفعيل",
+  "createUserFailed": "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.",
+  "registerButton": "تسجيل",
+  "imageUploadFailed": "فشل رفع الصورة",
+  "fileUploadFailed": "فشل رفع الملف"
+},
+"pharmacistRegister": {
+  "title": "إنشاء حساب صيدلي",
+  "subtitle": "املأ معلوماتك للتسجيل",
+  "fullNamePlaceholder": "أدخل الاسم الكامل",
+  "phonePlaceholder": "أدخل رقم الهاتف",
+  "emailPlaceholder": "أدخل البريد الإلكتروني",
+  "passwordPlaceholder": "أدخل كلمة المرور",
+  "from": "من",
+  "to": "إلى",
+  "locationPlaceholder": "أدخل الموقع..",
+  "locationSelected": "تم تحديد الموقع ✓",
+  "locationInMap": "تحديد الموقع على الخريطة",
+  "medicalCertificate": "الشهادة الطبية",
+  "pharmacyNamePlaceholder": "اسم الصيدلية",
+  "crNumberPlaceholder": "رقم السجل التجاري",
+  "registerButton": "تسجيل",
+  "fileUploadFailed": "فشل رفع الملف",
+  "serverUnavailable": "الخادم غير متاح. يرجى المحاولة لاحقاً.",
+  "registrationFailed": "فشل التسجيل",
+  "checkEmailActivation": "تحققي من بريدك الإلكتروني لرابط التفعيل",
+  "createUserFailed": "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى."
+},
+"deliveryRegister": {
+  "title": "إنشاء حساب مندوب توصيل",
+  "subtitle": "املأ معلوماتك للتسجيل",
+  "addPhoto": "إضافة صورة",
+  "fullNamePlaceholder": "أدخل الاسم الكامل",
+  "phonePlaceholder": "أدخل رقم الهاتف",
+  "emailPlaceholder": "أدخل البريد الإلكتروني",
+  "passwordPlaceholder": "أدخل كلمة المرور...",
+  "vehicleTypePlaceholder": "نوع المركبة",
+  "plateNumberPlaceholder": "رقم اللوحة",
+  "uploadLicenseFile": "رفع ملف الرخصة",
+  "registerButton": "تسجيل",
+  "imageUploadFailed": "فشل رفع الصورة",
+  "fileUploadFailed": "فشل رفع الملف",
+  "serverUnavailable": "الخادم غير متاح. يرجى المحاولة لاحقاً.",
+  "registrationFailed": "فشل التسجيل",
+  "checkEmailActivation": "تحققي من بريدك الإلكتروني لرابط التفعيل",
+  "createUserFailed": "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى."
+},
+"careProviderRegister": {
+  "title": "إعداد حساب مقدّم رعاية",
+  "subtitle": "املأ معلوماتك للتسجيل",
+  "addPhoto": "إضافة صورة",
+  "fullNamePlaceholder": "أدخل الاسم الكامل",
+  "phonePlaceholder": "أدخل رقم الهاتف",
+  "typePlaceholder": "النوع",
+  "physio": "علاج طبيعي",
+  "nurse": "تمريض",
+  "genderPlaceholder": "الجنس",
+  "female": "أنثى",
+  "male": "ذكر",
+  "emailPlaceholder": "أدخل البريد الإلكتروني",
+  "passwordPlaceholder": "أدخل كلمة المرور...",
+  "uploadLicenseFile": "رفع ملف الرخصة",
+  "sessionFeePlaceholder": "رسوم الجلسة...",
+  "registerButton": "تسجيل",
+  "imageUploadFailed": "فشل رفع الصورة",
+  "fileUploadFailed": "فشل رفع الملف",
+  "registrationFailed": "فشل التسجيل",
+  "checkEmailActivation": "تحققي من بريدك الإلكتروني لرابط التفعيل",
+  "createUserFailed": "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى."
 }
 }
 

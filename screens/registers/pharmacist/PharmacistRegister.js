@@ -7,16 +7,16 @@ import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as DocumentPicker from "expo-document-picker";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import MapPicker from "../patient/MapPicker";
 import { apiFetch } from "../../../utils/apiClient";
 
-
 export default function PharmacistRegister() {
+  const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
-
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -26,16 +26,13 @@ export default function PharmacistRegister() {
   const [address, setAddress] = useState("");
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
-
   const [fromTime, setFromTime] = useState(null);
   const [toTime, setToTime] = useState(null);
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker] = useState(false);
   const [isMapOpen, setIsMapOpen] = useState(false);
-
   const [certificateFile, setCertificateFile] = useState(null);
   const [certificateFileName, setCertificateFileName] = useState("");
-
   const navigation = useNavigation();
 
   const pickDocument = async () => {
@@ -58,7 +55,7 @@ export default function PharmacistRegister() {
       method: "POST",
       body: formData,
     });
-    if (!res.ok) throw new Error("File upload failed");
+    if (!res.ok) throw new Error(t("pharmacistRegister.fileUploadFailed"));
     return (await res.json()).file_id;
   };
 
@@ -73,10 +70,8 @@ export default function PharmacistRegister() {
     setError(null);
     setSuccessMsg(null);
     setIsLoading(true);
-
     try {
       const fileId = certificateFile ? await uploadFile() : null;
-
       const user = {
         role: "pharmacist",
         full_name: fullName,
@@ -92,24 +87,20 @@ export default function PharmacistRegister() {
         latitude,
         longitude,
       };
-
       const res = await apiFetch(`/api/auth/register`, {
         method: "POST",
         body: JSON.stringify(user),
       });
-
       const contentType = res.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
-        throw new Error("Server unavailable. Please try again later.");
+        throw new Error(t("pharmacistRegister.serverUnavailable"));
       }
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Registration failed");
-
-      setSuccessMsg("Check your email for Activation link");
+      if (!res.ok) throw new Error(data.message || t("pharmacistRegister.registrationFailed"));
+      setSuccessMsg(t("pharmacistRegister.checkEmailActivation"));
       setTimeout(() => navigation.navigate("Login"), 800);
     } catch (err) {
-      setError(err.message || "Failed to create user. Please try again.");
+      setError(err.message || t("pharmacistRegister.createUserFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -125,8 +116,8 @@ export default function PharmacistRegister() {
         >
           <Ionicons name="arrow-back" size={24} color="#0d3b66" />
         </TouchableOpacity>
-        <Text style={styles.title}>Pharmacists Account Setup</Text>
-        <Text style={styles.subtitle}>Fill your information to register</Text>
+        <Text style={styles.title}>{t("pharmacistRegister.title")}</Text>
+        <Text style={styles.subtitle}>{t("pharmacistRegister.subtitle")}</Text>
         {error && <Text style={styles.error}>{error}</Text>}
         {successMsg && <Text style={styles.success}>{successMsg}</Text>}
       </View>
@@ -137,7 +128,7 @@ export default function PharmacistRegister() {
           <Ionicons name="person" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type Full Name"
+            placeholder={t("pharmacistRegister.fullNamePlaceholder")}
             value={fullName}
             onChangeText={setFullName}
           />
@@ -148,7 +139,7 @@ export default function PharmacistRegister() {
           <Ionicons name="call" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type Phone Number"
+            placeholder={t("pharmacistRegister.phonePlaceholder")}
             keyboardType="numeric"
             value={phone}
             onChangeText={setPhone}
@@ -160,7 +151,7 @@ export default function PharmacistRegister() {
           <Ionicons name="mail" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type Email"
+            placeholder={t("pharmacistRegister.emailPlaceholder")}
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -173,7 +164,7 @@ export default function PharmacistRegister() {
           <Ionicons name="lock-closed" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type Password"
+            placeholder={t("pharmacistRegister.passwordPlaceholder")}
             secureTextEntry={!passwordShown}
             value={password}
             onChangeText={setPassword}
@@ -194,7 +185,7 @@ export default function PharmacistRegister() {
         >
           <Ionicons name="time" size={20} color="#39CCCC" />
           <Text style={styles.dateText}>
-            {fromTime ? formatTime(fromTime) : "From"}
+            {fromTime ? formatTime(fromTime) : t("pharmacistRegister.from")}
           </Text>
         </TouchableOpacity>
         {showFromPicker && (
@@ -216,7 +207,7 @@ export default function PharmacistRegister() {
         >
           <Ionicons name="time" size={20} color="#39CCCC" />
           <Text style={styles.dateText}>
-            {toTime ? formatTime(toTime) : "To"}
+            {toTime ? formatTime(toTime) : t("pharmacistRegister.to")}
           </Text>
         </TouchableOpacity>
         {showToPicker && (
@@ -236,7 +227,7 @@ export default function PharmacistRegister() {
           <Ionicons name="location" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type Location.."
+            placeholder={t("pharmacistRegister.locationPlaceholder")}
             value={address}
             onChangeText={setAddress}
           />
@@ -249,7 +240,7 @@ export default function PharmacistRegister() {
         >
           <Ionicons name="map" size={18} color="#333" />
           <Text style={styles.mapButtonText}>
-            {latitude ? "Location selected ✓" : "Location in map"}
+            {latitude ? t("pharmacistRegister.locationSelected") : t("pharmacistRegister.locationInMap")}
           </Text>
         </TouchableOpacity>
 
@@ -257,7 +248,7 @@ export default function PharmacistRegister() {
         <TouchableOpacity style={styles.inputGroup} onPress={pickDocument}>
           <Ionicons name="cloud-upload" size={20} color="#39CCCC" />
           <Text style={styles.fileText} numberOfLines={1}>
-            {certificateFileName || "Medical Certificate"}
+            {certificateFileName || t("pharmacistRegister.medicalCertificate")}
           </Text>
         </TouchableOpacity>
 
@@ -266,7 +257,7 @@ export default function PharmacistRegister() {
           <Ionicons name="storefront" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Pharmacy Name"
+            placeholder={t("pharmacistRegister.pharmacyNamePlaceholder")}
             value={pharmacyName}
             onChangeText={setPharmacyName}
           />
@@ -277,7 +268,7 @@ export default function PharmacistRegister() {
           <Ionicons name="document-text" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="CR Number"
+            placeholder={t("pharmacistRegister.crNumberPlaceholder")}
             keyboardType="numeric"
             value={crNumber}
             onChangeText={setCrNumber}
@@ -293,7 +284,7 @@ export default function PharmacistRegister() {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Register</Text>
+            <Text style={styles.buttonText}>{t("pharmacistRegister.registerButton")}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -323,7 +314,6 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 15, color: "#767676", marginTop: 6 },
   error: { color: "red", fontWeight: "600", marginTop: 8, textAlign: "center" },
   success: { color: "green", fontWeight: "600", marginTop: 8, textAlign: "center" },
-
   form: { paddingHorizontal: 24 },
   inputGroup: {
     flexDirection: "row", alignItems: "center", borderWidth: 1.5,
@@ -333,14 +323,12 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontSize: 15, paddingVertical: 10 },
   dateText: { flex: 1, fontSize: 15, color: "#333", paddingVertical: 10 },
   fileText: { flex: 1, color: "#828181", fontSize: 14 },
-
   mapButton: {
     flexDirection: "row", alignItems: "center", justifyContent: "center",
     gap: 8, borderWidth: 1.5, borderColor: "#ccc", borderRadius: 12,
     padding: 14, marginVertical: 8,
   },
   mapButtonText: { color: "#333", fontSize: 15 },
-
   button: {
     backgroundColor: "#0a3460", padding: 16, borderRadius: 12,
     alignItems: "center", marginTop: 18,

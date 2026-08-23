@@ -3,74 +3,49 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Modal,
   Linking,
   AppState,
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
 import { useTranslation } from "react-i18next";
-import DoctorEndCallModal from "./DoctorEndCallModal";
-import DoneModal from "../../patient/DoctorConsultation/booking/DoneModal";
 import { apiFetch } from "../../../utils/apiClient";
 
 
-export default function DoctorCallNow({
-  isOpen,
-  onClose,
-  patientId,
-  consultationId,
-  patient_phone,
-}) {
+export default function DoctorCallNow({ navigation, route }) {
+  const { patientId, consultationId, patient_phone, onDone } = route.params || {};
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [patientPhone, setPatientPhone] = useState(patient_phone);
   const [message, setMessage] = useState("");
-  const [showEndCallModal, setShowEndCallModal] = useState(false);
-  const [showConsDone, setShowConsDone] = useState(false);
   const [canCall, setCanCall] = useState(false);
 
   const callWasOpenedRef = useRef(false);
   const appState = useRef(AppState.currentState);
 
+  const finish = () => {
+   if (onDone) onDone();
+   navigation.goBack();
+  };
+
   useEffect(() => {
-    if (!isOpen) {
-      setError(null);
-      setMessage("");
-      setPatientPhone(null);
-      setShowEndCallModal(false);
-      setShowConsDone(false);
-      setCanCall(false);
-    } else {
-      if (patient_phone) {
-        console.log("Setting patient phone from prop:", patient_phone);
-        setPatientPhone(patient_phone);
-      }
+    if (patient_phone) {
+      setPatientPhone(patient_phone);
     }
-  }, [isOpen, patient_phone]);
+  }, [patient_phone]);
 
   useEffect(() => {
-    if (!isOpen || !patientId || !consultationId) return;
-
+    if (!patientId || !consultationId) return;
     const initiateCall = async () => {
       setIsLoading(true);
       setError(null);
       setCanCall(false);
-
-
       try {
-        const response = await apiFetch(
-          `/api/consultations/${consultationId}/call`,
-          {
-            method: "POST",
-          }
-        );
-
+        const response = await apiFetch(`/api/consultations/${consultationId}/call`, {
+          method: "POST",
+        });
         const data = await response.json();
-        console.log("Call initiation response: ", data);
-
         if (!response.ok || data.status !== "success") {
           throw new Error(data.message || t("doctorCallNow.callInitiateFailed"));
         }
@@ -84,28 +59,26 @@ export default function DoctorCallNow({
         setIsLoading(false);
       }
     };
-
     initiateCall();
-  }, [isOpen, patientId, consultationId]);
+  }, [patientId, consultationId]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {
-      if (appState.current === "active" && nextState.match(/inactive|background/)) {
-        if (callWasOpenedRef.current) {
-          // لا شيء الآن — ننتظر العودة
-        }
-      }
       if (appState.current.match(/inactive|background/) && nextState === "active") {
         if (callWasOpenedRef.current) {
-          setTimeout(() => setShowEndCallModal(true), 300);
           callWasOpenedRef.current = false;
+          setTimeout(() => {
+            navigation.replace("DoctorEndCallScreen", {
+              consultationId,
+              patientId,
+            });
+          }, 300);
         }
       }
       appState.current = nextState;
     });
-
     return () => subscription.remove();
-  }, []);
+  }, [consultationId, patientId]);
 
   const handleCallClick = async () => {
     const phone = patientPhone || patient_phone;
@@ -113,27 +86,18 @@ export default function DoctorCallNow({
       setError(t("doctorCallNow.phoneMissing"));
       return;
     }
-
     const url = `tel:${phone}`;
- try {
-    callWasOpenedRef.current = true;
-    await Linking.openURL(url);   
-  } catch (err) {
-    callWasOpenedRef.current = false;
-    setError(t("doctorCallNow.dialerUnavailable"));
-  }
-};
-
-  const handleEndCallSuccess = () => {
-    setShowEndCallModal(false);
-    setMessage(t("doctorCallNow.callEndedSuccess"));
-    setTimeout(() => {
-      setShowConsDone(true);
-    }, 300);
+    try {
+      callWasOpenedRef.current = true;
+      await Linking.openURL(url);
+    } catch (err) {
+      callWasOpenedRef.current = false;
+      setError(t("doctorCallNow.dialerUnavailable"));
+    }
   };
 
   return (
-    <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
+    <View style={styles.screen}>
       <View style={styles.overlay}>
         <View style={styles.card}>
           {error && (
@@ -141,7 +105,6 @@ export default function DoctorCallNow({
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
-
           {(patientPhone || patient_phone) && (
             <View style={styles.phoneBox}>
               <Text style={styles.phoneText}>
@@ -149,7 +112,6 @@ export default function DoctorCallNow({
               </Text>
             </View>
           )}
-
           {isLoading ? (
             <View style={styles.loadingBox}>
               <Text style={styles.loadingText}>{t("doctorCallNow.preparingCall")}</Text>
@@ -160,47 +122,25 @@ export default function DoctorCallNow({
               disabled={!canCall || !(patientPhone || patient_phone) || !!error}
               style={[
                 styles.callBtn,
-                (!canCall || !(patientPhone || patient_phone) || error) &&
-                  styles.callBtnDisabled,
+                (!canCall || !(patientPhone || patient_phone) || error) && styles.callBtnDisabled,
               ]}
             >
               <Ionicons name="call" size={18} color="#fff" />
               <Text style={styles.callBtnText}>{t("doctorCallNow.startConsultation")}</Text>
             </TouchableOpacity>
           )}
-
-          <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
+          <TouchableOpacity onPress={finish} style={styles.cancelBtn}>
             <Text style={styles.cancelBtnText}>{t("common.cancel")}</Text>
           </TouchableOpacity>
         </View>
-
-        <DoctorEndCallModal
-          isOpen={showEndCallModal}
-          onClose={() => setShowEndCallModal(false)}
-          consultationId={consultationId}
-          patientId={patientId}
-          onEndSuccess={handleEndCallSuccess}
-        />
-        <DoneModal
-          isOpen={showConsDone}
-          onHome={() => {
-            setShowConsDone(false);
-            onClose();
-          }}
-          message={t("doctorCallNow.callCompletedSuccess")}
-        />
       </View>
-    </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(5,36,67,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  screen: { flex: 1, backgroundColor: "rgba(5,36,67,0.5)" },
+  overlay: { flex: 1, justifyContent: "center", alignItems: "center" },
   card: {
     backgroundColor: "#fff",
     borderRadius: 16,
@@ -218,10 +158,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
   },
-  errorText: {
-    color: "#991b1b",
-    fontSize: 13,
-  },
+  errorText: { color: "#991b1b", fontSize: 13 },
   phoneBox: {
     width: "100%",
     backgroundColor: "#e6f7f7",
@@ -229,10 +166,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
   },
-  phoneText: {
-    color: "#052443",
-    fontSize: 13,
-  },
+  phoneText: { color: "#052443", fontSize: 13 },
   loadingBox: {
     width: "80%",
     backgroundColor: "#d1d5db",
@@ -241,10 +175,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     alignItems: "center",
   },
-  loadingText: {
-    fontSize: 16,
-    color: "#374151",
-  },
+  loadingText: { fontSize: 16, color: "#374151" },
   callBtn: {
     width: "80%",
     flexDirection: "row",
@@ -256,24 +187,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
   },
-  callBtnDisabled: {
-    backgroundColor: "#9ca3af",
-  },
-  callBtnText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
+  callBtnDisabled: { backgroundColor: "#9ca3af" },
+  callBtnText: { color: "#fff", fontSize: 18, fontWeight: "600" },
   cancelBtn: {
     width: "80%",
     backgroundColor: "#e71313",
     paddingVertical: 12,
     borderRadius: 8,
   },
-  cancelBtnText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
-  },
+  cancelBtnText: { color: "#fff", fontSize: 18, fontWeight: "600", textAlign: "center" },
 });

@@ -10,10 +10,11 @@
     "ok": "OK",
     "yes": "Yes",
     "no": "No",
-        "edit":"Edit",
+    "edit":"Edit",
     "save":"Save",
     "none":"None",
-    "continue":"continue"
+    "continue":"Continue",
+   "delete": "Delete"
 
   },
  "header": {
@@ -70,8 +71,8 @@
     "value": "Value",
     "status": "Status",
     "waitingMessage": "Analyzing your medical tests, please wait...",
-    "downloadPdf":"download file",
-    "downloadFail":"error downloading"
+    "downloadPdf":"Download file",
+    "downloadFail":"Error Downloading"
   },
 
   "labOption": {
@@ -674,7 +675,8 @@
   "enterReason": "Please enter a reason for the service",
   "selectScheduledTime": "Please select a scheduled time",
   "requestServiceFailed": "Failed to request service",
-  "requestServiceFailedRetry": "Failed to request service. Please try again."
+  "requestServiceFailedRetry": "Failed to request service. Please try again.",
+   "consultationCompletedMsg": "Consultation ended and medical record updated successfully"
 },
 
 "modifyMedicalReport": {
@@ -707,7 +709,8 @@
   "file": "File",
   "close": "Close",
   "otherConditions": "Other Conditions",
-  "currentMedications": "Current Medications"
+  "currentMedications": "Current Medications",
+  "preExistingConditions": "Pre existing Conditions"
 },
 
 "createPrescription": {
@@ -977,7 +980,24 @@
     "playRecording": "Play recording",
     "noSpeechDetected": "No speech was detected. Please try recording again in a quiet environment.",
     "playReply": "Listen",
-"speaking": "Speaking..."
+"speaking": "Speaking...",
+  "bookAppointment": "Book Appointment",
+  "chooseDoctorAndTime": "Choose a doctor and available appointment time",
+  "loadingDoctors": "Loading doctors...",
+  "noDoctorsAvailable": "No Doctors Available",
+  "noDoctorsAvailableDescription": "There are no doctors available for this specialty at the moment.",
+  "availableAppointments": "Available Appointments",
+  "noAvailableSlots": "No available appointment slots.",
+  "confirmBooking": "Confirm Booking",
+  "booking": "Booking...",
+  "consultationBooked": "Consultation booked successfully!",
+  "audioFileNotObtained": "Failed to get the audio recording file.",
+"transcriptionFailed": "Failed to convert audio to text.",
+  "deleteConfirmTitle": "Delete Conversation",
+  "deleteConfirmMessage": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
+  "deleteFailedTitle": "Delete Failed",
+  "deleteFailedMessage": "Could not delete the conversation, please try again",
+  "deleteAction": "Delete"
 },
 
 "forgotPassword": {
@@ -1116,6 +1136,102 @@
   "title": "Notifications",
   "empty": "No notifications yet",
   "markAllRead": "Mark all as read"
+},
+"verifyEmail": {
+  "title": "Email Verified!",
+  "subtitle": "Your account has been successfully verified. You can now log in.",
+  "redirecting": "Redirecting to login in {{seconds}}s...",
+  "goToLoginNow": "Go to Login Now"
+},
+"doctorRegister": {
+  "title": "Doctor Account Setup",
+  "subtitle": "Fill your information to register",
+  "specsFailed": "Failed to get specializations",
+  "specsFailedRetry": "Failed to get specializations. Please try again.",
+  "loading": "Loading...",
+  "addPhoto": "Add Photo",
+  "fullNamePlaceholder": "Type full name",
+  "phonePlaceholder": "Type phone number",
+  "specializationPlaceholder": "Specialization",
+  "genderPlaceholder": "Gender",
+  "female": "Female",
+  "male": "Male",
+  "emailPlaceholder": "Type email",
+  "passwordPlaceholder": "Type Password...",
+  "medicalCertificate": "Medical Certificate",
+  "consultationFeePlaceholder": "Consultation fee...",
+  "from": "From",
+  "to": "To",
+  "registrationFailed": "Registration failed",
+  "checkEmailActivation": "Check your email for Activation link",
+  "createUserFailed": "Failed to create user. Please try again.",
+  "registerButton": "Register",
+  "imageUploadFailed": "Image upload failed",
+  "fileUploadFailed": "File upload failed"
+},
+"pharmacistRegister": {
+  "title": "Pharmacists Account Setup",
+  "subtitle": "Fill your information to register",
+  "fullNamePlaceholder": "Type Full Name",
+  "phonePlaceholder": "Type Phone Number",
+  "emailPlaceholder": "Type Email",
+  "passwordPlaceholder": "Type Password",
+  "from": "From",
+  "to": "To",
+  "locationPlaceholder": "Type Location..",
+  "locationSelected": "Location selected ✓",
+  "locationInMap": "Location in map",
+  "medicalCertificate": "Medical Certificate",
+  "pharmacyNamePlaceholder": "Pharmacy Name",
+  "crNumberPlaceholder": "CR Number",
+  "registerButton": "Register",
+  "fileUploadFailed": "File upload failed",
+  "serverUnavailable": "Server unavailable. Please try again later.",
+  "registrationFailed": "Registration failed",
+  "checkEmailActivation": "Check your email for Activation link",
+  "createUserFailed": "Failed to create user. Please try again."
+},
+"deliveryRegister": {
+  "title": "Delivery Agents Account Setup",
+  "subtitle": "Fill your information to register",
+  "addPhoto": "Add Photo",
+  "fullNamePlaceholder": "Type full name",
+  "phonePlaceholder": "Type phone number",
+  "emailPlaceholder": "Type email",
+  "passwordPlaceholder": "Type password...",
+  "vehicleTypePlaceholder": "Vehicle Type",
+  "plateNumberPlaceholder": "Plate number",
+  "uploadLicenseFile": "Upload License File",
+  "registerButton": "Register",
+  "imageUploadFailed": "Image upload failed",
+  "fileUploadFailed": "File upload failed",
+  "serverUnavailable": "Server unavailable. Please try again later.",
+  "registrationFailed": "Registration failed",
+  "checkEmailActivation": "Check your email for Activation link",
+  "createUserFailed": "Failed to create user. Please try again."
+},
+"careProviderRegister": {
+  "title": "Care Provider Setup",
+  "subtitle": "Fill your information to register",
+  "addPhoto": "Add Photo",
+  "fullNamePlaceholder": "Type full name",
+  "phonePlaceholder": "Type phone number",
+  "typePlaceholder": "Type",
+  "physio": "Physio",
+  "nurse": "Nurse",
+  "genderPlaceholder": "Gender",
+  "female": "Female",
+  "male": "Male",
+  "emailPlaceholder": "Type email",
+  "passwordPlaceholder": "Type Password...",
+  "uploadLicenseFile": "Upload License File",
+  "sessionFeePlaceholder": "Session fee...",
+  "registerButton": "Register",
+  "imageUploadFailed": "Image upload failed",
+  "fileUploadFailed": "File upload failed",
+  "registrationFailed": "Registration failed",
+  "checkEmailActivation": "Check your email for Activation link",
+  "createUserFailed": "Failed to create user. Please try again."
 }
 
 }

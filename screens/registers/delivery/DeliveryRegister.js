@@ -7,27 +7,25 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "../../../utils/apiClient";
 
-
 export default function DeliveryRegister() {
+  const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
-
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [vehicleType, setVehicleType] = useState("");
   const [plateNumber, setPlateNumber] = useState("");
-
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [licenseFile, setLicenseFile] = useState(null);
   const [licenseFileName, setLicenseFileName] = useState("");
-
   const navigation = useNavigation();
 
   const pickImage = async () => {
@@ -59,7 +57,7 @@ export default function DeliveryRegister() {
       method: "POST",
       body: formData,
     });
-    if (!res.ok) throw new Error("Image upload failed");
+    if (!res.ok) throw new Error(t("deliveryRegister.imageUploadFailed"));
     return (await res.json()).image_id;
   };
 
@@ -75,7 +73,7 @@ export default function DeliveryRegister() {
       method: "POST",
       body: formData,
     });
-    if (!res.ok) throw new Error("File upload failed");
+    if (!res.ok) throw new Error(t("deliveryRegister.fileUploadFailed"));
     return (await res.json()).file_id;
   };
 
@@ -83,11 +81,9 @@ export default function DeliveryRegister() {
     setError(null);
     setSuccessMsg(null);
     setIsLoading(true);
-
     try {
       const imageId = photoFile ? await uploadImage() : null;
       const fileId = licenseFile ? await uploadFile() : null;
-
       const user = {
         role: "delivery",
         full_name: fullName,
@@ -99,24 +95,20 @@ export default function DeliveryRegister() {
         plate_number: plateNumber,
         driving_license_id: fileId,
       };
-
       const res = await apiFetch(`/api/auth/register`, {
         method: "POST",
         body: JSON.stringify(user),
       });
-
       const contentType = res.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
-        throw new Error("Server unavailable. Please try again later.");
+        throw new Error(t("deliveryRegister.serverUnavailable"));
       }
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Registration failed");
-
-      setSuccessMsg("Check your email for Activation link");
+      if (!res.ok) throw new Error(data.message || t("deliveryRegister.registrationFailed"));
+      setSuccessMsg(t("deliveryRegister.checkEmailActivation"));
       setTimeout(() => navigation.navigate("Login"), 800);
     } catch (err) {
-      setError(err.message || "Failed to create user. Please try again.");
+      setError(err.message || t("deliveryRegister.createUserFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -132,8 +124,8 @@ export default function DeliveryRegister() {
         >
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.title}>Delivery Agents Account Setup</Text>
-        <Text style={styles.subtitle}>Fill your information to register</Text>
+        <Text style={styles.title}>{t("deliveryRegister.title")}</Text>
+        <Text style={styles.subtitle}>{t("deliveryRegister.subtitle")}</Text>
         {error && <Text style={styles.error}>{error}</Text>}
         {successMsg && <Text style={styles.success}>{successMsg}</Text>}
       </View>
@@ -145,7 +137,7 @@ export default function DeliveryRegister() {
         ) : (
           <View style={styles.photoPlaceholder}>
             <Ionicons name="camera" size={26} color="#39CCCC" />
-            <Text style={styles.photoText}>Add Photo</Text>
+            <Text style={styles.photoText}>{t("deliveryRegister.addPhoto")}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -156,7 +148,7 @@ export default function DeliveryRegister() {
           <Ionicons name="person" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type full name"
+            placeholder={t("deliveryRegister.fullNamePlaceholder")}
             value={fullName}
             onChangeText={setFullName}
           />
@@ -167,7 +159,7 @@ export default function DeliveryRegister() {
           <Ionicons name="call" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type phone number"
+            placeholder={t("deliveryRegister.phonePlaceholder")}
             keyboardType="numeric"
             value={phone}
             onChangeText={setPhone}
@@ -179,7 +171,7 @@ export default function DeliveryRegister() {
           <Ionicons name="mail" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type email"
+            placeholder={t("deliveryRegister.emailPlaceholder")}
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -192,7 +184,7 @@ export default function DeliveryRegister() {
           <Ionicons name="lock-closed" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type password..."
+            placeholder={t("deliveryRegister.passwordPlaceholder")}
             secureTextEntry={!passwordShown}
             value={password}
             onChangeText={setPassword}
@@ -211,7 +203,7 @@ export default function DeliveryRegister() {
           <Ionicons name="car" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Vehicle Type"
+            placeholder={t("deliveryRegister.vehicleTypePlaceholder")}
             value={vehicleType}
             onChangeText={setVehicleType}
           />
@@ -222,7 +214,7 @@ export default function DeliveryRegister() {
           <Ionicons name="pricetag" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Plate number"
+            placeholder={t("deliveryRegister.plateNumberPlaceholder")}
             keyboardType="numeric"
             value={plateNumber}
             onChangeText={setPlateNumber}
@@ -233,7 +225,7 @@ export default function DeliveryRegister() {
         <TouchableOpacity style={styles.inputGroup} onPress={pickDocument}>
           <Ionicons name="cloud-upload" size={20} color="#39CCCC" />
           <Text style={styles.fileText} numberOfLines={1}>
-            {licenseFileName || "Upload License File"}
+            {licenseFileName || t("deliveryRegister.uploadLicenseFile")}
           </Text>
         </TouchableOpacity>
 
@@ -246,7 +238,7 @@ export default function DeliveryRegister() {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Register</Text>
+            <Text style={styles.buttonText}>{t("deliveryRegister.registerButton")}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -265,7 +257,6 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 15, color: "#767676", marginTop: 6 },
   error: { color: "red", fontWeight: "600", marginTop: 8, textAlign: "center" },
   success: { color: "green", fontWeight: "600", marginTop: 8, textAlign: "center" },
-
   photoCircle: {
     width: 90, height: 90, borderRadius: 45, borderWidth: 2,
     borderColor: "#A1A1A1", alignSelf: "center", overflow: "hidden",
@@ -274,7 +265,6 @@ const styles = StyleSheet.create({
   photoImg: { width: "100%", height: "100%" },
   photoPlaceholder: { flex: 1, justifyContent: "center", alignItems: "center" },
   photoText: { fontSize: 10, color: "#767676", marginTop: 4 },
-
   form: { paddingHorizontal: 24 },
   inputGroup: {
     flexDirection: "row", alignItems: "center", borderWidth: 1,
@@ -283,7 +273,6 @@ const styles = StyleSheet.create({
   },
   input: { flex: 1, fontSize: 15, paddingVertical: 10 },
   fileText: { flex: 1, color: "#767676", fontSize: 14 },
-
   button: {
     backgroundColor: "#052443", padding: 16, borderRadius: 10,
     alignItems: "center", marginTop: 18,

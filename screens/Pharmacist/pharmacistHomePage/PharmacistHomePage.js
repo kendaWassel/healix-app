@@ -10,19 +10,17 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import PharmacistHeader from "../../Components/header/PharmacistHeader";
 import Footer from "../../Components/footer/Footer";
+import { apiFetch } from "../../../utils/apiClient";
 
 const PharmacistHomePage = () => {
   const { t } = useTranslation();
-  const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
-
   const [pharmacistData, setPharmacistData] = useState({
     full_name: "",
     email: "",
@@ -45,19 +43,9 @@ const PharmacistHomePage = () => {
     setError(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch(
-        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/profile",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Accept : "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    
+      const response = await apiFetch(
+        "/api/pharmacist/profile");
 
       const data = await response.json();
       console.log("Pharmacist profile:", data);
@@ -110,7 +98,7 @@ const PharmacistHomePage = () => {
     setSuccessMsg(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
+
 
       // 🔹 نفس حل _method Spoofing المطبَّق في DoctorHomePage
       const formData = new FormData();
@@ -137,15 +125,10 @@ const PharmacistHomePage = () => {
         });
       }
 
-      const response = await fetch(
-        "https://unjuicy-schizogenous-gibson.ngrok-free.dev/api/pharmacist/profile",
+      const response = await apiFetch(
+        "/api/pharmacist/profile",
         {
           method: "POST",
-          headers: {
-                   Accept : "application/json",
-            "ngrok-skip-browser-warning": "true",
-            Authorization: `Bearer ${token}`,
-          },
           body: formData,
         }
       );

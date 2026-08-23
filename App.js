@@ -18,8 +18,14 @@ import Pharmacist from "./screens/Pharmacist/Pharmacist";
 import Delivery from "./screens/delivery/Delivery";
 import Nurse from "./screens/nurse/Nurse";
 import Physio from "./screens/physio/Physio";
-
-
+import DeepLinkListener from "./DeepLinkListener";
+import VerifyEmailScreen from "./screens/verifyemailScreen/VerifyEmailScreen";
+import AI_Medical_Assistant from "./screens/patient/AIMedicalAssistant/AI_Medical_Assistant";
+import EditMedicalReportModal from "./screens/Components/PatientMedicalReport/EditMedicalReportModal";
+import MedicalReportModal from "./screens/registers/patient/MedicalReportModal";
+import CreatePrescriptionScreen from "./screens/doctor/prescription/CreatePrescription";
+import DoctorEndCallModal from "./screens/doctor/doctorCallNow/DoctorEndCallModal";
+import DoctorCallNow from "./screens/doctor/doctorCallNow/DoctorCallNow";
 const Stack = createNativeStackNavigator();
 
 const STRIPE_PUBLISHABLE_KEY = "pk_test_51Sb7QiADj5gMi232iI6BqSWfA8HBIm1VFNrlZxAtk1U0gPLuZ7KxgQipkKw0Jv2QzcDq1Mjc4lISxsrjcYnY5GpH00wseIAv7q";
@@ -28,6 +34,7 @@ export default function App() {
   return (
     <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
     <NavigationContainer>
+       <DeepLinkListener />
       <Stack.Navigator
         initialRouteName="Landing"
         screenOptions={{ headerShown: false }}
@@ -61,7 +68,40 @@ export default function App() {
         <Stack.Screen name="Delivery" component={Delivery} />
         <Stack.Screen name="Nurse" component={Nurse} />
         <Stack.Screen name="Physio" component={Physio} />
- 
+        <Stack.Screen name="VerifyEmailScreen" component={VerifyEmailScreen} />
+       <Stack.Screen
+         name="AIMedicalAssistant"
+         component={AI_Medical_Assistant}
+         options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+       />
+           <Stack.Screen
+         name="EditMedicalReportScreen"
+         component={EditMedicalReportModal}
+         options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+       />
+
+        <Stack.Screen
+   name="MedicalReportScreen"
+   component={MedicalReportModal}
+   options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+ />
+
+   <Stack.Screen
+     name="CreatePrescriptionScreen"
+     component={CreatePrescriptionScreen}
+     options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+   />
+   <Stack.Screen
+     name="DoctorEndCallScreen"
+     component={DoctorEndCallModal}
+     options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+   />
+   <Stack.Screen
+     name="DoctorCallNowScreen"
+     component={DoctorCallNow}
+     options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+   />
+
       </Stack.Navigator>
     </NavigationContainer>
     </StripeProvider>

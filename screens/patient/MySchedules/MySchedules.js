@@ -236,7 +236,7 @@ const MySchedules = () => {
                         <Text style={styles.infoText}>{schedule.fee}</Text>
                       </View>
                       <Text style={styles.statusText}>
-                        {schedule.status || t("mySchedules.unknown")}
+                      {schedule.status_label || schedule.status || t("mySchedules.unknown")}
                       </Text>
                     </View>
                   </View>

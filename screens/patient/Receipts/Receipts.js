@@ -5,6 +5,8 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Platform,
+  Keyboard,
   TextInput,
   ActivityIndicator,
   Modal as RNModal,
@@ -36,6 +38,7 @@ export default function Receipts() {
   const [isLoadingPharmacist, setIsLoadingPharmacist] = useState(false);
   const [error, setError] = useState(null);
   const [errorPharmacist, setErrorPharmacist] = useState(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [sendPharmacy, setSendPharmacy] = useState(false);
   const [done, setDone] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -89,6 +92,7 @@ export default function Receipts() {
           Name: p.doctor_name || "Uploaded by you",
           Date: p.issued_at ? new Date(p.issued_at).toLocaleDateString() : "",
           status: p.status || "N/A",
+          status_label: p.status_label || p.status || "N/A",
           diagnosis: p.diagnosis || "N/A",
           prescription_image_url: p.prescription_image_url || null,
         }));
@@ -139,11 +143,11 @@ export default function Receipts() {
           prescription_id: p.prescription_id,
           date: p.priced_at ? new Date(p.priced_at).toLocaleDateString() : "",
           source: p.source || "Unknown",
+          source_label: p.source_label || p.source || "Unknown",
           order_status: p.order_status || "Unknown",
+           order_status_label: p.status_label || p.order_status || "Unknown",
           prescription_status: p.prescription_status || "Unknown",
-          // Coerced to Number: the backend has been observed to return these
-          // as strings in some responses, and .toFixed() below would throw
-          // on a string.
+           prescription_status_label: p.prescription_status_label || p.prescription_status || "Unknown",
           total_amount: Number(p.total_amount) || 0,
           total_price: Number(p.total_price) || 0,
           total_quantity: Number(p.total_quantity) || 0,
@@ -350,6 +354,22 @@ export default function Receipts() {
   }
 };
 
+
+   useEffect(() => {
+     const showEvent = Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow";
+     const hideEvent = Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide";
+     const showSub = Keyboard.addListener(showEvent, (e) => {
+       setKeyboardHeight(e.endCoordinates.height);
+     });
+     const hideSub = Keyboard.addListener(hideEvent, () => {
+       setKeyboardHeight(0);
+     });
+     return () => {
+       showSub.remove();
+       hideSub.remove();
+     };
+   }, []);
+
   return (
     <View style={{ flex: 1 }}>
       <PatientHeader />
@@ -401,7 +421,7 @@ export default function Receipts() {
                       <Text style={styles.receiptDate}>{item.Date}</Text>
                       {item.status === "rejected" && (
                         <View style={styles.rejectedBadge}>
-                          <Text style={styles.rejectedBadgeText}>{item.status}</Text>
+                             <Text style={styles.rejectedBadgeText}>{item.status_label || item.status}</Text>
                         </View>
                       )}
                     </View>
@@ -493,14 +513,14 @@ export default function Receipts() {
                 {pharmacistReceipts.map((item) => (
                   <View key={item.id} style={styles.receiptCard}>
                     <Text style={styles.receiptName}>{item.name}</Text>
-                    <Text style={styles.detailLine}>
-                      <Text style={styles.detailLabel}>{t("receipts.source")} </Text>
-                      {item.source}
-                    </Text>
-                    <Text style={styles.detailLine}>
-                      <Text style={styles.detailLabel}>{t("receipts.status")} </Text>
-                      {item.order_status}
-                    </Text>
+                 <Text style={styles.detailLine}>
+  <Text style={styles.detailLabel}>{t("receipts.source")} </Text>
+  {item.source_label}
+</Text>
+<Text style={styles.detailLine}>
+  <Text style={styles.detailLabel}>{t("receipts.status")} </Text>
+  {item.order_status_label}
+</Text>
                     {item.items && item.items.length > 0 && (
                       <View style={styles.medicinesBox}>
                         <Text style={styles.medicinesTitle}>{t("receipts.medicines")}</Text>
@@ -710,7 +730,7 @@ export default function Receipts() {
         onRequestClose={() => setShowDrugChecker(false)}
       >
         <View style={styles.overlay}>
-          <View style={styles.checkerCard}>
+          <View style={[styles.checkerCard, { marginBottom: keyboardHeight > 0 ? keyboardHeight + 12 : 0 }]}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text style={styles.checkerTitle}>{t("receipts.checkDrugInteraction")}</Text>
 
@@ -1172,10 +1192,10 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     padding: 16,
   },
-  resultMajor: { borderColor: "#ef4444", backgroundColor: "#fef2f2" },
-  resultModerate: { borderColor: "#eab308", backgroundColor: "#fefce8" },
-  resultMinor: { borderColor: "#fde68a", backgroundColor: "#fefce8" },
-  resultSafe: { borderColor: "#22c55e", backgroundColor: "#f0fdf4" },
+resultMajor: { borderColor: "#dc2626", backgroundColor: "#fee2e2" },
+resultModerate: { borderColor: "#d97706", backgroundColor: "#fef3c7" },
+resultMinor: { borderColor: "#ca8a04", backgroundColor: "#fefce8" },
+resultSafe: { borderColor: "#16a34a", backgroundColor: "#dcfce7" },
   resultTitle: {
     fontWeight: "700",
     textAlign: "center",

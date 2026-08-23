@@ -9,16 +9,16 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "../../../utils/apiClient";
 
-
 export default function DoctorRegister() {
+  const { t } = useTranslation();
   const [passwordShown, setPasswordShown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [specsLoading, setSpecsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
-
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -30,17 +30,13 @@ export default function DoctorRegister() {
   const [toTime, setToTime] = useState(null);
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker] = useState(false);
-
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [certificateFile, setCertificateFile] = useState(null);
   const [certificateFileName, setCertificateFileName] = useState("");
-
   const [specs, setSpecs] = useState([]);
-
   const navigation = useNavigation();
 
-  // تحميل التخصصات عند فتح الشاشة
   useEffect(() => {
     fetchSpecs();
   }, []);
@@ -52,11 +48,11 @@ export default function DoctorRegister() {
       const res = await apiFetch(`/api/specializations`);
       const data = await res.json();
       if (!res.ok || data.status !== "success") {
-        throw new Error(data.message || "Failed to get specializations");
+        throw new Error(data.message || t("doctorRegister.specsFailed"));
       }
       setSpecs(data.data);
     } catch (err) {
-      setError(err.message || "Failed to get specializations. Please try again.");
+      setError(err.message || t("doctorRegister.specsFailedRetry"));
     } finally {
       setSpecsLoading(false);
     }
@@ -91,7 +87,7 @@ export default function DoctorRegister() {
       method: "POST",
       body: formData,
     });
-    if (!res.ok) throw new Error("Image upload failed");
+    if (!res.ok) throw new Error(t("doctorRegister.imageUploadFailed"));
     return (await res.json()).image_id;
   };
 
@@ -107,7 +103,7 @@ export default function DoctorRegister() {
       method: "POST",
       body: formData,
     });
-    if (!res.ok) throw new Error("File upload failed");
+    if (!res.ok) throw new Error(t("doctorRegister.fileUploadFailed"));
     return (await res.json()).file_id;
   };
 
@@ -122,11 +118,9 @@ export default function DoctorRegister() {
     setError(null);
     setSuccessMsg(null);
     setIsLoading(true);
-
     try {
       const imageId = photoFile ? await uploadImage() : null;
       const fileId = certificateFile ? await uploadFile() : null;
-
       const user = {
         role: "doctor",
         full_name: fullName,
@@ -141,18 +135,16 @@ export default function DoctorRegister() {
         consultation_fee: parseInt(consultationFee) || 0,
         certificate_file_id: fileId,
       };
-
       const res = await apiFetch(`/api/auth/register`, {
         method: "POST",
         body: JSON.stringify(user),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Registration failed");
-
-      setSuccessMsg("Check your email for Activation link");
+      if (!res.ok) throw new Error(data.message || t("doctorRegister.registrationFailed"));
+      setSuccessMsg(t("doctorRegister.checkEmailActivation"));
       setTimeout(() => navigation.navigate("Login"), 800);
     } catch (err) {
-      setError(err.message || "Failed to create user. Please try again.");
+      setError(err.message || t("doctorRegister.createUserFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -162,7 +154,7 @@ export default function DoctorRegister() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#39CCCC" />
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.loadingText}>{t("doctorRegister.loading")}</Text>
       </View>
     );
   }
@@ -177,8 +169,8 @@ export default function DoctorRegister() {
         >
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.title}>Doctor Account Setup</Text>
-        <Text style={styles.subtitle}>Fill your information to register</Text>
+        <Text style={styles.title}>{t("doctorRegister.title")}</Text>
+        <Text style={styles.subtitle}>{t("doctorRegister.subtitle")}</Text>
         {error && <Text style={styles.error}>{error}</Text>}
         {successMsg && <Text style={styles.success}>{successMsg}</Text>}
       </View>
@@ -190,7 +182,7 @@ export default function DoctorRegister() {
         ) : (
           <View style={styles.photoPlaceholder}>
             <Ionicons name="camera" size={26} color="#39CCCC" />
-            <Text style={styles.photoText}>Add Photo</Text>
+            <Text style={styles.photoText}>{t("doctorRegister.addPhoto")}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -201,7 +193,7 @@ export default function DoctorRegister() {
           <Ionicons name="person" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type full name"
+            placeholder={t("doctorRegister.fullNamePlaceholder")}
             value={fullName}
             onChangeText={setFullName}
           />
@@ -212,7 +204,7 @@ export default function DoctorRegister() {
           <Ionicons name="call" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type phone number"
+            placeholder={t("doctorRegister.phonePlaceholder")}
             keyboardType="numeric"
             value={phone}
             onChangeText={setPhone}
@@ -227,7 +219,7 @@ export default function DoctorRegister() {
             selectedValue={specialization}
             onValueChange={setSpecialization}
           >
-            <Picker.Item label="Specialization" value="" />
+            <Picker.Item label={t("doctorRegister.specializationPlaceholder")} value="" />
             {specs.map((spec) => (
               <Picker.Item key={spec.id} label={spec.name} value={spec.name} />
             ))}
@@ -238,9 +230,9 @@ export default function DoctorRegister() {
         <View style={styles.inputGroup}>
           <Ionicons name="male-female" size={20} color="#39CCCC" />
           <Picker style={styles.picker} selectedValue={gender} onValueChange={setGender}>
-            <Picker.Item label="Gender" value="" />
-            <Picker.Item label="Female" value="female" />
-            <Picker.Item label="Male" value="male" />
+            <Picker.Item label={t("doctorRegister.genderPlaceholder")} value="" />
+            <Picker.Item label={t("doctorRegister.female")} value="female" />
+            <Picker.Item label={t("doctorRegister.male")} value="male" />
           </Picker>
         </View>
 
@@ -249,7 +241,7 @@ export default function DoctorRegister() {
           <Ionicons name="mail" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type email"
+            placeholder={t("doctorRegister.emailPlaceholder")}
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -262,7 +254,7 @@ export default function DoctorRegister() {
           <Ionicons name="lock-closed" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Type Password..."
+            placeholder={t("doctorRegister.passwordPlaceholder")}
             secureTextEntry={!passwordShown}
             value={password}
             onChangeText={setPassword}
@@ -280,7 +272,7 @@ export default function DoctorRegister() {
         <TouchableOpacity style={styles.inputGroup} onPress={pickDocument}>
           <Ionicons name="cloud-upload" size={20} color="#39CCCC" />
           <Text style={styles.fileText} numberOfLines={1}>
-            {certificateFileName || "Medical Certificate"}
+            {certificateFileName || t("doctorRegister.medicalCertificate")}
           </Text>
         </TouchableOpacity>
 
@@ -289,7 +281,7 @@ export default function DoctorRegister() {
           <Ionicons name="cash" size={20} color="#39CCCC" />
           <TextInput
             style={styles.input}
-            placeholder="Consultation fee..."
+            placeholder={t("doctorRegister.consultationFeePlaceholder")}
             keyboardType="numeric"
             value={consultationFee}
             onChangeText={setConsultationFee}
@@ -304,7 +296,7 @@ export default function DoctorRegister() {
         >
           <Ionicons name="time" size={20} color="#39CCCC" />
           <Text style={styles.dateText}>
-            {fromTime ? formatTime(fromTime) : "From"}
+            {fromTime ? formatTime(fromTime) : t("doctorRegister.from")}
           </Text>
         </TouchableOpacity>
         {showFromPicker && (
@@ -326,7 +318,7 @@ export default function DoctorRegister() {
         >
           <Ionicons name="time" size={20} color="#39CCCC" />
           <Text style={styles.dateText}>
-            {toTime ? formatTime(toTime) : "To"}
+            {toTime ? formatTime(toTime) : t("doctorRegister.to")}
           </Text>
         </TouchableOpacity>
         {showToPicker && (
@@ -350,7 +342,7 @@ export default function DoctorRegister() {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Register</Text>
+            <Text style={styles.buttonText}>{t("doctorRegister.registerButton")}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -362,7 +354,6 @@ const styles = StyleSheet.create({
   container: { backgroundColor: "#fff", flexGrow: 1, paddingBottom: 40 },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   loadingText: { marginTop: 10, color: "#767676" },
-
   header: {
     alignItems: "center", paddingHorizontal: 20,
     paddingTop: Platform.OS === "ios" ? 55 : 35, marginBottom: 16,
@@ -372,7 +363,6 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 15, color: "#767676", marginTop: 6 },
   error: { color: "red", fontWeight: "600", marginTop: 8, textAlign: "center" },
   success: { color: "green", fontWeight: "600", marginTop: 8, textAlign: "center" },
-
   photoCircle: {
     width: 90, height: 90, borderRadius: 45, borderWidth: 1,
     borderColor: "#e0e0e0", alignSelf: "center", overflow: "hidden",
@@ -381,7 +371,6 @@ const styles = StyleSheet.create({
   photoImg: { width: "100%", height: "100%" },
   photoPlaceholder: { flex: 1, justifyContent: "center", alignItems: "center" },
   photoText: { fontSize: 10, color: "#767676", marginTop: 4 },
-
   form: { paddingHorizontal: 24 },
   inputGroup: {
     flexDirection: "row", alignItems: "center", borderWidth: 1,
@@ -393,7 +382,6 @@ const styles = StyleSheet.create({
   picker: { flex: 1, color: "#767676" },
   fileText: { flex: 1, color: "#767676", fontSize: 14 },
   dollar: { color: "#767676", fontSize: 16 },
-
   button: {
     backgroundColor: "#052443", padding: 16, borderRadius: 10,
     alignItems: "center", marginTop: 18,
