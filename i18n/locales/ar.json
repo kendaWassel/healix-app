@@ -120,7 +120,8 @@
     "allergiesPlaceholder": "مثال: panadol",
     "medicationsPlaceholder": "مثال: Metformin",
     "updateSuccess": "تم تحديث التقرير الطبي بنجاح",
-    "preExistingConditions" :"الأمراض السابقة"
+    "preExistingConditions":"الامراض السابقة"
+
   },
   "deliveryHome": {
     "title": "معلومات الحساب",
@@ -526,7 +527,7 @@
   "otherConditionsNote": "تُعرض للطبيب للمراجعة، ولا تدخل في الفحص الآلي للتعارضات",
   "addAllergy": "إضافة حساسية أخرى",
   "addMedication": "إضافة دواء آخر",
-  "preExistingConditions": "الأمراض السابقة"
+  "preExistingConditions":"الامراض السابقة"
 },
 "mapPicker": {
   "title": "اختر موقعك",

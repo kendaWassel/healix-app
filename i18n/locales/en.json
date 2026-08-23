@@ -118,7 +118,7 @@
     "medicationsPlaceholder": "e.g. Metformin",
     "noReport":"No medical report available",
     "updateSuccess":"Medical report updated successfully",
-    "preExistingConditions" :"Pre existing Conditions"
+    "preExistingConditions":"Pre Existing Conditions"
   },
   "deliveryHome": {
     "title": "Account Information",
@@ -496,8 +496,8 @@
   "otherConditionsPlaceholder": "Any condition not listed above",
   "otherConditionsNote": "Shown to your doctor for review — not included in automatic contraindication checks",
   "addAllergy": "Add another allergy",
-  "addMedication": "Add another medication",
-   "preExistingConditions": "Pre existing Conditions"
+" addMedication": "Add another medication",
+"preExistingConditions":"Pre Existing Conditions"
 },
 "mapPicker": {
   "title": "Pick your location",
