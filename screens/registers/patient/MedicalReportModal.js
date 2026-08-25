@@ -11,7 +11,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { useTranslation } from "react-i18next";
 import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
-import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExisitingConditions";
+import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExistingConditions";
 import { apiFetch } from "../../../utils/apiClient";
 import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
 import DoneModal from "../../patient/DoctorConsultation/booking/DoneModal";
