@@ -496,7 +496,7 @@
   "otherConditionsPlaceholder": "Any condition not listed above",
   "otherConditionsNote": "Shown to your doctor for review — not included in automatic contraindication checks",
   "addAllergy": "Add another allergy",
-" addMedication": "Add another medication",
+  "addMedication": "Add another medication",
 "preExistingConditions":"Pre Existing Conditions"
 },
 "mapPicker": {
