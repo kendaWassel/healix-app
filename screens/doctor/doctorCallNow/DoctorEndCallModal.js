@@ -129,9 +129,7 @@ export default function DoctorEndCallModal({ navigation, route }) {
     });
   };
 
-  // Returns true/false only — MedicalReportScreen decides what to show
-  // (DoneModal vs plain goBack) based on this return value combined with
-  // afterSuccessScreen. No navigation or success alert happens here.
+
   const submitModifyReport = async (formFields) => {
     try {
       const dataToSubmit = { ...formFields, consultation_id: consultationId };

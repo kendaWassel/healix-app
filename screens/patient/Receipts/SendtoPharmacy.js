@@ -10,7 +10,6 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import Modal from "./Modal";
 import { apiFetch } from "../../../utils/apiClient";

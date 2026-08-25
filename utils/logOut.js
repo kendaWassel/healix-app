@@ -1,5 +1,4 @@
-// utils/logout.js
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { apiFetch } from "./apiClient";
 
 
@@ -15,7 +14,7 @@ export async function performLogout(navigation) {
     console.error("Logout request failed:", err);
 
   } finally {
-    await AsyncStorage.removeItem("token");
+   await SecureStore.deleteItemAsync("token");
     navigation.reset({
       index: 0,
       routes: [{ name: "Login" }],

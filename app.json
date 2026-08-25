@@ -20,12 +20,11 @@
       }
     },
     "android": {
-      "softwareKeyboardLayoutMode": "resize", 
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#052443"
       },
-      "softwareKeyboardLayoutMode": "pan",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDVsG_l8IRcPhEoZFZOcrDbyLWdZ7HOpCo"
@@ -69,7 +68,8 @@
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location so we can share it with the patient during delivery."
         }
       ],
-      "./withDisableForceDark.js"
+      "./withDisableForceDark.js",
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {

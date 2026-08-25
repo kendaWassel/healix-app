@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { useTranslation } from "react-i18next";
 import Modal from "./Modal";
 import { apiFetch } from "../../../utils/apiClient";

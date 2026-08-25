@@ -5,7 +5,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import ForgotPasswordModal from "./ForgetPasswordModal";
@@ -48,7 +48,7 @@ export default function UserLogin() {
       }
 
       setSuccessMsg(t("userLogin.loginSuccess"));
-      await AsyncStorage.setItem("token", data.token);
+      await SecureStore.setItemAsync("token", data.token);
       if (data.email_verified) {
         const routes = {
           patient: "Patient",
