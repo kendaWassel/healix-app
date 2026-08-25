@@ -10,7 +10,6 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import Footer from "../../Components/footer/Footer";
 import PatientHeader from "../../Components/header/PatientHeader";

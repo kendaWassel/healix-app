@@ -1,6 +1,3 @@
-// Converted from Nurse.jsx.
-// react-router-dom's <Routes>/<Route> becomes a nested Stack.Navigator,
-// same pattern as the Delivery module.
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import NurseHomePage from "./nurseHomePage/NurseHomePage";

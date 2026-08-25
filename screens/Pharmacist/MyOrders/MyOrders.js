@@ -10,7 +10,6 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import PharmacistHeader from "../../Components/header/PharmacistHeader";
 import Footer from "../../Components/footer/Footer";
@@ -138,7 +137,7 @@ export default function MyOrders() {
   const handleDeliverOrder = async (order_id) => {
     try {
       setLoadingId(order_id);
-      const token = await AsyncStorage.getItem("token");
+    
 
       const response = await apiFetch(
         `/api/pharmacist/orders/${order_id}/ready`,

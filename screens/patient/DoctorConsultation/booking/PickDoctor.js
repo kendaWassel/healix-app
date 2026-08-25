@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import PatientHeader from "../../../Components/header/PatientHeader";
 import DoctorCard from "../../../Components/doctorCard/DoctorCard";

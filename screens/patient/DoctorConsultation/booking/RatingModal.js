@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../../../../utils/apiClient";
 export default function RatingModal({ isOpen, onClose, url, message, onRatingSuccess }) {
@@ -25,7 +24,7 @@ export default function RatingModal({ isOpen, onClose, url, message, onRatingSuc
     setIsSubmitting(true);
     setError(null);
 
-    const token = await AsyncStorage.getItem("token");
+
 
     try {
       const response = await apiFetch(
