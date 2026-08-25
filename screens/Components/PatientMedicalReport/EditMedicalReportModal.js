@@ -14,21 +14,12 @@ import { useTranslation } from "react-i18next";
 import { apiFetch } from "../../../utils/apiClient";
 import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
 import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExistingConditions";
-import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion"
-import { Picker } from "@react-native-picker/picker";
+import { useDrugSuggestion } from "../../Components/drugSuggestion/DrugSuggestion";
 
 const toCamelCase = (str) =>
   str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
 
-// NOTE: converted from a <Modal>-based popup to a full navigation screen.
-// Android renders RN's <Modal> in a separate Dialog window that doesn't
-// participate in keyboard resize/pan, which broke every keyboard-avoidance
-// approach tried (KeyboardAvoidingView, manual listeners, KeyboardAwareScrollView).
-// As a real screen inside the main Activity window, keyboard handling works reliably.
-export default function EditMedicalReportModal({
-  navigation,
-  route,
-}) {
+export default function EditMedicalReportModal({ navigation, route }) {
   const { report, onSaved, gender } = route.params || {};
   const { t, i18n } = useTranslation();
   const [conditionSearch, setConditionSearch] = useState("");
@@ -43,10 +34,6 @@ export default function EditMedicalReportModal({
     previous_surgeries: "",
     is_pregnant: "",
   });
-<<<<<<< HEAD
-
-=======
->>>>>>> 58a52fe19d5da3f690d01bfc3487eff0329d8777
   const [allergies, setAllergies] = useState([""]);
   const [medications, setMedications] = useState([""]);
 
@@ -56,7 +43,7 @@ export default function EditMedicalReportModal({
         chronic_diseases: Array.isArray(report.chronic_diseases)
           ? report.chronic_diseases
           : [],
-          pre_existing_conditions: Array.isArray(report.pre_existing_conditions)
+        pre_existing_conditions: Array.isArray(report.pre_existing_conditions)
           ? report.pre_existing_conditions
           : [],
         other_conditions: report.other_conditions || "",
@@ -91,29 +78,28 @@ export default function EditMedicalReportModal({
     });
   };
 
-    const togglePreExisting = (value) => {
-  setFields((prev) => {
-    const current = prev.pre_existing_conditions || [];
-    return {
-      ...prev,
-      pre_existing_conditions: current.includes(value)
-        ? current.filter((c) => c !== value)
-        : [...current, value],
-    };
-  });
-};
+  const togglePreExisting = (value) => {
+    setFields((prev) => {
+      const current = prev.pre_existing_conditions || [];
+      return {
+        ...prev,
+        pre_existing_conditions: current.includes(value)
+          ? current.filter((c) => c !== value)
+          : [...current, value],
+      };
+    });
+  };
 
   const filteredConditions = CHRONIC_CONDITIONS.filter((c) => {
     const q = conditionSearch.trim().toLowerCase();
     return !q || c.ar.includes(q) || c.en.toLowerCase().includes(q);
   });
 
-    const filteredPreExisting = PRE_EXISTING_CONDITIONS.filter((c) => {
-  const q = preExistingSearch.trim().toLowerCase();
-  return !q || c.ar.includes(q) || c.en.toLowerCase().includes(q);
-});
+  const filteredPreExisting = PRE_EXISTING_CONDITIONS.filter((c) => {
+    const q = preExistingSearch.trim().toLowerCase();
+    return !q || c.ar.includes(q) || c.en.toLowerCase().includes(q);
+  });
 
-  // ── Dynamic list helpers (shared shape for allergies + medications) ──
   const updateListItem = (setter, index, value, field) => {
     setter((prev) => {
       const next = [...prev];
@@ -208,114 +194,6 @@ export default function EditMedicalReportModal({
   );
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <Text style={styles.title}>
-              {t("patientMedicalReport.editTitle")}
-            </Text>
-
-            <Text style={styles.label}>
-              {t("patientMedicalReport.chronicDiseases")}
-            </Text>
-            <TouchableOpacity
-              onPress={() => setShowConditionsPicker(true)}
-              style={styles.dropdownBtn}
-            >
-              <Text
-                style={[
-                  styles.dropdownText,
-                  fields.chronic_diseases.length === 0 && styles.dropdownPlaceholder,
-                ]}
-                numberOfLines={1}
-              >
-                {fields.chronic_diseases.length > 0
-                  ? t("medicalReportModal.conditionsSelected", {
-                      count: fields.chronic_diseases.length,
-                    })
-                  : t("medicalReportModal.selectConditions")}
-              </Text>
-              <Ionicons name="chevron-down" size={18} color="#9ca3af" />
-            </TouchableOpacity>
-            {fields.chronic_diseases.length > 0 && (
-              <View style={styles.chipsRow}>
-                {fields.chronic_diseases.map((value) => {
-                  const cond = CHRONIC_CONDITIONS.find((c) => c.value === value);
-                  const label = cond
-                    ? (i18n.language?.startsWith("ar") ? cond.ar : cond.en)
-                    : value;
-                  return (
-                    <View key={value} style={styles.chip}>
-                      <Text style={styles.chipText}>{label}</Text>
-                      <TouchableOpacity onPress={() => toggleCondition(value)}>
-                        <Ionicons name="close-circle" size={14} color="#0e7490" />
-                      </TouchableOpacity>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
-
-
-             {/* Pre-existing conditions — same dropdown pattern as chronic diseases */}
-            <Text style={styles.label}>{t("medicalReportModal.preExistingConditions")}</Text>
-            <TouchableOpacity
-              onPress={() => setShowPreExistingPicker(true)}
-              style={[styles.dropdownBtn]}
-            >
-              <Text
-                style={[
-                  styles.dropdownText,
-                  (fields.pre_existing_conditions || []).length === 0 && styles.dropdownPlaceholder,
-                ]}
-                numberOfLines={1}
-              >
-                {(fields.pre_existing_conditions || []).length > 0
-                  ? t("medicalReportModal.conditionsSelected", {
-                      count: fields.pre_existing_conditions.length,
-                    })
-                  : t("medicalReportModal.selectConditions")}
-              </Text>
-              <Ionicons name="chevron-down" size={18} color="#9ca3af" />
-            </TouchableOpacity>
-
-            {(fields.pre_existing_conditions || []).length > 0 && (
-              <View style={styles.chipsRow}>
-                {fields.pre_existing_conditions.map((value) => {
-                  const cond = PRE_EXISTING_CONDITIONS.find((c) => c.value === value);
-                  const label = cond
-                    ? (i18n.language?.startsWith("ar") ? cond.ar : cond.en)
-                    : value;
-                  return (
-                    <View key={value} style={styles.chip}>
-                      <Text style={styles.chipText}>{label}</Text>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
-
-    {(gender === "female" || gender === "أنثى") && (
-  <>
-    <Text style={styles.label}>
-      {t("medicalReportModal.pregnancyStatus")}
-    </Text>
-    <View style={styles.pregnancyOptionsRow}>
-      <TouchableOpacity
-        onPress={() => setFields({ ...fields, is_pregnant: "yes" })}
-        style={[
-          styles.pregnancyOption,
-          fields.is_pregnant === "yes" && styles.pregnancyOptionSelected,
-        ]}
-      >
-        <Text
-          style={[
-            styles.pregnancyOptionText,
-            fields.is_pregnant === "yes" && styles.pregnancyOptionTextSelected,
-          ]}
-        >
-          {t("medicalReportModal.pregnant")}
     <View style={styles.screen}>
       <View style={styles.header}>
         <Text style={styles.title}>
@@ -371,6 +249,49 @@ export default function EditMedicalReportModal({
             })}
           </View>
         )}
+
+        {/* Pre-existing conditions — same dropdown pattern as chronic diseases */}
+        <Text style={styles.label}>
+          {t("medicalReportModal.preExistingConditions")}
+        </Text>
+        <TouchableOpacity
+          onPress={() => setShowPreExistingPicker(true)}
+          style={styles.dropdownBtn}
+        >
+          <Text
+            style={[
+              styles.dropdownText,
+              (fields.pre_existing_conditions || []).length === 0 && styles.dropdownPlaceholder,
+            ]}
+            numberOfLines={1}
+          >
+            {(fields.pre_existing_conditions || []).length > 0
+              ? t("medicalReportModal.conditionsSelected", {
+                  count: fields.pre_existing_conditions.length,
+                })
+              : t("medicalReportModal.selectConditions")}
+          </Text>
+          <Ionicons name="chevron-down" size={18} color="#9ca3af" />
+        </TouchableOpacity>
+        {(fields.pre_existing_conditions || []).length > 0 && (
+          <View style={styles.chipsRow}>
+            {fields.pre_existing_conditions.map((value) => {
+              const cond = PRE_EXISTING_CONDITIONS.find((c) => c.value === value);
+              const label = cond
+                ? (i18n.language?.startsWith("ar") ? cond.ar : cond.en)
+                : value;
+              return (
+                <View key={value} style={styles.chip}>
+                  <Text style={styles.chipText}>{label}</Text>
+                  <TouchableOpacity onPress={() => togglePreExisting(value)}>
+                    <Ionicons name="close-circle" size={14} color="#0e7490" />
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
         {(gender === "female" || gender === "أنثى") && (
           <>
             <Text style={styles.label}>
@@ -412,6 +333,7 @@ export default function EditMedicalReportModal({
             </View>
           </>
         )}
+
         <Text style={styles.label}>
           {t("patientMedicalReport.allergies")}
         </Text>
@@ -492,7 +414,7 @@ export default function EditMedicalReportModal({
           </View>
         </View>
       </Modal>
-{/* pre existing modal  */}
+
       <Modal
         visible={showPreExistingPicker}
         transparent
@@ -509,14 +431,12 @@ export default function EditMedicalReportModal({
                 <Ionicons name="close" size={24} color="#666" />
               </TouchableOpacity>
             </View>
-
             <TextInput
               value={preExistingSearch}
               onChangeText={setPreExistingSearch}
               placeholder={t("medicalReportModal.searchCondition")}
               style={styles.pickerSearch}
             />
-
             <ScrollView style={styles.pickerList}>
               {filteredPreExisting.map((cond) => {
                 const selected = (fields.pre_existing_conditions || []).includes(cond.value);
@@ -542,7 +462,6 @@ export default function EditMedicalReportModal({
                 </Text>
               )}
             </ScrollView>
-
             <TouchableOpacity
               onPress={() => {
                 setPreExistingSearch("");
@@ -555,8 +474,7 @@ export default function EditMedicalReportModal({
           </View>
         </View>
       </Modal>
-
-    </Modal>
+    </View>
   );
 }
 
@@ -760,6 +678,12 @@ const styles = StyleSheet.create({
   pickerRowTextSelected: {
     color: "#0e7490",
     fontWeight: "600",
+  },
+  pickerEmpty: {
+    textAlign: "center",
+    color: "#9ca3af",
+    paddingVertical: 24,
+    fontSize: 13,
   },
   pickerDoneBtn: {
     backgroundColor: "#052443",

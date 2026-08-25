@@ -548,7 +548,7 @@ const deleteConversation = async (id) => {
       const response = await apiFetch(url);
       const { ok, data, errorText } = await readResponse(response);
       if (ok) {
-        setBookingOptions(data);
+        setBookingOptions(data.data);
       } else {
         setMessages((prev) => [
           ...prev,

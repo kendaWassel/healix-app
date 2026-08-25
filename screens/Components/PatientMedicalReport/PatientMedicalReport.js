@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
 import { apiFetch } from "../../../utils/apiClient";
 import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
-import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExisitingConditions";
+import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExistingConditions";
 
 export default function PatientMedicalReport() {
   const { t, i18n } = useTranslation();
