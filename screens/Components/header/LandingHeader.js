@@ -1,10 +1,10 @@
 import { View, Text,Image, TouchableOpacity, StyleSheet, Platform } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import {useTrackedNavigation} from "../../../hooks/useTrackedNavigation"
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 
 const LandingHeader = () => {
-  const navigation = useNavigation();
+  const navigation = useTrackedNavigation();
   const { t } = useTranslation();
 
   return (

@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import ForgotPasswordModal from "./ForgetPasswordModal";
 import { apiFetch } from "../../utils/apiClient";
+import { useTrackedNavigation } from "../../hooks/useTrackedNavigation";
 
 export default function UserLogin() {
   const { t } = useTranslation();
@@ -20,7 +21,7 @@ export default function UserLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const navigation = useNavigation();
+  const navigation = useTrackedNavigation();
 
   const handleSubmit = async () => {
     setError(null);

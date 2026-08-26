@@ -14,9 +14,10 @@ import Footer from "../../Components/footer/Footer";
 import PatientDetailsModal from "./PatientDetailsModal";
 import { useNavigation } from "@react-navigation/native";
 import { apiFetch } from "../../../utils/apiClient";
+import { useTrackedNavigation } from "../../../hooks/useTrackedNavigation";
 
 export default function DoctorSchedules() {
-  const navigation = useNavigation();
+  const navigation = useTrackedNavigation();
   const { t } = useTranslation();
 
   const FILTERS = [
