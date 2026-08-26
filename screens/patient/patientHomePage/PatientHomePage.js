@@ -12,6 +12,7 @@ import { useNavigation } from "@react-navigation/native";
 import PatientMedicalReport from "../../Components/PatientMedicalReport/PatientMedicalReport";
 import { LinearGradient } from "expo-linear-gradient";
 import { apiFetch } from "../../../utils/apiClient";
+import { useTrackedNavigation } from "../../../hooks/useTrackedNavigation";
 
 export default function PatientHomePage() {
   const { t } = useTranslation();
@@ -20,7 +21,7 @@ export default function PatientHomePage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
-  const navigation = useNavigation();
+  const navigation = useTrackedNavigation();
   const [patientData, setPatientData] = useState({
     full_name: "",
     email: "",

@@ -26,6 +26,8 @@ import MedicalReportModal from "./screens/registers/patient/MedicalReportModal";
 import CreatePrescriptionScreen from "./screens/doctor/prescription/CreatePrescription";
 import DoctorEndCallModal from "./screens/doctor/doctorCallNow/DoctorEndCallModal";
 import DoctorCallNow from "./screens/doctor/doctorCallNow/DoctorCallNow";
+import { handleNavigationStateChange, markNavigationStart } from "./utils/navPerf";
+
 const Stack = createNativeStackNavigator();
 
 const STRIPE_PUBLISHABLE_KEY = "pk_test_51Sb7QiADj5gMi232iI6BqSWfA8HBIm1VFNrlZxAtk1U0gPLuZ7KxgQipkKw0Jv2QzcDq1Mjc4lISxsrjcYnY5GpH00wseIAv7q";
@@ -33,7 +35,9 @@ const STRIPE_PUBLISHABLE_KEY = "pk_test_51Sb7QiADj5gMi232iI6BqSWfA8HBIm1VFNrlZxA
 export default function App() {
   return (
     <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
-    <NavigationContainer>
+    <NavigationContainer
+    onStateChange={handleNavigationStateChange}
+    >
        <DeepLinkListener />
       <Stack.Navigator
         initialRouteName="Landing"
