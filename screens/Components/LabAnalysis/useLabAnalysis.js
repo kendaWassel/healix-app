@@ -1,7 +1,8 @@
 import { useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "../../../utils/apiClient";
 
-import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
+
+
 
 export function useLabAnalysis() {
   const [file, setFile] = useState(null);
@@ -16,15 +17,9 @@ export function useLabAnalysis() {
     setError(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
 
-      const res = await fetch(`${BASE_URL}/lab/supported-tests`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          ...NGROK_HEADERS,
-        },
-      });
+
+      const res = await apiFetch(`/api/lab/supported-tests`);
 
       if (!res.ok) {
         throw new Error("Failed to load supported tests");
@@ -52,7 +47,7 @@ export function useLabAnalysis() {
     setError(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
+      
 
       const formData = new FormData();
       formData.append("file", {
@@ -65,12 +60,8 @@ export function useLabAnalysis() {
         if (v) formData.append(k, v);
       });
 
-      const res = await fetch(`${BASE_URL}/lab/analyze`, {
+      const res = await apiFetch(`/api/lab/analyze`, {
         method: "POST",
-        headers: {
-          ...NGROK_HEADERS,
-          Authorization: `Bearer ${token}`,
-        },
         body: formData,
       });
 

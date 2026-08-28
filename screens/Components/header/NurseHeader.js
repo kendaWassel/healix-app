@@ -1,68 +1,267 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  Modal,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 
-import { useState } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
-import { useNavigation, useNavigationState } from "@react-navigation/native";
-import { FontAwesome5 } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
-import { colors } from "../../../constants/colors";
+
 import LanguageSwitcher from "../common/LanguageSwitcher";
+import { performLogout } from "../../../utils/logOut";
 
 const NurseHeader = () => {
-  const { t } = useTranslation();
   const navigation = useNavigation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const route = useRoute();
+  const { t } = useTranslation();
 
-  const currentRoute = useNavigationState(
-    (state) => state?.routes[state.index]?.name
-  );
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  const navItems = [
-    { label: t("header.home"), route: "NurseHome" },
-    { label: t("header.newOrders"), route: "NurseNewOrders" },
-    { label: t("header.mySchedules"), route: "NurseAppointments" },
+  const isActive = (screenName) => route.name === screenName;
+
+  // Nurse navigation links
+  const links = [
+    {
+      screen: "NurseHome",
+      label: t("nurse.nurseHeader.home"),
+      icon: "home-outline",
+    },
+    {
+      screen: "NurseNewOrders",
+      label: t("nurse.nurseHeader.newOrders"),
+      icon: "cart-outline",
+    },
+    {
+      screen: "NurseAppointments",
+      label: t("nurse.nurseHeader.mySchedules"),
+      icon: "calendar-outline",
+    },
   ];
 
-  const goTo = (route) => {
-    navigation.navigate(route);
-    setIsMenuOpen(false);
+  const go = (screen) => {
+    setMenuOpen(false);
+    navigation.navigate(screen);
+  };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+
+    try {
+      await performLogout(navigation);
+    } finally {
+      setLoggingOut(false);
+      setShowLogoutConfirm(false);
+    }
   };
 
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.navBar}>
-        <TouchableOpacity onPress={() => goTo("NurseHome")}>
-          <Image
-            source={require("../../../assets/Logo-dark.png")}
-            style={styles.logo}
-            resizeMode="contain"
+    <View style={styles.nav}>
+
+      {/* ================= LOGO ================= */}
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate("NurseHome")}
+      >
+        <Image
+          source={require("../../../assets/Logo-dark.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+
+      {/* ================= RIGHT SECTION ================= */}
+
+      <View style={styles.rightSection}>
+
+        {/* Menu Button */}
+
+        <TouchableOpacity
+          onPress={() => setMenuOpen(true)}
+          style={styles.menuBtn}
+        >
+          <Ionicons
+            name="menu"
+            size={24}
+            color="#052443"
           />
         </TouchableOpacity>
 
+        {/* Language */}
 
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-          <LanguageSwitcher />
-          <TouchableOpacity onPress={() => setIsMenuOpen(!isMenuOpen)} hitSlop={10}>
-            <FontAwesome5 name="bars" size={22} color={colors.textColor} />
-          </TouchableOpacity>
+        <LanguageSwitcher />
+
+        {/* Nurse Badge */}
+
+        <View style={styles.badge}>
+          <Ionicons
+            name="medical-outline"
+            size={22}
+            color="#39CCCC"
+          />
+
+          <Text style={styles.badgeText}>
+            {t("nurse.nurseHeader.nurse")}
+          </Text>
         </View>
+
       </View>
 
-      {isMenuOpen && (
-        <View style={styles.dropdown}>
-          {navItems.map((item) => (
-            <TouchableOpacity key={item.route} onPress={() => goTo(item.route)}>
-              <Text
-                style={[
-                  styles.navLink,
-                  currentRoute === item.route && styles.navLinkActive,
-                ]}
-              >
-                {item.label}
+      {/* ================= DROPDOWN MENU ================= */}
+
+      <Modal
+        visible={menuOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuOpen(false)}
+      >
+        <Pressable
+          style={styles.backdrop}
+          onPress={() => setMenuOpen(false)}
+        >
+          <View style={styles.dropdown}>
+
+            {/* Navigation Links */}
+
+            {links.map((link) => {
+              const active = isActive(link.screen);
+
+              return (
+                <TouchableOpacity
+                  key={link.screen}
+                  onPress={() => go(link.screen)}
+                  style={[
+                    styles.dropdownItem,
+                    active && styles.dropdownItemActive,
+                  ]}
+                >
+
+                  <Ionicons
+                    name={link.icon}
+                    size={18}
+                    color={active ? "#39CCCC" : "#767676"}
+                  />
+
+                  <Text
+                    style={[
+                      styles.dropdownText,
+                      active && styles.dropdownTextActive,
+                    ]}
+                  >
+                    {link.label}
+                  </Text>
+
+                  {active && (
+                    <View style={styles.activeDot} />
+                  )}
+
+                </TouchableOpacity>
+              );
+            })}
+
+            {/* Divider */}
+
+            <View style={styles.divider} />
+
+            {/* Logout */}
+
+            <TouchableOpacity
+              onPress={() => {
+                setMenuOpen(false);
+                setShowLogoutConfirm(true);
+              }}
+              style={styles.dropdownItem}
+            >
+
+              <Ionicons
+                name="log-out-outline"
+                size={18}
+                color="#dc2626"
+              />
+
+              <Text style={styles.logoutText}>
+                {t("logout.menuItem")}
               </Text>
+
             </TouchableOpacity>
-          ))}
+
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* ================= LOGOUT CONFIRMATION ================= */}
+
+      <Modal
+        visible={showLogoutConfirm}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          if (!loggingOut) {
+            setShowLogoutConfirm(false);
+          }
+        }}
+      >
+        <View style={styles.confirmOverlay}>
+
+          <View style={styles.confirmCard}>
+
+            <Text style={styles.confirmTitle}>
+              {t("logout.confirmTitle")}
+            </Text>
+
+            <Text style={styles.confirmMessage}>
+              {t("logout.confirmMessage")}
+            </Text>
+
+            <View style={styles.confirmButtonsRow}>
+
+              {/* Cancel */}
+
+              <TouchableOpacity
+                onPress={() => setShowLogoutConfirm(false)}
+                style={styles.confirmCancelBtn}
+                disabled={loggingOut}
+              >
+                <Text style={styles.confirmCancelText}>
+                  {t("common.cancel")}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Logout */}
+
+              <TouchableOpacity
+                onPress={handleLogout}
+                style={styles.confirmLogoutBtn}
+                disabled={loggingOut}
+              >
+                {loggingOut ? (
+                  <ActivityIndicator
+                    color="#fff"
+                    size="small"
+                  />
+                ) : (
+                  <Text style={styles.confirmLogoutText}>
+                    {t("logout.menuItem")}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+            </View>
+
+          </View>
+
         </View>
-      )}
+      </Modal>
+
     </View>
   );
 };
@@ -70,34 +269,239 @@ const NurseHeader = () => {
 export default NurseHeader;
 
 const styles = StyleSheet.create({
-  wrapper: {
+
+  /* ================= HEADER ================= */
+
+  nav: {
+    backgroundColor: "#fff",
+
     borderBottomWidth: 1,
-    borderBottomColor: colors.cardBorder,
-  },
-  navBar: {
+    borderBottomColor: "#e0e0e0",
+
+    paddingTop: Platform.OS === "ios" ? 66 : 35,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    paddingTop: 50, // status bar clearance
   },
-  logo: { width: 110, height: 36 },
+
+  logo: {
+    width: 90,
+    height: 32,
+  },
+
+  rightSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  menuBtn: {
+    padding: 4,
+  },
+
+  /* ================= NURSE BADGE ================= */
+
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+
+  badgeText: {
+    fontWeight: "600",
+    color: "#052443",
+    fontSize: 13,
+  },
+
+  /* ================= DROPDOWN ================= */
+
+  backdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.15)",
+  },
+
   dropdown: {
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.cardBorder,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 14,
+    position: "absolute",
+
+    top: Platform.OS === "ios" ? 108 : 78,
+    right: 20,
+
+    minWidth: 200,
+
+    backgroundColor: "#fff",
+
+    borderRadius: 12,
+
+    paddingVertical: 6,
+
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+
+    shadowColor: "#000",
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+
+    elevation: 8,
   },
-  navLink: {
-    color: colors.textColor,
-    fontWeight: "500",
-    fontSize: 16,
+
+  dropdownItem: {
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    gap: 10,
+
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
-  navLinkActive: {
-    color: colors.cyan,
+
+  dropdownItemActive: {
+    backgroundColor: "#ebfafa",
+  },
+
+  dropdownText: {
+    fontSize: 14,
+
+    color: "#374151",
+
+    flex: 1,
+  },
+
+  dropdownTextActive: {
+    color: "#39CCCC",
+
+    fontWeight: "700",
+  },
+
+  activeDot: {
+    width: 6,
+    height: 6,
+
+    borderRadius: 3,
+
+    backgroundColor: "#39CCCC",
+  },
+
+  /* ================= DIVIDER ================= */
+
+  divider: {
+    height: 1,
+
+    backgroundColor: "#f3f4f6",
+
+    marginVertical: 4,
+  },
+
+  /* ================= LOGOUT ================= */
+
+  logoutText: {
+    fontSize: 14,
+
+    color: "#dc2626",
+
     fontWeight: "600",
   },
+
+  /* ================= LOGOUT MODAL ================= */
+
+  confirmOverlay: {
+    flex: 1,
+
+    backgroundColor: "rgba(0,0,0,0.4)",
+
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  confirmCard: {
+    backgroundColor: "#fff",
+
+    borderRadius: 16,
+
+    padding: 24,
+
+    width: "85%",
+
+    maxWidth: 360,
+  },
+
+  confirmTitle: {
+    fontSize: 18,
+
+    fontWeight: "700",
+
+    color: "#052443",
+
+    textAlign: "center",
+
+    marginBottom: 8,
+  },
+
+  confirmMessage: {
+    fontSize: 14,
+
+    color: "#767676",
+
+    textAlign: "center",
+
+    marginBottom: 20,
+  },
+
+  confirmButtonsRow: {
+    flexDirection: "row",
+
+    gap: 12,
+  },
+
+  /* ================= CANCEL BUTTON ================= */
+
+  confirmCancelBtn: {
+    flex: 1,
+
+    borderWidth: 1,
+
+    borderColor: "#d1d5db",
+
+    borderRadius: 10,
+
+    paddingVertical: 12,
+
+    alignItems: "center",
+  },
+
+  confirmCancelText: {
+    color: "#374151",
+
+    fontWeight: "600",
+  },
+
+  /* ================= LOGOUT BUTTON ================= */
+
+  confirmLogoutBtn: {
+    flex: 1,
+
+    backgroundColor: "#dc2626",
+
+    borderRadius: 10,
+
+    paddingVertical: 12,
+
+    alignItems: "center",
+  },
+
+  confirmLogoutText: {
+    color: "#fff",
+
+    fontWeight: "600",
+  },
+
 });

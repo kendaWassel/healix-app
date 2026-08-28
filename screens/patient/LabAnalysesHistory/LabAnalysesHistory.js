@@ -11,8 +11,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import { BASE_URL, NGROK_HEADERS } from "../../../constants/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import PatientHeader from "../../Components/header/PatientHeader";
 import Footer from "../../Components/footer/Footer";
 import { colors } from "../../../constants/colors";
@@ -47,19 +45,11 @@ export default function LabAnalysesHistory() {
   const fetchAnalyses = async (page = 1) => {
     setIsLoading(true);
     setError(null);
-    const token = await AsyncStorage.getItem("token");
+
 
     try {
-      const response = await fetch(
-        `${BASE_URL}/lab/analyses?page=${page}&per_page=${pagination.perPage}`,
-        {
-          method: "GET",
-          headers: {
-            ...NGROK_HEADERS,
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+      const response = await apiFetch(
+        `/api/lab/analyses?page=${page}&per_page=${pagination.perPage}`);
 
       if (!response.ok) {
         const serverError = await response.json().catch(() => ({}));
