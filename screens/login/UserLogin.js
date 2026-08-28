@@ -100,6 +100,7 @@ export default function UserLogin() {
             <TextInput
               style={styles.input}
               placeholder={t("userLogin.emailPlaceholder")}
+              placeholderTextColor="#9CA3AF"
               keyboardType="email-address"
               autoCapitalize="none"
               value={email}
@@ -113,6 +114,7 @@ export default function UserLogin() {
             <TextInput
               style={styles.input}
               placeholder={t("userLogin.passwordPlaceholder")}
+              placeholderTextColor="#9CA3AF"
               secureTextEntry={!passwordShown}
               value={password}
               onChangeText={setPassword}
@@ -195,7 +197,7 @@ const styles = StyleSheet.create({
     borderColor: "#e0e0e0", borderRadius: 10, paddingHorizontal: 14,
     paddingVertical: 12, marginVertical: 10, gap: 10,
   },
-  input: { flex: 1, fontSize: 16 },
+  input: { flex: 1, fontSize: 16 , color: "#052443"},
   button: {
     backgroundColor: "#052443", padding: 16, borderRadius: 10,
     alignItems: "center", marginTop: 20,
