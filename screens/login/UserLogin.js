@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     borderColor: "#e0e0e0", borderRadius: 10, paddingHorizontal: 14,
     paddingVertical: 12, marginVertical: 10, gap: 10,
   },
-  input: { flex: 1, fontSize: 16 },
+  input: { flex: 1, fontSize: 16 , color: "#333" },
   button: {
     backgroundColor: "#052443", padding: 16, borderRadius: 10,
     alignItems: "center", marginTop: 20,
