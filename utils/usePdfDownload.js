@@ -1,8 +1,7 @@
 import { useState } from "react";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BASE_URL, NGROK_HEADERS } from "../constants/api";
+import { apiFetch } from "./apiClient";
 
 export function usePdfDownload() {
   const [downloadingId, setDownloadingId] = useState(null);
@@ -18,15 +17,18 @@ export function usePdfDownload() {
     setDownloadError(null);
 
     try {
-      const token = await AsyncStorage.getItem("token");
+      // apiFetch expects a relative API path.
+      // If the backend sends a full URL, extract only the path.
+      let apiPath = pdfUrl;
 
-      const response = await fetch(pdfUrl, {
-        method: "GET",
-        headers: {
-          ...NGROK_HEADERS,
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      if (pdfUrl.startsWith("http")) {
+        const parsedUrl = new URL(pdfUrl);
+        apiPath = parsedUrl.pathname + parsedUrl.search;
+      }
+
+      console.log("PDF API path:", apiPath);
+
+      const response = await apiFetch(apiPath);
 
       if (!response.ok) {
         const errText = await response.text().catch(() => "");
@@ -35,9 +37,12 @@ export function usePdfDownload() {
       }
 
       const blob = await response.blob();
-      const fileUri = `${FileSystem.documentDirectory}lab-report-${fileId}.pdf`;
+
+      const fileUri =
+        `${FileSystem.documentDirectory}lab-report-${fileId}.pdf`;
 
       const reader = new FileReader();
+
       const base64Data = await new Promise((resolve, reject) => {
         reader.onload = () => resolve(reader.result.split(",")[1]);
         reader.onerror = reject;
@@ -49,6 +54,7 @@ export function usePdfDownload() {
       });
 
       const canShare = await Sharing.isAvailableAsync();
+
       if (canShare) {
         await Sharing.shareAsync(fileUri, {
           mimeType: "application/pdf",
@@ -64,15 +70,22 @@ export function usePdfDownload() {
     }
   };
 
-  // patient-side: API response gives a full pdf_url
+  // Patient side
   const downloadPdf = (pdfUrl, fileId, dialogTitle) =>
     downloadFromUrl(pdfUrl, fileId, dialogTitle);
 
-  // doctor-side: build the URL from patient_id + analysis id
+  // Doctor side
   const downloadDoctorPdf = (patientId, analysisId, dialogTitle) => {
-    const url = `${BASE_URL}/patients/${patientId}/lab/analyses/${analysisId}/pdf`;
+    const url =
+      `/api/patients/${patientId}/lab/analyses/${analysisId}/pdf`;
+
     return downloadFromUrl(url, analysisId, dialogTitle);
   };
 
-  return { downloadPdf, downloadDoctorPdf, downloadingId, downloadError };
+  return {
+    downloadPdf,
+    downloadDoctorPdf,
+    downloadingId,
+    downloadError,
+  };
 }

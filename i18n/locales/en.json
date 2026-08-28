@@ -509,6 +509,13 @@
   "useIt": "Use it"
 },
 "nurse":{
+  "nurseHeader": {
+    "home": "Home",
+    "newOrders": "New Orders",
+    "mySchedules": "My Schedules",
+    "nurse": "Nurse"
+  },
+
   "nurseHome": {
     "title": "Account Information",
     "subtitle": "View or update your information",

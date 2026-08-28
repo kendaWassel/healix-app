@@ -94,13 +94,7 @@ export default function DoctorEndCallModal({ navigation, route }) {
     }
   };
 
-  // Fetches the patient's current medical record, then navigates straight
-  // to MedicalReportScreen (already converted, reads route.params) with
-  // showTreatmentPlan so the doctor's treatment-plan field appears, and
-  // afterSuccessScreen so MedicalReportScreen shows its own DoneModal on
-  // success — DoneModal must live on the screen the user actually lands
-  // on, since this screen (DoctorEndCallModal) is removed from the nav
-  // stack by the `replace` call below and can no longer show anything.
+
   const goToModifyReport = async () => {
     let currentMedicalReport = {};
     try {
