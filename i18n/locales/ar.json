@@ -711,8 +711,14 @@
   "close": "إغلاق",
   "otherConditions": "حالات أخرى",
   "currentMedications": "الأدوية الحالية",
-  "preExistingConditions": "الأمراض السابقة"
-} , 
+  "preExistingConditions": "الأمراض السابقة",
+  "aiSummaries": "ملخص المساعد الذكي (Healix)",
+  "aiSummaryStatusSent": "مُرسل",
+  "aiSummaryStatusDraft": "مسودة — لسا ما انبعتت",
+  "noAiSummaries": "ما في ملخصات مساعد ذكي لهاد المريض لهلق",
+  "loadingAiSummaries": "عم نجيب الملخصات...",
+  "aiSummariesLoadFailed": "ما قدرنا نجيب ملخصات المساعد الذكي"
+} ,
 
 "createPrescription": {
   "createTitle": "إنشاء وصفة طبية",
