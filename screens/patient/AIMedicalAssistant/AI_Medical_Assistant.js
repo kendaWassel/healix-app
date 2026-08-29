@@ -1120,6 +1120,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
+    color: "#052443",
     fontSize: 13,
   },
   micBtn: { backgroundColor: "#f3f4f6", padding: 10, borderRadius: 20 },
