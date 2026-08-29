@@ -281,6 +281,7 @@ export default function DoctorEndCallModal({ navigation, route }) {
                   setError(null);
                 }}
                 placeholder={t("doctorEndCall.reasonPlaceholder")}
+                placeholderTextColor="#9ca3af"
                 style={styles.input}
               />
             </View>
@@ -434,6 +435,8 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",
+     backgroundColor: "#fff",
+    color: "#111827",
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,

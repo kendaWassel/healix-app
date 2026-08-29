@@ -222,6 +222,7 @@ export default function MedicalReportModal({ navigation, route }) {
               style={[styles.input, { flex: 1, marginBottom: 0 }, disabled && styles.inputDisabled]}
               value={value}
               placeholder={placeholder}
+               placeholderTextColor="#9ca3af"
               editable={!disabled}
               onChangeText={(text) => updateListItem(setter, index, text, field)}
             />
@@ -276,6 +277,7 @@ export default function MedicalReportModal({ navigation, route }) {
         <TextInput
           style={styles.input}
           placeholder={t("medicalReportModal.diagnosisPlaceholder")}
+           placeholderTextColor="#9ca3af"
           value={fields.diagnosis}
           onChangeText={(t2) => setFields({ ...fields, diagnosis: t2 })}
         />
@@ -386,6 +388,7 @@ export default function MedicalReportModal({ navigation, route }) {
         <TextInput
           style={[styles.input, isEdit && styles.inputDisabled]}
           placeholder={t("medicalReportModal.otherConditionsPlaceholder")}
+           placeholderTextColor="#9ca3af"
           value={fields.other_conditions}
           onChangeText={(t2) => setFields({ ...fields, other_conditions: t2 })}
           editable={!isEdit}
@@ -394,6 +397,7 @@ export default function MedicalReportModal({ navigation, route }) {
         <TextInput
           style={[styles.input, isEdit && styles.inputDisabled]}
           placeholder={t("medicalReportModal.previousSurgeriesPlaceholder")}
+           placeholderTextColor="#9ca3af"
           value={fields.previous_surgeries}
           onChangeText={(t2) => setFields({ ...fields, previous_surgeries: t2 })}
           editable={!isEdit}
@@ -503,6 +507,7 @@ export default function MedicalReportModal({ navigation, route }) {
               value={conditionSearch}
               onChangeText={setConditionSearch}
               placeholder={t("medicalReportModal.searchCondition")}
+               placeholderTextColor="#9ca3af"
               style={styles.pickerSearch}
             />
             <ScrollView style={styles.pickerList}>
@@ -563,6 +568,7 @@ export default function MedicalReportModal({ navigation, route }) {
               value={preExistingSearch}
               onChangeText={setPreExistingSearch}
               placeholder={t("medicalReportModal.searchCondition")}
+               placeholderTextColor="#9ca3af"
               style={styles.pickerSearch}
             />
             <ScrollView style={styles.pickerList}>
@@ -627,7 +633,7 @@ const styles = StyleSheet.create({
   hint: { fontSize: 11, color: "#9ca3af", marginBottom: 6 },
   input: {
     borderWidth: 1, borderColor: "#ccc", borderRadius: 8,
-    paddingHorizontal: 12, paddingVertical: 10, fontSize: 15,
+    paddingHorizontal: 12, paddingVertical: 10, fontSize: 15,   color: "#111827"
   },
   inputDisabled: {
     backgroundColor: "#f3f4f6",

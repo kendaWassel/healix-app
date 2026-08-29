@@ -110,6 +110,7 @@ export default function PatientRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("patientRegister.fullNamePlaceholder")}
+            placeholderTextColor="#9ca3af"
             value={fullName}
             onChangeText={setFullName}
           />
@@ -119,6 +120,7 @@ export default function PatientRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("patientRegister.phonePlaceholder")}
+            placeholderTextColor="#9ca3af"
             keyboardType="numeric"
             value={phone}
             onChangeText={setPhone}
@@ -152,6 +154,7 @@ export default function PatientRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("patientRegister.emailPlaceholder")}
+            placeholderTextColor="#9ca3af"
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -164,6 +167,7 @@ export default function PatientRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("patientRegister.passwordPlaceholder")}
+            placeholderTextColor="#9ca3af"
             secureTextEntry={!passwordShown}
             value={password}
             onChangeText={setPassword}
@@ -228,6 +232,7 @@ export default function PatientRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("patientRegister.addressPlaceholder")}
+            placeholderTextColor="#9ca3af"
             value={address}
             onChangeText={setAddress}
           />
@@ -302,7 +307,7 @@ const styles = StyleSheet.create({
     borderColor: "#e0e0e0", borderRadius: 10, paddingHorizontal: 14,
     paddingVertical: 4, marginVertical: 7, gap: 10,
   },
-  input: { flex: 1, fontSize: 15, paddingVertical: 10 },
+  input: { flex: 1, fontSize: 15, paddingVertical: 10 , color: "#052443"},
   dateText: { flex: 1, fontSize: 15, color: "#333", paddingVertical: 10 },
   picker: { flex: 1, color: "#767676" },
   mapButton: {

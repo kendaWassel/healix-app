@@ -158,6 +158,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                 <TextInput
                   style={styles.input}
                   placeholder={t("forgotPassword.emailPlaceholder")}
+                  placeholderTextColor="#6B7280"
                   keyboardType="email-address"
                   autoCapitalize="none"
                   value={email}
@@ -192,6 +193,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                 <TextInput
                   style={styles.input}
                   placeholder={t("forgotPassword.codePlaceholder")}
+                  placeholderTextColor="#6B7280"
                   keyboardType="number-pad"
                   value={otp}
                   onChangeText={setOtp}
@@ -227,6 +229,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                 <TextInput
                   style={styles.input}
                   placeholder={t("forgotPassword.newPasswordPlaceholder")}
+                  placeholderTextColor="#6B7280"
                   secureTextEntry={!passwordShown}
                   value={newPassword}
                   onChangeText={setNewPassword}
@@ -241,6 +244,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                 <TextInput
                   style={styles.input}
                   placeholder={t("forgotPassword.confirmPasswordPlaceholder")}
+                  placeholderTextColor="#6B7280"
                   secureTextEntry={!passwordShown}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -327,7 +331,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     gap: 10,
   },
-  input: { flex: 1, fontSize: 15 },
+  input: { flex: 1, fontSize: 15 , color: "#052443" },
   primaryBtn: {
     backgroundColor: "#052443",
     padding: 14,

@@ -160,6 +160,7 @@ export default function EditMedicalReportModal({ navigation, route }) {
               style={[styles.input, { flex: 1, marginBottom: 0 }]}
               value={value}
               placeholder={t(`patientMedicalReport.${toCamelCase(field)}Placeholder`)}
+              placeholderTextColor="#6B7280"
               onChangeText={(text) => updateListItem(setter, index, text, field)}
             />
             {list.length > 1 && (
@@ -380,6 +381,7 @@ export default function EditMedicalReportModal({ navigation, route }) {
               value={conditionSearch}
               onChangeText={setConditionSearch}
               placeholder={t("medicalReportModal.searchCondition")}
+              placeholderTextColor="#6B7280"
               style={styles.pickerSearch}
             />
             <ScrollView style={styles.pickerList}>
@@ -435,6 +437,7 @@ export default function EditMedicalReportModal({ navigation, route }) {
               value={preExistingSearch}
               onChangeText={setPreExistingSearch}
               placeholder={t("medicalReportModal.searchCondition")}
+              placeholderTextColor="#6B7280"
               style={styles.pickerSearch}
             />
             <ScrollView style={styles.pickerList}>
@@ -499,6 +502,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
+    color: "#052443" ,
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,

@@ -802,6 +802,7 @@ const deleteConversation = async (id) => {
                 ? t("aiAssistant.transcribing")
                 : t("aiAssistant.describeSymptoms")
             }
+              placeholderTextColor="#9ca3af"
             editable={!isTyping && !isTranscribing && !isFinished}
             style={styles.textInput}
           />

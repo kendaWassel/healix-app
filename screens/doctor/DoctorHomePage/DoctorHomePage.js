@@ -289,6 +289,7 @@ const DoctorHomePage = () => {
                   onChangeText={(t2) => setDoctorData({ ...doctorData, consultation_fee: t2 })}
                   keyboardType="numeric"
                   placeholder={t("doctorHome.consultationFeePlaceholder")}
+                   placeholderTextColor="#6B7280"
                   style={styles.input}
                 />
                 <Text style={styles.dollarSign}>$</Text>
@@ -311,6 +312,7 @@ const Field = ({ label, icon, value, placeholder, keyboardType, onChangeText }) 
       <TextInput
         value={value}
         placeholder={placeholder}
+        placeholderTextColor="#6B7280"
         keyboardType={keyboardType}
         onChangeText={onChangeText}
         style={styles.input}

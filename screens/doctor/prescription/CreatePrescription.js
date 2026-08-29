@@ -213,6 +213,7 @@ export default function CreatePrescriptionScreen({ navigation, route }) {
                 value={diagnosis}
                 onChangeText={setDiagnosis}
                 placeholder={t("createPrescription.diagnosisPlaceholder")}
+                placeholderTextColor="#6B7280"
                 style={styles.input}
               />
             </View>
@@ -222,6 +223,7 @@ export default function CreatePrescriptionScreen({ navigation, route }) {
                 value={notes}
                 onChangeText={setNotes}
                 placeholder={t("createPrescription.notesPlaceholder")}
+                placeholderTextColor="#6B7280"
                 multiline
                 numberOfLines={3}
                 style={[styles.input, styles.textarea]}
@@ -232,6 +234,7 @@ export default function CreatePrescriptionScreen({ navigation, route }) {
               <View key={index} style={styles.medicineBox}>
                 <TextInput
                   placeholder={t("createPrescription.medicineNamePlaceholder")}
+                    placeholderTextColor="#6B7280"
                   value={med.name}
                   onChangeText={(t2) => handleMedicineChange(index, "name", t2)}
                   style={[styles.input, { marginBottom: 8 }]}
@@ -252,12 +255,14 @@ export default function CreatePrescriptionScreen({ navigation, route }) {
                 )}
                 <TextInput
                   placeholder={t("createPrescription.dosagePlaceholder")}
+                    placeholderTextColor="#6B7280"
                   value={med.dosage}
                   onChangeText={(t2) => handleMedicineChange(index, "dosage", t2)}
                   style={[styles.input, { marginBottom: 8 }]}
                 />
                 <TextInput
                   placeholder={t("createPrescription.boxesPlaceholder")}
+                    placeholderTextColor="#6B7280"
                   value={med.boxes}
                   onChangeText={(t2) => handleMedicineChange(index, "boxes", t2)}
                   keyboardType="numeric"
@@ -265,6 +270,7 @@ export default function CreatePrescriptionScreen({ navigation, route }) {
                 />
                 <TextInput
                   placeholder={t("createPrescription.instructionsPlaceholder")}
+                    placeholderTextColor="#6B7280"
                   value={med.instructions}
                   onChangeText={(t2) =>
                     handleMedicineChange(index, "instructions", t2)
