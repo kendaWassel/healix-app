@@ -717,7 +717,13 @@
   "close": "Close",
   "otherConditions": "Other Conditions",
   "currentMedications": "Current Medications",
-  "preExistingConditions": "Pre existing Conditions"
+  "preExistingConditions": "Pre existing Conditions",
+  "aiSummaries": "AI Assistant Summary (Healix)",
+  "aiSummaryStatusSent": "Sent",
+  "aiSummaryStatusDraft": "Draft — not sent yet",
+  "noAiSummaries": "No AI assistant summaries for this patient yet",
+  "loadingAiSummaries": "Loading summaries...",
+  "aiSummariesLoadFailed": "Couldn't load AI assistant summaries"
 },
 
 "createPrescription": {

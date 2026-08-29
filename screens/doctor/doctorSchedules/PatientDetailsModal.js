@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,46 @@ import {
   ScrollView,
   Modal,
   Linking,
+  ActivityIndicator,
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { CHRONIC_CONDITIONS } from "../../../constants/chronicConditions";
 import { PRE_EXISTING_CONDITIONS } from "../../../constants/preExistingConditions";
+import { apiFetch } from "../../../utils/apiClient";
+
 export default function PatientDetailsModal({ details, onClose }) {
   const { t, i18n } = useTranslation();
+  const [aiSummaries, setAiSummaries] = useState([]);
+  const [isLoadingSummaries, setIsLoadingSummaries] = useState(false);
+  const [summariesError, setSummariesError] = useState(null);
+
+  useEffect(() => {
+    if (!details?.patient_id) return;
+    let cancelled = false;
+
+    const loadSummaries = async () => {
+      setIsLoadingSummaries(true);
+      setSummariesError(null);
+      try {
+        const response = await apiFetch(`/api/doctor/patients/${details.patient_id}/doctor-summaries`);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || "failed");
+        if (!cancelled) setAiSummaries(data.data?.doctor_summaries || []);
+      } catch (err) {
+        if (!cancelled) setSummariesError(t("patientDetailsModal.aiSummariesLoadFailed"));
+      } finally {
+        if (!cancelled) setIsLoadingSummaries(false);
+      }
+    };
+
+    loadSummaries();
+    return () => {
+      cancelled = true;
+    };
+  }, [details?.patient_id]);
+
   if (!details) return null;
 
   const chronicDiseases = details.medical_record?.chronic_diseases;
@@ -157,6 +189,40 @@ export default function PatientDetailsModal({ details, onClose }) {
             </View>
 
             <View style={styles.group}>
+              <Text style={styles.label}>{t("patientDetailsModal.aiSummaries")}</Text>
+              {isLoadingSummaries ? (
+                <ActivityIndicator size="small" color="#052443" style={{ marginTop: 6 }} />
+              ) : summariesError ? (
+                <Text style={styles.value}>{summariesError}</Text>
+              ) : aiSummaries.length === 0 ? (
+                <Text style={styles.value}>{t("patientDetailsModal.noAiSummaries")}</Text>
+              ) : (
+                aiSummaries.map((summary) => (
+                  <View key={summary.id} style={styles.summaryCard}>
+                    <View style={styles.summaryHeader}>
+                      <Text
+                        style={[
+                          styles.summaryStatus,
+                          summary.status === "sent" ? styles.summaryStatusSent : styles.summaryStatusDraft,
+                        ]}
+                      >
+                        {summary.status === "sent"
+                          ? t("patientDetailsModal.aiSummaryStatusSent")
+                          : t("patientDetailsModal.aiSummaryStatusDraft")}
+                      </Text>
+                      {summary.created_at ? (
+                        <Text style={styles.summaryDate}>
+                          {new Date(summary.created_at).toLocaleDateString()}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Text style={styles.summaryText}>{summary.summary}</Text>
+                  </View>
+                ))
+              )}
+            </View>
+
+            <View style={styles.group}>
               <Text style={styles.label}>{t("patientDetailsModal.attachments")}</Text>
 
               <Text style={styles.subLabel}>{t("patientDetailsModal.images")}</Text>
@@ -283,6 +349,44 @@ const styles = StyleSheet.create({
   fileLink: {
     color: "#2563eb",
     textDecorationLine: "underline",
+  },
+  summaryCard: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    padding: 10,
+    marginTop: 6,
+  },
+  summaryHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  summaryStatus: {
+    fontSize: 12,
+    fontWeight: "700",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  summaryStatusSent: {
+    backgroundColor: "#dcfce7",
+    color: "#15803d",
+  },
+  summaryStatusDraft: {
+    backgroundColor: "#fef3c7",
+    color: "#92400e",
+  },
+  summaryDate: {
+    fontSize: 12,
+    color: "#6b7280",
+  },
+  summaryText: {
+    color: "#374151",
+    lineHeight: 20,
   },
   footer: {
     borderTopWidth: 1,
