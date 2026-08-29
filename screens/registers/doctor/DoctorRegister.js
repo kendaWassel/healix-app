@@ -194,6 +194,7 @@ export default function DoctorRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("doctorRegister.fullNamePlaceholder")}
+             placeholderTextColor="#6B7280"
             value={fullName}
             onChangeText={setFullName}
           />

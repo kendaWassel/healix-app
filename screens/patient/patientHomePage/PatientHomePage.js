@@ -197,6 +197,7 @@ export default function PatientHomePage() {
                   style={styles.input}
                   value={patientData.birth_date}
                   placeholder={t("patientHome.notSet")}
+                  placeholderTextColor="#9ca3af"
                   onChangeText={(t2) => setPatientData({ ...patientData, birth_date: t2 })}
                 />
               </View>
@@ -219,6 +220,7 @@ export default function PatientHomePage() {
                 <TextInput
                   style={styles.input}
                   placeholder={t("patientHome.addressPlaceholder")}
+                  placeholderTextColor="#9ca3af"
                   value={patientData.address}
                   onChangeText={(t2) => setPatientData({ ...patientData, address: t2 })}
                 />

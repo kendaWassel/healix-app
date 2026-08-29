@@ -743,6 +743,7 @@ export default function Receipts() {
                     checkDrugName(t2, "drugA");
                   }}
                   placeholder="e.g. Warfarin"
+                  placeholderTextColor="#9ca3af"
                   style={styles.input}
                 />
                 {suggestion?.field === "drugA" && (
@@ -772,6 +773,7 @@ export default function Receipts() {
                     checkDrugName(t2, "drugB");
                   }}
                   placeholder="e.g. Aspirin"
+                  placeholderTextColor="#9ca3af"
                   style={styles.input}
                 />
                 {suggestion?.field === "drugB" && (
@@ -1169,6 +1171,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
+    color: "#052443"
   },
   checkBtn: {
     backgroundColor: "#052443",

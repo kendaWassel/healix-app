@@ -412,6 +412,7 @@ export default function NewOrders() {
                       <TextInput
                         keyboardType="numeric"
                         placeholder={t("newOrdersScreen.enterPricePlaceholder")}
+                         placeholderTextColor="#6B7280"
                         value={prices[index] || ""}
                         onChangeText={(t2) =>
                           setPrices((prev) => ({ ...prev, [index]: t2 }))
@@ -449,6 +450,7 @@ export default function NewOrders() {
                     <View key={index} style={{ marginBottom: 12 }}>
                       <TextInput
                         placeholder={t("newOrdersScreen.medicineNamePlaceholder")}
+                        placeholderTextColor="#6B7280"
                         value={name}
                         onChangeText={(t2) => {
                           const updated = [...manualDrugNames];
@@ -521,6 +523,7 @@ export default function NewOrders() {
                       <Text style={styles.fieldLabel}>{item.dosageName}</Text>
                       <TextInput
                         placeholder={t("newOrdersScreen.addDosagePlaceholder")}
+                        placeholderTextColor="#6B7280"
                         value={item.dosage}
                         onChangeText={(t2) => {
                           const newDosages = [...dosages];
@@ -532,6 +535,7 @@ export default function NewOrders() {
                       <TextInput
                         keyboardType="numeric"
                         placeholder={t("newOrdersScreen.addPricePlaceholder")}
+                        placeholderTextColor="#6B7280"
                         value={item.price}
                         onChangeText={(t2) => {
                           const newDosages = [...dosages];
@@ -586,6 +590,7 @@ export default function NewOrders() {
               value={RejectReason}
               onChangeText={setRejectReason}
               placeholder={t("newOrdersScreen.rejectReasonPlaceholder")}
+              placeholderTextColor="#6B7280"
               multiline
               numberOfLines={3}
               style={[styles.input, styles.textarea]}

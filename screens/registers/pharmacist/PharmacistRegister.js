@@ -129,6 +129,7 @@ export default function PharmacistRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("pharmacistRegister.fullNamePlaceholder")}
+             placeholderTextColor="#9ca3af"
             value={fullName}
             onChangeText={setFullName}
           />
@@ -140,6 +141,7 @@ export default function PharmacistRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("pharmacistRegister.phonePlaceholder")}
+             placeholderTextColor="#9ca3af"
             keyboardType="numeric"
             value={phone}
             onChangeText={setPhone}
@@ -152,6 +154,7 @@ export default function PharmacistRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("pharmacistRegister.emailPlaceholder")}
+             placeholderTextColor="#9ca3af"
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -165,6 +168,7 @@ export default function PharmacistRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("pharmacistRegister.passwordPlaceholder")}
+             placeholderTextColor="#9ca3af"
             secureTextEntry={!passwordShown}
             value={password}
             onChangeText={setPassword}
@@ -228,6 +232,7 @@ export default function PharmacistRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("pharmacistRegister.locationPlaceholder")}
+             placeholderTextColor="#9ca3af"
             value={address}
             onChangeText={setAddress}
           />
@@ -258,6 +263,7 @@ export default function PharmacistRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("pharmacistRegister.pharmacyNamePlaceholder")}
+             placeholderTextColor="#9ca3af"
             value={pharmacyName}
             onChangeText={setPharmacyName}
           />
@@ -269,6 +275,7 @@ export default function PharmacistRegister() {
           <TextInput
             style={styles.input}
             placeholder={t("pharmacistRegister.crNumberPlaceholder")}
+             placeholderTextColor="#9ca3af"
             keyboardType="numeric"
             value={crNumber}
             onChangeText={setCrNumber}

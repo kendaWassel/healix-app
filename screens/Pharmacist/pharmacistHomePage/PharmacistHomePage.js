@@ -232,6 +232,7 @@ const PharmacistHomePage = () => {
                 <Ionicons name="location-outline" size={20} color="#39CCCC" />
                 <TextInput
                   placeholder={t("pharmacistHomePage.addressPlaceholder")}
+                   placeholderTextColor="#6B7280"
                   value={pharmacistData.address}
                   onChangeText={(t2) => setPharmacistData({ ...pharmacistData, address: t2 })}
                   style={styles.input}
@@ -285,6 +286,7 @@ const Field = ({ label, icon, value, placeholder, keyboardType, onChangeText, ed
         value={value}
         editable={editable}
         placeholder={placeholder}
+         placeholderTextColor="#6B7280"
         keyboardType={keyboardType}
         onChangeText={onChangeText}
         style={styles.input}

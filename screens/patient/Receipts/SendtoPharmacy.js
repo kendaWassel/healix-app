@@ -129,6 +129,7 @@ const SendToPharmacy = ({ open, onClose, onDone, prescription_id }) => {
             value={search}
             onChangeText={setSearch}
             placeholder={t("sendToPharmacy.searchPlaceholder")}
+            placeholderTextColor="#6B7280"
             style={styles.searchInput}
           />
         </View>
